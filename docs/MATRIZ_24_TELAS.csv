@@ -1,0 +1,25 @@
+﻿numero;arquivo_referencia;tela;rota;funcionalidade_central;dominios_backend;criterio_de_aceitacao
+1;01_fluxo_inicial.png;Splash / boas-vindas;/;CTA Começar, navegação inicial;auth/catalog;reprodução visual e navegação
+2;01_fluxo_inicial.png;Onboarding / comprador;/onboarding;wizard orçamento bairros quartos finalidade pagamento;buyer_profiles;persistência e validação
+3;01_fluxo_inicial.png;Login / acesso;/entrar;entrar recuperar senha criar conta OIDC opcional;auth;autenticação e estados de erro
+4;01_fluxo_inicial.png;Home / Matches;/inicio;matches recomendados e proximidade com autorização;matches/properties;resultados reais e score
+5;02_exploracao_e_mapa.png;Buscar / Explorar;/explorar;busca filtros cards ordenação;properties/search;busca real e URLs
+6;02_exploracao_e_mapa.png;Mapa Inteligente;/mapa;pins por score clustering bottom sheet;properties/geo;mapa e filtros reais
+7;02_exploracao_e_mapa.png;Filtros avançados;/explorar/filtros;preço região área tipo finalidade;properties/search;persistência de filtros
+8;02_exploracao_e_mapa.png;Alerta oportunidade;/matches/perto;Match Nearby enquanto PWA em uso;matches/location;localização negada sem ficção
+9;03_interacao_e_match.png;Swipe / Descobrir;/matches/descobrir;descartar salvar interesse;interactions/matches;swipe com ação persistida
+10;03_interacao_e_match.png;Favoritos;/favoritos;favoritar desfavoritar organizar;favorites;CRUD persistente
+11;03_interacao_e_match.png;Comparar;/comparar;comparação lado a lado;properties/compare;dados verdadeiros
+12;03_interacao_e_match.png;SPIRE Exclusive;/exclusivos;listagem de exclusivos e pré-lançamentos;properties/private;visibilidade autorizada
+13;04_conversao_e_atendimento.png;Detalhe de imóvel;/imoveis/[slug];galeria razões Match CTA contato e visitas;properties/matches;todas as ações
+14;04_conversao_e_atendimento.png;Fale com consultor;/atendimento/[propertyId];contato consultor WhatsApp retorno;contacts/brokers;contato rastreado
+15;04_conversao_e_atendimento.png;Agendar visita;/visitas/agendar;datas slots confirmação;visits/brokers;evitar sobreposição
+16;04_conversao_e_atendimento.png;Tour Inteligente;/tour;roteiro e slots de visitas;tours/routes;tempos não inventados
+17;05_perfil_e_relacionamento.png;Meu perfil;/perfil;preferências e privacidade;users/preferences;edição e consentimento
+18;05_perfil_e_relacionamento.png;Notificações;/notificacoes;inbox mensagens por eventos;notifications;permissões e histórico
+19;05_perfil_e_relacionamento.png;Meus radares;/radares;buscas salvas e alertas;radars;gatilhos reais
+20;05_perfil_e_relacionamento.png;Minhas visitas e atividades;/minhas-visitas;agenda propostas histórico;visits/proposals;atividades persistidas
+21;06_painel_comercial.png;Visão Geral;/admin;KPIs funil receita atribuição;admin/reports;dados do CRM sem mocks
+22;06_painel_comercial.png;Leads / oportunidades;/admin/leads;tabela segmentada com lead score;admin/leads;permissão e filtros
+23;06_painel_comercial.png;Detalhes Lead / CRM;/admin/leads/[id];buyer profile timeline imóveis tasks;admin/crm;ações e auditoria
+24;06_painel_comercial.png;Agenda / Funil;/admin/agenda;visitas calendário kanban pipeline;admin/calendar/pipeline;reservas e mudança de estágio

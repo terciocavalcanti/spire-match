@@ -1,0 +1,43 @@
+{
+  "name": "@spire/web",
+  "version": "0.1.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "dev": "next dev --port 3000",
+    "build": "next build --webpack",
+    "start": "next start --port 3000",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf .next .turbo"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^6.0.0",
+    "@serwist/next": "^9.5.13",
+    "@tanstack/react-query": "^5.64.2",
+    "@spire/api-client": "workspace:*",
+    "@spire/contracts": "workspace:*",
+    "@spire/design-tokens": "workspace:*",
+    "@spire/ui-web": "workspace:*",
+    "lucide-react": "^1.60.0",
+    "maplibre-gl": "^6.15.0",
+    "next": "^16.4.2",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-hook-form": "^7.90.0",
+    "serwist": "^9.5.13",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@spire/configs": "workspace:*",
+    "@types/node": "^22.10.5",
+    "@types/react": "^19.0.7",
+    "@types/react-dom": "^19.0.3",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9.18.0",
+    "postcss": "^8.4.49",
+    "rimraf": "^6.0.1",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.3"
+  }
+}

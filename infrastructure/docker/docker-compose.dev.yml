@@ -1,0 +1,83 @@
+name: spire-match-dev
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-spire}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-spire}
+      POSTGRES_DB: ${POSTGRES_DB:-spire_match}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - spire_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-spire} -d ${POSTGRES_DB:-spire_match}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - spire_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    # MinIO bloqueou pull anônimo de "latest" tanto no Docker Hub quanto no
+    # quay.io (política de licenciamento). Como nenhuma feature atual (Marco A)
+    # usa storage S3 ainda, este serviço fica em perfil opcional — ativar com
+    # `docker compose --profile storage up -d` depois de resolver a imagem
+    # (conta/login no quay.io, build local, ou provedor alternativo) quando o
+    # Marco B implementar upload de mídia.
+    image: quay.io/minio/minio:latest
+    profiles: ["storage"]
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-spire}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-spirematch123}
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - spire_minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    restart: unless-stopped
+    ports:
+      - "${MAILHOG_SMTP_PORT:-1025}:1025" # SMTP de teste (ver SMTP_URL no .env.example)
+      - "${MAILHOG_UI_PORT:-8025}:8025" # UI web para inspecionar e-mails enviados
+
+  # Perfil opcional "proxy": rehearsal local do Caddyfile de produção. Não é
+  # necessário no dia a dia — web/admin/api rodam direto via `pnpm dev` nas
+  # portas 3000/3001/4000. Suba com `docker compose --profile proxy up caddy`.
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    profiles: ["proxy"]
+    ports:
+      - "8080:80"
+    volumes:
+      - ../caddy/Caddyfile.dev:/etc/caddy/Caddyfile:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  spire_postgres_data:
+  spire_redis_data:
+  spire_minio_data:
