@@ -44,6 +44,8 @@ services:
       context: .
       dockerfile: infrastructure/docker/api.Dockerfile
     restart: unless-stopped
+    expose:
+      - "4000"
     environment:
       NODE_ENV: production
       PORT: 4000
@@ -85,6 +87,8 @@ services:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
         NEXT_PUBLIC_MAPTILER_API_KEY: ${NEXT_PUBLIC_MAPTILER_API_KEY:-}
     restart: unless-stopped
+    expose:
+      - "3000"
     environment:
       PORT: 3000
     depends_on:
@@ -98,6 +102,8 @@ services:
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
     restart: unless-stopped
+    expose:
+      - "3001"
     environment:
       PORT: 3001
     depends_on:
