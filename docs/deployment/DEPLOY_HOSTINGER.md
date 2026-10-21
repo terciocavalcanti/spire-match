@@ -1,5 +1,10 @@
 # Guia de deploy — SPIRE MATCH na Hostinger VPS (KVM 2)
 
+> Sua VPS já tem o **Coolify** instalado (ex: template "Coolify" da
+> Hostinger)? Use [DEPLOY_COOLIFY.md](DEPLOY_COOLIFY.md) em vez deste — é
+> mais simples, o Coolify já cuida do proxy/HTTPS e do build a partir do Git.
+> Este guia aqui é para uma VPS "crua", só com Ubuntu.
+
 Este guia assume que você **nunca configurou um servidor Linux antes**. Siga
 os passos na ordem. Cada comando é para copiar e colar — não precisa entender
 tudo de primeira, só ir executando.
