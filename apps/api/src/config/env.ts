@@ -18,7 +18,7 @@ const envSchema = z.object({
     .default("http://localhost:3000,http://localhost:3001")
     .transform((v) => v.split(",").map((origin) => origin.trim())),
 
-  // Pendências externas reais (ver docs/deployment/PROVIDER_CONFIGURATION.md) —
+  // Pendências externas reais (ver docs/deployment/DEPLOY_HOSTINGER.md) —
   // ausentes em dev, nunca simuladas como ativas em produção.
   MAPTILER_API_KEY: z.string().optional(),
   S3_ENDPOINT: z.string().optional(),

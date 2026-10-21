@@ -1,0 +1,92 @@
+name: spire-match-prod
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - spire_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    # Sem "ports": o Postgres só é alcançável pelos outros serviços desta
+    # mesma rede Compose, nunca exposto diretamente na internet.
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - spire_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    image: ${API_IMAGE}
+    restart: unless-stopped
+    env_file: ../../.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:4000/api/v1/health/live').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  web:
+    image: ${WEB_IMAGE}
+    restart: unless-stopped
+    env_file: ../../.env
+    # Sobrescreve a PORT herdada do .env compartilhado (ali ela se refere à
+    # API, na porta 4000) — o server.js do Next.js também lê PORT, então sem
+    # isso o web passaria a escutar em 4000 e o Caddy (que aponta pra 3000)
+    # pararia de conseguir alcançá-lo.
+    environment:
+      - PORT=3000
+    depends_on:
+      api:
+        condition: service_healthy
+
+  admin:
+    image: ${ADMIN_IMAGE}
+    restart: unless-stopped
+    env_file: ../../.env
+    environment:
+      - PORT=3001
+    depends_on:
+      api:
+        condition: service_healthy
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    env_file: ../../.env
+    volumes:
+      - ./../caddy/Caddyfile.prod:/etc/caddy/Caddyfile:ro
+      - spire_caddy_data:/data
+      - spire_caddy_config:/config
+    depends_on:
+      - web
+      - admin
+      - api
+
+volumes:
+  spire_postgres_data:
+  spire_redis_data:
+  spire_caddy_data:
+  spire_caddy_config:

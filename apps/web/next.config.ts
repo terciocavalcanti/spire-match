@@ -1,8 +1,14 @@
+import path from "node:path";
+
 import withSerwistInit from "@serwist/next";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // Imagem Docker de produção usa `.next/standalone` — precisa da raiz do
+  // monorepo para rastrear corretamente as dependências via symlinks pnpm.
+  outputFileTracingRoot: path.join(__dirname, "../../"),
+  output: "standalone",
   transpilePackages: ["@spire/ui-web", "@spire/design-tokens", "@spire/contracts", "@spire/api-client"],
   images: {
     // Hospedagem de fotos de imóveis via S3-compatible (R2/MinIO) — hosts

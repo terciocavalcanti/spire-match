@@ -1,0 +1,16 @@
+# Caddy emite e renova HTTPS (Let's Encrypt) automaticamente para cada
+# domínio real abaixo — não é preciso configurar certificados manualmente.
+# Os três domínios precisam de um registro DNS tipo A apontando para o IP
+# desta VPS antes de reiniciar o Caddy (ver docs/deployment/DEPLOY_HOSTINGER.md).
+
+{$APP_DOMAIN} {
+	reverse_proxy web:3000
+}
+
+{$ADMIN_DOMAIN} {
+	reverse_proxy admin:3001
+}
+
+{$API_DOMAIN} {
+	reverse_proxy api:4000
+}
