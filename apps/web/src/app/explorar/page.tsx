@@ -3,7 +3,7 @@
 import type { AiSearchResponse, PropertyType } from "@spire/contracts";
 import { EmptyState, FilterChip, PropertyCard } from "@spire/ui-web";
 import { useQuery } from "@tanstack/react-query";
-import { SlidersHorizontal, Search } from "lucide-react";
+import { Map, SlidersHorizontal, Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
@@ -98,6 +98,13 @@ function ExplorarContent() {
                   {activeFilterCount}
                 </span>
               )}
+            </Link>
+            <Link
+              href="/mapa"
+              aria-label="Ver no mapa"
+              className="flex h-12 w-12 items-center justify-center rounded-xl border border-border-subtle bg-background-elevated text-ink-primary"
+            >
+              <Map className="h-4 w-4" />
             </Link>
           </div>
           <div className="mt-3 flex gap-2 overflow-x-auto pb-1">

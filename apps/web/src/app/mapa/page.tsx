@@ -1,7 +1,7 @@
 "use client";
 
 import { Button, EmptyState, MatchBadge } from "@spire/ui-web";
-import { BedDouble, Car, LocateFixed, Ruler } from "lucide-react";
+import { BedDouble, Car, List, LocateFixed, Ruler } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
@@ -35,14 +35,23 @@ export default function MapaPage() {
           <p className="text-bodySm text-ink-secondary">
             {isLoading ? "Carregando imóveis…" : `${points.length} imóveis no mapa`}
           </p>
-          <button
-            type="button"
-            onClick={geo.request}
-            className="flex items-center gap-1.5 rounded-pill bg-background-subtle px-3 py-1.5 text-bodySm text-ink-secondary"
-          >
-            <LocateFixed className="h-3.5 w-3.5" />
-            {geo.status === "granted" ? "Localização ativa" : "Minha localização"}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={geo.request}
+              className="flex items-center gap-1.5 rounded-pill bg-background-subtle px-3 py-1.5 text-bodySm text-ink-secondary"
+            >
+              <LocateFixed className="h-3.5 w-3.5" />
+              {geo.status === "granted" ? "Localização ativa" : "Minha localização"}
+            </button>
+            <Link
+              href="/explorar"
+              aria-label="Ver em lista"
+              className="flex h-9 w-9 items-center justify-center rounded-pill bg-background-subtle text-ink-secondary"
+            >
+              <List className="h-3.5 w-3.5" />
+            </Link>
+          </div>
         </div>
       }
     >
