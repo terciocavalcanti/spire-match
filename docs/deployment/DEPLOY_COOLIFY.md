@@ -48,16 +48,23 @@ lista como campos editáveis. Preencha:
 | Variável | Valor |
 |---|---|
 | `POSTGRES_USER` | `spire` |
-| `POSTGRES_PASSWORD` | uma senha forte só sua (gere uma, ex: `openssl rand -base64 24`) |
+| `POSTGRES_PASSWORD` | uma senha forte só sua — gere com `openssl rand -hex 24` (não use `-base64`: pode gerar `#`/`@`/`/`, que quebram a URL de conexão montada automaticamente) |
 | `POSTGRES_DB` | `spire_match` |
 | `CORS_ALLOWED_ORIGINS` | `https://app.seudominio.com.br,https://admin.seudominio.com.br` |
 | `NEXT_PUBLIC_API_URL` | `https://api.seudominio.com.br/api/v1` |
 | `NEXT_PUBLIC_MAPTILER_API_KEY` | deixe vazio por agora |
+| `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` | gere seu próprio par rodando `node -e "console.log(require('web-push').generateVAPIDKeys())"` em qualquer máquina com Node (`npm i -g web-push` antes) — veja abaixo |
 
 As demais (`MAPTILER_API_KEY`, `S3_*`, `SMTP_URL`, `WHATSAPP_*`,
-`LLM_PROVIDER_API_KEY`, `VAPID_*`) também aparecem — pode deixar todas em
-branco por enquanto. Cada uma ativa uma integração externa só quando
-preenchida (ver tabela no fim deste guia).
+`LLM_PROVIDER_API_KEY`) podem ficar em branco por enquanto — cada uma ativa
+uma integração externa só quando preenchida (ver tabela no fim deste guia).
+
+> **Sobre o VAPID**: diferente das outras, essa não é uma pendência externa
+> de verdade — não existe conta/provedor terceiro envolvido, é só um par de
+> chaves que identifica o seu servidor perante o navegador para habilitar
+> notificações push. Preencha `VAPID_PUBLIC_KEY` e `VAPID_PRIVATE_KEY` com o
+> `publicKey`/`privateKey` gerados — o PWA busca a chave pública direto da
+> API em tempo real, não precisa rebuildar o frontend para isso.
 
 > **Importante**: `NEXT_PUBLIC_API_URL` e `NEXT_PUBLIC_MAPTILER_API_KEY` são
 > usadas durante o **build** do PWA (ficam embutidas no código). Se você
@@ -87,13 +94,15 @@ subir os 5 containers e emitir os certificados HTTPS automaticamente para os
 Acompanhe pelos **Deployment Logs**. Ao final, cada serviço deve aparecer
 como "Running"/saudável.
 
-> **Nota sobre o primeiríssimo deploy**: é normal e esperado que o container
-> da `api` apareça como **"unhealthy" por até ~1 minuto** logo na primeira
-> vez (o Postgres reinicia uma vez sozinho enquanto cria o banco do zero, e
-> a API tenta se conectar um pouco antes disso terminar). Ele se recupera
-> sozinho automaticamente — isso foi testado e confirmado antes deste guia
-> ser escrito. Se depois de 2-3 minutos ainda estiver "unhealthy", aí sim
-> vale investigar (clique no serviço → Logs).
+> **Nota sobre o primeiríssimo deploy**: na primeira inicialização de um
+> volume vazio, o Postgres reinicia uma vez sozinho enquanto cria o banco —
+> a API detecta isso e tenta reconectar por até ~30s antes de desistir, em
+> vez de travar. Se mesmo assim o deploy falhar logo no início com erro de
+> senha/autenticação, normalmente é porque o volume do Postgres já existe
+> de uma tentativa anterior com outra senha — apague-o (aba **Persistent
+> Storage** não deixa excluir direto; use o **Terminal** do servidor:
+> `docker volume ls | grep postgres-data` para achar o nome e
+> `docker volume rm <nome>` para remover) e faça o deploy de novo.
 
 ## 5. Conferir
 

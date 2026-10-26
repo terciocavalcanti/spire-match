@@ -13,6 +13,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
+import { brokers } from "./brokers";
 
 export const propertyStatusEnum = pgEnum("property_status", PROPERTY_STATUSES);
 export const propertyTypeEnum = pgEnum("property_type", PROPERTY_TYPES);
@@ -66,6 +67,10 @@ export const properties = pgTable(
     exclusiveType: exclusiveTypeEnum("exclusive_type"),
     // Patrocínio é só posicionamento editorial — nunca entra no cálculo do Match Score.
     isSponsored: boolean("is_sponsored").notNull().default(false),
+
+    // Corretor responsável/autorizado pelo imóvel — nulo até a captação real
+    // (Marco E) atribuir um; "Fale com consultor" exige esse vínculo.
+    brokerId: uuid("broker_id").references(() => brokers.id, { onDelete: "set null" }),
 
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

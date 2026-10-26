@@ -83,6 +83,13 @@ export class PropertiesService {
     return row ?? null;
   }
 
+  async findByIdDetail(id: string): Promise<PropertyDetail | null> {
+    const [row] = await this.db.select().from(properties).where(eq(properties.id, id)).limit(1);
+    if (!row) return null;
+    const images = await this.db.select().from(propertyImages).where(eq(propertyImages.propertyId, row.id));
+    return toPropertyDetail(row, images);
+  }
+
   /**
    * Pré-filtra por bounding box (indexado em `lat`/`lng`) e depois ordena
    * pela distância haversine exata — ver nota de simplificação do Marco B em

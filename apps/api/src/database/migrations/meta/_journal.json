@@ -15,6 +15,13 @@
       "when": 1792531335603,
       "tag": "0001_salty_luminals",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792972233625,
+      "tag": "0002_clumsy_meggan",
+      "breakpoints": true
     }
   ]
 }

@@ -27,6 +27,16 @@ export class PropertiesController {
     return this.properties.search(query);
   }
 
+  // Idem — usada por telas que só têm o UUID (atendimento, visitas, tour).
+  @Get("by-id/:id")
+  async findById(@Param("id") id: string) {
+    const property = await this.properties.findByIdDetail(id);
+    if (!property) {
+      throw new NotFoundException({ code: "PROPERTY_NOT_FOUND", message: "Imóvel não encontrado" });
+    }
+    return property;
+  }
+
   @Get(":slug")
   async findBySlug(@Param("slug") slug: string) {
     const property = await this.properties.findBySlug(slug);

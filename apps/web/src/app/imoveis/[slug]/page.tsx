@@ -1,12 +1,13 @@
 "use client";
 
 import { Button, MatchBadge, PropertyGallery } from "@spire/ui-web";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { BedDouble, Car, ChevronLeft, Heart, Ruler, Share2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useEffect, useRef } from "react";
 
+import { ProposalForm } from "@/components/property/ProposalForm";
 import { useFavoriteIds, useToggleFavorite } from "@/hooks/use-favorites";
 import { useMatchForProperty } from "@/hooks/use-matches";
 import { apiClient } from "@/lib/api-client";
@@ -28,7 +29,6 @@ const REASON_LABELS: Record<string, string> = {
 export default function ImovelPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const router = useRouter();
-  const queryClient = useQueryClient();
   const favoriteIds = useFavoriteIds();
   const toggleFavorite = useToggleFavorite();
   const viewRecorded = useRef(false);
@@ -176,21 +176,18 @@ export default function ImovelPage({ params }: { params: Promise<{ slug: string 
             </div>
           </div>
         )}
+
+        <ProposalForm property={property} />
       </div>
 
       <div className="fixed inset-x-0 bottom-0 z-30 flex gap-3 border-t border-border-subtle bg-background-elevated p-4">
-        <a
-          href={`https://wa.me/?text=${encodeURIComponent(`Olá! Tenho interesse no imóvel ${property.title} (${currencyFormatter.format(property.price)}).`)}`}
-          target="_blank"
-          rel="noreferrer"
-          onClick={() => {
-            void apiClient.interactions.create({ propertyId: property.id, type: "CONTACT" });
-            void queryClient.invalidateQueries({ queryKey: ["property", slug] });
-          }}
+        <Link
+          href={`/atendimento/${property.id}`}
+          onClick={() => void apiClient.interactions.create({ propertyId: property.id, type: "CONTACT" })}
           className="flex h-12 flex-1 items-center justify-center rounded-pill border border-border-strong text-button text-ink-primary"
         >
-          WhatsApp
-        </a>
+          Fale com consultor
+        </Link>
         <Link
           href={`/visitas/agendar?imovel=${property.slug}`}
           onClick={() => void apiClient.interactions.create({ propertyId: property.id, type: "VISIT_REQUEST" })}

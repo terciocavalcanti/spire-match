@@ -43,3 +43,44 @@ const serwist = new Serwist({
 });
 
 serwist.addEventListeners();
+
+interface PushPayload {
+  title: string;
+  body: string;
+  url?: string;
+}
+
+// Web Push (W3C Push API) — exibe a notificação do sistema quando o servidor
+// envia um push real (ver NotificationsService/WebPushService na API). Sem
+// isso, a assinatura existiria mas nada apareceria para o usuário.
+self.addEventListener("push", (event) => {
+  if (!event.data) return;
+  let payload: PushPayload;
+  try {
+    payload = event.data.json() as PushPayload;
+  } catch {
+    return;
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(payload.title, {
+      body: payload.body,
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      data: { url: payload.url ?? "/notificacoes" },
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = (event.notification.data as { url?: string } | undefined)?.url ?? "/notificacoes";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientsList) => {
+      for (const client of clientsList) {
+        if ("focus" in client) return client.focus();
+      }
+      return self.clients.openWindow(url);
+    }),
+  );
+});

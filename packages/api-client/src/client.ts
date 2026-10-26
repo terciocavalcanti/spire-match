@@ -3,22 +3,37 @@ import {
   type AiSearchRequest,
   type AiSearchResponse,
   type AuthenticatedUser,
+  type Broker,
   type BuyerPreferences,
+  type Contact,
+  type CreateContactRequest,
   type CreateInteractionRequest,
+  type CreateProposalRequest,
+  type CreateRadarRequest,
+  type CreateVisitRequest,
   type Favorite,
   type ForgotPasswordRequest,
+  type GenerateTourRequest,
   type LoginRequest,
   type MatchResult,
+  type Notification,
+  type NotificationListQuery,
+  type Proposal,
   type PropertyDetail,
   type PropertyNearbyQuery,
   type PropertySearchQuery,
   type PropertySummary,
+  type PushSubscriptionRequest,
+  type Radar,
   type RecalculateMatchesRequest,
   type RegisterRequest,
   type ResetPasswordRequest,
   type SessionResponse,
+  type Tour,
   type UpdateBuyerPreferencesRequest,
   type VerifyEmailRequest,
+  type Visit,
+  type VisitSlot,
   apiErrorSchema,
   sessionResponseSchema,
 } from "@spire/contracts";
@@ -145,6 +160,8 @@ export class SpireApiClient {
 
     bySlug: (slug: string) => this.request<PropertyDetail>(`/properties/${slug}`),
 
+    byId: (id: string) => this.request<PropertyDetail>(`/properties/by-id/${id}`),
+
     nearby: (query: PropertyNearbyQuery) =>
       this.request<{ items: Array<PropertySummary & { distanceMeters: number }> }>(
         `/properties/nearby${toQueryString(query)}`,
@@ -195,5 +212,60 @@ export class SpireApiClient {
   health = {
     live: () => this.request<{ status: "ok" }>("/health/live", { method: "GET" }),
     ready: () => this.request<{ status: "ok" | "degraded" }>("/health/ready", { method: "GET" }),
+  };
+
+  brokers = {
+    list: () => this.request<{ items: Broker[] }>("/brokers"),
+    byProperty: (propertyId: string) => this.request<{ broker: Broker | null }>(`/brokers/by-property/${propertyId}`),
+    byId: (id: string) => this.request<Broker>(`/brokers/${id}`),
+  };
+
+  visits = {
+    availability: (brokerId: string, date: string) =>
+      this.request<{ slots: VisitSlot[] }>(`/visits/availability${toQueryString({ brokerId, date })}`),
+    mine: () => this.request<{ items: Visit[] }>("/visits/mine"),
+    schedule: (payload: CreateVisitRequest) =>
+      this.request<Visit>("/visits", { method: "POST", body: JSON.stringify(payload) }),
+    cancel: (id: string) => this.request<{ cancelled: true }>(`/visits/${id}`, { method: "DELETE" }),
+  };
+
+  proposals = {
+    mine: () => this.request<{ items: Proposal[] }>("/proposals/mine"),
+    create: (payload: CreateProposalRequest) =>
+      this.request<Proposal>("/proposals", { method: "POST", body: JSON.stringify(payload) }),
+  };
+
+  contacts = {
+    mine: () => this.request<{ items: Contact[] }>("/contacts/mine"),
+    create: (payload: CreateContactRequest) =>
+      this.request<Contact>("/contacts", { method: "POST", body: JSON.stringify(payload) }),
+  };
+
+  notifications = {
+    list: (query: Partial<NotificationListQuery> = {}) =>
+      this.request<{ items: Notification[]; nextCursor: string | null }>(`/notifications${toQueryString(query)}`),
+    unreadCount: () => this.request<{ count: number }>("/notifications/unread-count"),
+    markRead: (id: string) => this.request<{ read: true }>(`/notifications/${id}/read`, { method: "POST" }),
+    markAllRead: () => this.request<{ read: true }>("/notifications/read-all", { method: "POST" }),
+    vapidPublicKey: () => this.request<{ publicKey: string | null }>("/notifications/vapid-public-key"),
+    subscribePush: (payload: PushSubscriptionRequest) =>
+      this.request<{ subscribed: true }>("/notifications/push/subscribe", { method: "POST", body: JSON.stringify(payload) }),
+    unsubscribePush: (endpoint: string) =>
+      this.request<{ unsubscribed: true }>("/notifications/push/subscribe", {
+        method: "DELETE",
+        body: JSON.stringify({ endpoint }),
+      }),
+  };
+
+  radars = {
+    list: () => this.request<{ items: Radar[] }>("/radars"),
+    create: (payload: CreateRadarRequest) => this.request<Radar>("/radars", { method: "POST", body: JSON.stringify(payload) }),
+    check: (id: string) => this.request<{ newMatches: number }>(`/radars/${id}/check`, { method: "POST" }),
+    remove: (id: string) => this.request<{ removed: true }>(`/radars/${id}`, { method: "DELETE" }),
+  };
+
+  tours = {
+    generate: (payload: GenerateTourRequest) =>
+      this.request<Tour>("/tours/generate", { method: "POST", body: JSON.stringify(payload) }),
   };
 }

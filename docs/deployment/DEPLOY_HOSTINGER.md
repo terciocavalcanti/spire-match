@@ -112,9 +112,10 @@ nano .env
 O `nano` é um editor de texto simples dentro do terminal. Ajuste pelo menos:
 
 - `APP_DOMAIN`, `ADMIN_DOMAIN`, `API_DOMAIN` → os 3 domínios que você criou na Parte 1.1.
-- `POSTGRES_PASSWORD` → troque por uma senha forte e só sua (ex: gere uma em https://1password.com/password-generator, ou rode `openssl rand -base64 24` na própria VPS).
+- `POSTGRES_PASSWORD` → troque por uma senha forte e só sua. **Rode `openssl rand -hex 24` na própria VPS** (não use `-base64` nem um gerador de senha genérico — eles podem incluir caracteres como `#`, `@`, `/`, que quebram a `DATABASE_URL` logo abaixo; `-hex` é sempre só letras e números, seguro).
 - `DATABASE_URL` → troque a senha nela também, **igual à que você colocou em `POSTGRES_PASSWORD`**.
 - `CORS_ALLOWED_ORIGINS` → `https://app.seudominio.com.br,https://admin.seudominio.com.br` (com os seus domínios reais).
+- `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` → necessárias para notificações push funcionarem. Não é credencial de terceiro — gere seu próprio par rodando `npm i -g web-push && node -e "console.log(require('web-push').generateVAPIDKeys())"` (na VPS ou em qualquer máquina com Node). Copie `publicKey` para `VAPID_PUBLIC_KEY` e `privateKey` para `VAPID_PRIVATE_KEY` — o PWA busca a chave pública direto da API em tempo real, não precisa rebuildar o frontend.
 
 As demais variáveis (MapTiler, SMTP, WhatsApp, LLM) podem ficar em branco por
 agora — o produto funciona sem elas, só com os avisos de "pendência externa"

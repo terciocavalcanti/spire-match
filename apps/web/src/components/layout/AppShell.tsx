@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { useUnreadNotificationsCount } from "@/hooks/use-notifications";
 
 import { BOTTOM_NAV_ITEMS } from "./nav-items";
 
@@ -22,11 +23,13 @@ export function AppShell({ children, headerSlot }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { data: user } = useCurrentUser();
+  const { data: unread } = useUnreadNotificationsCount(Boolean(user));
 
   return (
     <div className="flex min-h-dvh flex-col bg-background-base">
       <SpireHeader
         user={user ? { name: user.name, avatarUrl: user.avatarUrl } : user === null ? null : undefined}
+        hasUnreadNotifications={Boolean(unread && unread.count > 0)}
         onNotificationsClick={() => router.push("/notificacoes")}
         onAvatarClick={() => router.push("/perfil")}
       >

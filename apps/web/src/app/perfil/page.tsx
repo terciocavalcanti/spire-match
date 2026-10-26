@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { PreferencesForm } from "@/components/profile/PreferencesForm";
 import { InstallPwaCard } from "@/components/pwa/InstallPwaCard";
+import { PushNotificationsCard } from "@/components/pwa/PushNotificationsCard";
 import { CURRENT_USER_QUERY_KEY, useCurrentUser } from "@/hooks/use-current-user";
 import { apiClient } from "@/lib/api-client";
 
@@ -83,8 +84,9 @@ export default function PerfilPage() {
           </div>
         </Card>
 
-        <div className="mt-6">
+        <div className="mt-6 space-y-3">
           <InstallPwaCard />
+          <PushNotificationsCard />
         </div>
 
         <div className="mt-6">

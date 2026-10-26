@@ -7,6 +7,7 @@ import { eq } from "drizzle-orm";
 
 import { createDatabase } from "./client";
 import { buyerProfiles, roleAssignments, roles, users } from "./schema";
+import { seedBrokers } from "./seed-brokers";
 import { seedProperties } from "./seed-properties";
 
 const DEMO_PASSWORD = "SpireDemo#2026";
@@ -78,7 +79,8 @@ async function main() {
     }
   }
 
-  await seedProperties(db);
+  const brokerIds = await seedBrokers(db);
+  await seedProperties(db, brokerIds);
 
 
   console.log(

@@ -565,8 +565,9 @@ export const PROPERTY_SEEDS: PropertySeed[] = [
   },
 ];
 
-export async function seedProperties(db: Database): Promise<void> {
-  for (const seed of PROPERTY_SEEDS) {
+export async function seedProperties(db: Database, brokerIds: string[] = []): Promise<void> {
+  for (const [index, seed] of PROPERTY_SEEDS.entries()) {
+    const brokerId = brokerIds.length > 0 ? (brokerIds[index % brokerIds.length] ?? null) : null;
     const [property] = await db
       .insert(properties)
       .values({
@@ -594,6 +595,7 @@ export async function seedProperties(db: Database): Promise<void> {
         isExclusive: seed.isExclusive,
         exclusiveType: seed.exclusiveType,
         isSponsored: seed.isSponsored,
+        brokerId,
       })
       .onConflictDoUpdate({
         target: properties.slug,
@@ -602,6 +604,7 @@ export async function seedProperties(db: Database): Promise<void> {
           description: seed.description,
           status: seed.status,
           price: seed.price.toFixed(2),
+          brokerId,
           updatedAt: new Date(),
         },
       })
