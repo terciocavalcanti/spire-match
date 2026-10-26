@@ -13,3 +13,5 @@ export * from "./contacts";
 export * from "./notifications";
 export * from "./radars";
 export * from "./tours";
+export * from "./leads";
+export * from "./admin";

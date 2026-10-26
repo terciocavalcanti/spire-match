@@ -13,6 +13,7 @@ import { DatabaseModule } from "./database/database.module";
 import { FavoritesModule } from "./favorites/favorites.module";
 import { HealthModule } from "./health/health.module";
 import { InteractionsModule } from "./interactions/interactions.module";
+import { LeadsModule } from "./leads/leads.module";
 import { MatchesModule } from "./matches/matches.module";
 import { NotificationsModule } from "./notifications/notifications.module";
 import { PropertiesModule } from "./properties/properties.module";
@@ -43,6 +44,7 @@ import { VisitsModule } from "./visits/visits.module";
     ContactsModule,
     RadarsModule,
     ToursModule,
+    LeadsModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

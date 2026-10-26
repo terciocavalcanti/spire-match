@@ -5,15 +5,19 @@ import { desc, eq } from "drizzle-orm";
 import type { Database } from "../database/client";
 import { DATABASE } from "../database/database.module";
 import { properties, proposals } from "../database/schema";
+import { LeadsService } from "../leads/leads.service";
 import { NotificationsService } from "../notifications/notifications.service";
 
 import { toProposal } from "./proposal-mapper";
+
+const currencyFormatter = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
 @Injectable()
 export class ProposalsService {
   constructor(
     @Inject(DATABASE) private readonly db: Database,
     private readonly notifications: NotificationsService,
+    private readonly leads: LeadsService,
   ) {}
 
   async create(userId: string, request: CreateProposalRequest): Promise<Proposal> {
@@ -38,6 +42,13 @@ export class ProposalsService {
       "Proposta enviada",
       `Sua proposta para ${property.title} foi registrada e está aguardando retorno.`,
       "/minhas-visitas",
+    );
+
+    await this.leads.recordSignal(
+      userId,
+      "PROPOSAL_RECEIVED",
+      `Proposta de ${currencyFormatter.format(request.amount)} recebida para ${property.title}.`,
+      property.id,
     );
 
     return toProposal(row, property);

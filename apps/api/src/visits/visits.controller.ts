@@ -1,9 +1,11 @@
 import { Body, Controller, Delete, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
-import { createVisitRequestSchema, visitAvailabilityQuerySchema } from "@spire/contracts";
+import { adminVisitListQuerySchema, createVisitRequestSchema, visitAvailabilityQuerySchema } from "@spire/contracts";
 
 import { CurrentUserId } from "../auth/decorators/current-user-id.decorator";
 import { SessionAuthGuard } from "../auth/guards/session-auth.guard";
+import { Roles } from "../common/decorators/roles.decorator";
+import { RolesGuard } from "../common/guards/roles.guard";
 import { ZodValidationPipe } from "../common/pipes/zod-validation.pipe";
 
 import { VisitsService } from "./visits.service";
@@ -19,6 +21,16 @@ export class VisitsController {
   ) {
     const slots = await this.visits.getAvailability(query.brokerId, query.date);
     return { slots };
+  }
+
+  @Get("admin")
+  @UseGuards(SessionAuthGuard, RolesGuard)
+  @Roles("ADMIN", "SUPER_ADMIN", "SALES_MANAGER", "BROKER")
+  async adminAgenda(
+    @Query(new ZodValidationPipe(adminVisitListQuerySchema)) query: ReturnType<typeof adminVisitListQuerySchema.parse>,
+  ) {
+    const items = await this.visits.listAll(query);
+    return { items };
   }
 
   @Get("mine")

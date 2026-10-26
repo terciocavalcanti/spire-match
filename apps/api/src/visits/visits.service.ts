@@ -1,10 +1,11 @@
 import { ConflictException, Inject, Injectable, NotFoundException } from "@nestjs/common";
-import type { CreateVisitRequest, Visit, VisitSlot } from "@spire/contracts";
-import { and, asc, eq, gte, lt, ne } from "drizzle-orm";
+import type { AdminVisitListQuery, CreateVisitRequest, Visit, VisitSlot } from "@spire/contracts";
+import { and, asc, eq, gte, lt, lte, ne } from "drizzle-orm";
 
 import type { Database } from "../database/client";
 import { DATABASE } from "../database/database.module";
-import { brokers, properties, visits } from "../database/schema";
+import { brokers, properties, users, visits } from "../database/schema";
+import { LeadsService } from "../leads/leads.service";
 import { NotificationsService } from "../notifications/notifications.service";
 
 import { toVisit } from "./visit-mapper";
@@ -33,6 +34,7 @@ export class VisitsService {
   constructor(
     @Inject(DATABASE) private readonly db: Database,
     private readonly notifications: NotificationsService,
+    private readonly leads: LeadsService,
   ) {}
 
   async getAvailability(brokerId: string, date: string): Promise<VisitSlot[]> {
@@ -109,6 +111,13 @@ export class VisitsService {
       `/minhas-visitas`,
     );
 
+    await this.leads.recordSignal(
+      userId,
+      "VISIT_SCHEDULED",
+      `Visita agendada a ${property.title} com ${broker.name} para ${when}.`,
+      property.id,
+    );
+
     return toVisit(row, property, broker);
   }
 
@@ -129,7 +138,29 @@ export class VisitsService {
       .update(visits)
       .set({ status: "CANCELLED", updatedAt: new Date() })
       .where(and(eq(visits.id, visitId), eq(visits.userId, userId)))
-      .returning({ id: visits.id });
+      .returning({ id: visits.id, propertyId: visits.propertyId });
     if (!row) throw new NotFoundException({ code: "VISIT_NOT_FOUND", message: "Visita não encontrada" });
+
+    const [property] = await this.db.select({ title: properties.title }).from(properties).where(eq(properties.id, row.propertyId)).limit(1);
+    await this.leads.recordSignal(userId, "VISIT_CANCELLED", `Visita a ${property?.title ?? "imóvel"} cancelada.`);
+  }
+
+  /** Agenda administrativa: todas as visitas (não só as do usuário logado). */
+  async listAll(query: AdminVisitListQuery): Promise<Visit[]> {
+    const conditions = [];
+    if (query.brokerId) conditions.push(eq(visits.brokerId, query.brokerId));
+    if (query.from) conditions.push(gte(visits.scheduledAt, new Date(`${query.from}T00:00:00${RECIFE_UTC_OFFSET}`)));
+    if (query.to) conditions.push(lte(visits.scheduledAt, new Date(`${query.to}T23:59:59${RECIFE_UTC_OFFSET}`)));
+
+    const rows = await this.db
+      .select({ visit: visits, property: properties, broker: brokers, buyer: users })
+      .from(visits)
+      .innerJoin(properties, eq(properties.id, visits.propertyId))
+      .innerJoin(brokers, eq(brokers.id, visits.brokerId))
+      .innerJoin(users, eq(users.id, visits.userId))
+      .where(conditions.length ? and(...conditions) : undefined)
+      .orderBy(asc(visits.scheduledAt));
+
+    return rows.map(({ visit, property, broker, buyer }) => toVisit(visit, property, broker, buyer));
   }
 }

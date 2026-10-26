@@ -42,5 +42,6 @@ export function toPropertyDetail(row: PropertyRow, images: PropertyImageRow[]): 
       .map((img) => ({ id: img.id, url: img.url, alt: img.alt, position: img.position })),
     features: row.features,
     acceptedPaymentMethods: row.acceptedPaymentMethods,
+    brokerId: row.brokerId,
   };
 }

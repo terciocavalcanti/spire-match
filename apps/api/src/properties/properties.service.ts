@@ -1,18 +1,30 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import type {
+  AdminPropertyListQuery,
+  CreatePropertyRequest,
   PropertyDetail,
   PropertyNearbyQuery,
   PropertySearchQuery,
   PropertySummary,
+  UpdatePropertyRequest,
 } from "@spire/contracts";
 import { haversineDistanceMeters } from "@spire/domain";
-import { and, asc, eq, gte, ilike, inArray, lte, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, ilike, inArray, lte, or, sql } from "drizzle-orm";
 
 import type { Database } from "../database/client";
 import { DATABASE } from "../database/database.module";
-import { properties, propertyImages } from "../database/schema";
+import { properties, propertyImages, propertyPriceHistory } from "../database/schema";
 
 import { toPropertyDetail, toPropertySummary } from "./property-mapper";
+
+function slugify(title: string): string {
+  return title
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
 
 function decodeCursor(cursor: string | undefined): number {
   if (!cursor) return 0;
@@ -132,5 +144,131 @@ export class PropertiesService {
   /** Lista todos os imóveis disponíveis — usado pelo MatchService para pontuar contra o perfil do comprador. */
   async listAvailable() {
     return this.db.select().from(properties).where(eq(properties.status, "AVAILABLE"));
+  }
+
+  /** Lista administrativa: todos os status (inclusive rascunho/arquivado), não só os publicados. */
+  async adminList(query: AdminPropertyListQuery): Promise<PropertyPage> {
+    const offset = decodeCursor(query.cursor);
+    const conditions = [];
+    if (query.status) conditions.push(eq(properties.status, query.status));
+    if (query.q) {
+      conditions.push(or(ilike(properties.title, `%${query.q}%`), ilike(properties.neighborhood, `%${query.q}%`))!);
+    }
+
+    const rows = await this.db
+      .select()
+      .from(properties)
+      .where(conditions.length ? and(...conditions) : undefined)
+      .orderBy(desc(properties.createdAt))
+      .limit(query.limit + 1)
+      .offset(offset);
+
+    const hasMore = rows.length > query.limit;
+    const pageRows = hasMore ? rows.slice(0, query.limit) : rows;
+
+    return {
+      items: pageRows.map(toPropertySummary),
+      nextCursor: hasMore ? encodeCursor(offset + query.limit) : null,
+    };
+  }
+
+  private async uniqueSlug(title: string, excludeId?: string): Promise<string> {
+    const base = slugify(title) || "imovel";
+    let candidate = base;
+    let suffix = 1;
+    for (;;) {
+
+      const [existing] = await this.db.select({ id: properties.id }).from(properties).where(eq(properties.slug, candidate)).limit(1);
+      if (!existing || existing.id === excludeId) return candidate;
+      suffix += 1;
+      candidate = `${base}-${suffix}`;
+    }
+  }
+
+  async adminCreate(request: CreatePropertyRequest): Promise<PropertyDetail> {
+    const slug = await this.uniqueSlug(request.title);
+    const [row] = await this.db
+      .insert(properties)
+      .values({
+        slug,
+        title: request.title,
+        description: request.description,
+        type: request.type,
+        purpose: request.purpose,
+        status: request.status,
+        price: request.price.toFixed(2),
+        condominiumFee: request.condominiumFee != null ? request.condominiumFee.toFixed(2) : null,
+        iptu: request.iptu != null ? request.iptu.toFixed(2) : null,
+        areaSqm: request.areaSqm.toFixed(2),
+        bedrooms: request.bedrooms,
+        bathrooms: request.bathrooms,
+        parkingSpaces: request.parkingSpaces,
+        neighborhood: request.neighborhood,
+        city: request.city,
+        state: request.state.toUpperCase(),
+        lat: request.lat ?? null,
+        lng: request.lng ?? null,
+        coverImageUrl: request.coverImageUrl ?? null,
+        features: request.features,
+        acceptedPaymentMethods: request.acceptedPaymentMethods,
+        isExclusive: request.isExclusive,
+        exclusiveType: request.exclusiveType ?? null,
+        isSponsored: request.isSponsored,
+        brokerId: request.brokerId ?? null,
+      })
+      .returning();
+    if (!row) throw new Error("Falha ao criar imóvel");
+
+    await this.db.insert(propertyPriceHistory).values({ propertyId: row.id, price: row.price });
+
+    return toPropertyDetail(row, []);
+  }
+
+  async adminUpdate(id: string, request: UpdatePropertyRequest): Promise<PropertyDetail> {
+    const [current] = await this.db.select().from(properties).where(eq(properties.id, id)).limit(1);
+    if (!current) throw new NotFoundException({ code: "PROPERTY_NOT_FOUND", message: "Imóvel não encontrado" });
+
+    const slug = request.title && request.title !== current.title ? await this.uniqueSlug(request.title, id) : current.slug;
+
+    const [row] = await this.db
+      .update(properties)
+      .set({
+        slug,
+        ...(request.title !== undefined && { title: request.title }),
+        ...(request.description !== undefined && { description: request.description }),
+        ...(request.type !== undefined && { type: request.type }),
+        ...(request.purpose !== undefined && { purpose: request.purpose }),
+        ...(request.status !== undefined && { status: request.status }),
+        ...(request.price !== undefined && { price: request.price.toFixed(2) }),
+        ...(request.condominiumFee !== undefined && { condominiumFee: request.condominiumFee != null ? request.condominiumFee.toFixed(2) : null }),
+        ...(request.iptu !== undefined && { iptu: request.iptu != null ? request.iptu.toFixed(2) : null }),
+        ...(request.areaSqm !== undefined && { areaSqm: request.areaSqm.toFixed(2) }),
+        ...(request.bedrooms !== undefined && { bedrooms: request.bedrooms }),
+        ...(request.bathrooms !== undefined && { bathrooms: request.bathrooms }),
+        ...(request.parkingSpaces !== undefined && { parkingSpaces: request.parkingSpaces }),
+        ...(request.neighborhood !== undefined && { neighborhood: request.neighborhood }),
+        ...(request.city !== undefined && { city: request.city }),
+        ...(request.state !== undefined && { state: request.state.toUpperCase() }),
+        ...(request.lat !== undefined && { lat: request.lat }),
+        ...(request.lng !== undefined && { lng: request.lng }),
+        ...(request.coverImageUrl !== undefined && { coverImageUrl: request.coverImageUrl }),
+        ...(request.features !== undefined && { features: request.features }),
+        ...(request.acceptedPaymentMethods !== undefined && { acceptedPaymentMethods: request.acceptedPaymentMethods }),
+        ...(request.isExclusive !== undefined && { isExclusive: request.isExclusive }),
+        ...(request.exclusiveType !== undefined && { exclusiveType: request.exclusiveType }),
+        ...(request.isSponsored !== undefined && { isSponsored: request.isSponsored }),
+        ...(request.brokerId !== undefined && { brokerId: request.brokerId }),
+        updatedAt: new Date(),
+      })
+      .where(eq(properties.id, id))
+      .returning();
+    if (!row) throw new Error("Falha ao atualizar imóvel");
+
+    if (request.price !== undefined && request.price.toFixed(2) !== current.price) {
+      await this.db.insert(propertyPriceHistory).values({ propertyId: id, price: row.price });
+    }
+
+    const images = await this.db.select().from(propertyImages).where(eq(propertyImages.propertyId, id));
+    return toPropertyDetail(row, images);
   }
 }

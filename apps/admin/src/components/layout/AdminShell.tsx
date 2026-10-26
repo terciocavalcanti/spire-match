@@ -1,10 +1,14 @@
 "use client";
 
-import { AdminSidebar } from "@spire/ui-web";
+import { AdminSidebar, Button } from "@spire/ui-web";
+import { ShieldAlert } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { apiClient } from "@/lib/api-client";
+import { hasAdminAccess } from "@/lib/roles";
 
 import { ADMIN_NAV_GROUPS } from "./nav-groups";
 
@@ -14,7 +18,43 @@ function NextLink({ href, ...props }: React.AnchorHTMLAttributes<HTMLAnchorEleme
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { data: user } = useCurrentUser();
+  const router = useRouter();
+  const { data: user, isLoading } = useCurrentUser();
+
+  useEffect(() => {
+    if (!isLoading && user === null) router.replace("/entrar");
+  }, [isLoading, user, router]);
+
+  if (isLoading || user === undefined) {
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-background-base">
+        <div className="h-10 w-10 animate-pulse rounded-full bg-background-subtle" aria-hidden />
+      </div>
+    );
+  }
+
+  if (!user) return null; // redirecionando para /entrar
+
+  if (!hasAdminAccess(user.roles)) {
+    return (
+      <div className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-background-base px-6 text-center">
+        <ShieldAlert className="h-10 w-10 text-status-danger" aria-hidden />
+        <h1 className="font-display text-2xl text-ink-primary">Acesso restrito</h1>
+        <p className="max-w-sm text-bodyMd text-ink-secondary">
+          A conta {user.email} não tem permissão para acessar o painel comercial SPIRE.
+        </p>
+        <Button
+          variant="outline"
+          onClick={async () => {
+            await apiClient.auth.logout();
+            router.replace("/entrar");
+          }}
+        >
+          Sair e entrar com outra conta
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-dvh bg-background-base">

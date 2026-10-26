@@ -5,12 +5,16 @@ import { desc, eq } from "drizzle-orm";
 import type { Database } from "../database/client";
 import { DATABASE } from "../database/database.module";
 import { brokers, contacts, properties } from "../database/schema";
+import { LeadsService } from "../leads/leads.service";
 
 import { toContact } from "./contact-mapper";
 
 @Injectable()
 export class ContactsService {
-  constructor(@Inject(DATABASE) private readonly db: Database) {}
+  constructor(
+    @Inject(DATABASE) private readonly db: Database,
+    private readonly leads: LeadsService,
+  ) {}
 
   async create(userId: string, request: CreateContactRequest): Promise<Contact> {
     const [property] = await this.db.select().from(properties).where(eq(properties.id, request.propertyId)).limit(1);
@@ -30,6 +34,13 @@ export class ContactsService {
       .values({ userId, propertyId: request.propertyId, brokerId: broker.id, channel: request.channel, message: request.message })
       .returning();
     if (!row) throw new Error("Falha ao registrar contato");
+
+    await this.leads.recordSignal(
+      userId,
+      "CONTACT",
+      `Contato com ${broker.name} sobre ${property.title}: "${request.message}"`,
+      property.id,
+    );
 
     return toContact(row, property, broker);
   }

@@ -62,6 +62,7 @@ export const propertyDetailSchema = propertySummarySchema.extend({
   images: z.array(propertyImageSchema),
   features: z.array(z.string()),
   acceptedPaymentMethods: z.array(paymentMethodSchema),
+  brokerId: z.string().uuid().nullable(),
 });
 export type PropertyDetail = z.infer<typeof propertyDetailSchema>;
 
@@ -83,6 +84,46 @@ export const propertySearchQuerySchema = z.object({
   exclusivesOnly: z.coerce.boolean().optional(),
 });
 export type PropertySearchQuery = z.infer<typeof propertySearchQuerySchema>;
+
+// --- Administração (CRUD de imóveis, Marco D) ---
+export const createPropertyRequestSchema = z.object({
+  title: z.string().trim().min(3).max(200),
+  description: z.string().trim().max(5000).default(""),
+  type: propertyTypeSchema,
+  purpose: listingPurposeSchema,
+  status: propertyStatusSchema.default("DRAFT"),
+  price: z.number().positive(),
+  condominiumFee: z.number().nonnegative().nullable().optional(),
+  iptu: z.number().nonnegative().nullable().optional(),
+  areaSqm: z.number().positive(),
+  bedrooms: z.number().int().nonnegative(),
+  bathrooms: z.number().int().nonnegative(),
+  parkingSpaces: z.number().int().nonnegative(),
+  neighborhood: z.string().trim().min(1).max(120),
+  city: z.string().trim().min(1).max(120),
+  state: z.string().trim().length(2),
+  lat: z.number().min(-90).max(90).nullable().optional(),
+  lng: z.number().min(-180).max(180).nullable().optional(),
+  coverImageUrl: z.string().url().nullable().optional(),
+  features: z.array(z.string().trim().min(1)).default([]),
+  acceptedPaymentMethods: z.array(paymentMethodSchema).default([]),
+  isExclusive: z.boolean().default(false),
+  exclusiveType: exclusiveTypeSchema.nullable().optional(),
+  isSponsored: z.boolean().default(false),
+  brokerId: z.string().uuid().nullable().optional(),
+});
+export type CreatePropertyRequest = z.infer<typeof createPropertyRequestSchema>;
+
+export const updatePropertyRequestSchema = createPropertyRequestSchema.partial();
+export type UpdatePropertyRequest = z.infer<typeof updatePropertyRequestSchema>;
+
+export const adminPropertyListQuerySchema = z.object({
+  cursor: z.string().optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(30),
+  status: propertyStatusSchema.optional(),
+  q: z.string().trim().min(1).optional(),
+});
+export type AdminPropertyListQuery = z.infer<typeof adminPropertyListQuerySchema>;
 
 export const propertyNearbyQuerySchema = z.object({
   lat: z.coerce.number(),

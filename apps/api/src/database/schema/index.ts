@@ -16,3 +16,4 @@ export * from "./proposals";
 export * from "./contacts";
 export * from "./notifications";
 export * from "./radars";
+export * from "./leads";

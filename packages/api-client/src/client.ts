@@ -1,19 +1,30 @@
 import {
   type AddFavoriteRequest,
+  type AdminOverview,
+  type AdminPropertyListQuery,
+  type AdminVisitListQuery,
   type AiSearchRequest,
   type AiSearchResponse,
+  type AssignLeadRequest,
   type AuthenticatedUser,
   type Broker,
   type BuyerPreferences,
   type Contact,
+  type CreateBrokerRequest,
   type CreateContactRequest,
   type CreateInteractionRequest,
+  type CreateLeadNoteRequest,
+  type CreatePropertyRequest,
   type CreateProposalRequest,
   type CreateRadarRequest,
   type CreateVisitRequest,
   type Favorite,
   type ForgotPasswordRequest,
+  type FunnelReport,
   type GenerateTourRequest,
+  type Lead,
+  type LeadDetail,
+  type LeadListQuery,
   type LoginRequest,
   type MatchResult,
   type Notification,
@@ -30,7 +41,10 @@ import {
   type ResetPasswordRequest,
   type SessionResponse,
   type Tour,
+  type UpdateBrokerRequest,
   type UpdateBuyerPreferencesRequest,
+  type UpdateLeadStageRequest,
+  type UpdatePropertyRequest,
   type VerifyEmailRequest,
   type Visit,
   type VisitSlot,
@@ -218,6 +232,37 @@ export class SpireApiClient {
     list: () => this.request<{ items: Broker[] }>("/brokers"),
     byProperty: (propertyId: string) => this.request<{ broker: Broker | null }>(`/brokers/by-property/${propertyId}`),
     byId: (id: string) => this.request<Broker>(`/brokers/${id}`),
+    create: (payload: CreateBrokerRequest) => this.request<Broker>("/brokers", { method: "POST", body: JSON.stringify(payload) }),
+    update: (id: string, payload: UpdateBrokerRequest) =>
+      this.request<Broker>(`/brokers/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
+  };
+
+  leads = {
+    list: (query: Partial<LeadListQuery> = {}) =>
+      this.request<{ items: Lead[]; nextCursor: string | null }>(`/leads${toQueryString(query)}`),
+    overview: () => this.request<AdminOverview>("/leads/overview"),
+    funnelReport: (days = 30) => this.request<FunnelReport>(`/leads/funnel-report${toQueryString({ days })}`),
+    detail: (id: string) => this.request<LeadDetail>(`/leads/${id}`),
+    updateStage: (id: string, payload: UpdateLeadStageRequest) =>
+      this.request<LeadDetail>(`/leads/${id}/stage`, { method: "PATCH", body: JSON.stringify(payload) }),
+    assign: (id: string, payload: AssignLeadRequest) =>
+      this.request<LeadDetail>(`/leads/${id}/assign`, { method: "PATCH", body: JSON.stringify(payload) }),
+    addNote: (id: string, payload: CreateLeadNoteRequest) =>
+      this.request<LeadDetail>(`/leads/${id}/notes`, { method: "POST", body: JSON.stringify(payload) }),
+  };
+
+  adminProperties = {
+    list: (query: Partial<AdminPropertyListQuery> = {}) =>
+      this.request<{ items: PropertySummary[]; nextCursor: string | null }>(`/properties/admin${toQueryString(query)}`),
+    create: (payload: CreatePropertyRequest) =>
+      this.request<PropertyDetail>("/properties/admin", { method: "POST", body: JSON.stringify(payload) }),
+    update: (id: string, payload: UpdatePropertyRequest) =>
+      this.request<PropertyDetail>(`/properties/admin/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
+  };
+
+  adminVisits = {
+    agenda: (query: Partial<AdminVisitListQuery> = {}) =>
+      this.request<{ items: Visit[] }>(`/visits/admin${toQueryString(query)}`),
   };
 
   visits = {
