@@ -26,7 +26,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             aria-invalid={Boolean(error)}
             aria-describedby={describedBy}
             className={cn(
-              "h-full flex-1 bg-transparent text-bodyLg text-ink-primary placeholder:text-ink-tertiary focus:outline-none",
+              "h-full flex-1 bg-transparent text-bodyLg text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0",
               className,
             )}
             {...props}
