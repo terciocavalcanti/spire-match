@@ -120,7 +120,7 @@ export default function ImovelPage({ params }: { params: Promise<{ slug: string 
 
       <div className="px-4 py-5 sm:px-6">
         {match && (
-          <div className="-mt-12 mb-4">
+          <div className="relative z-10 -mt-12 mb-4">
             <MatchBadge score={match.score} size="lg" />
           </div>
         )}

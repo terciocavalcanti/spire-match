@@ -36,9 +36,10 @@ export function ProposalForm({ property }: { property: PropertyDetail }) {
   if (!open) {
     return (
       <div className="border-t border-border-subtle py-5">
-        <button type="button" onClick={() => setOpen(true)} className="text-bodyMd font-medium text-ink-primary underline">
+        <Button variant="outline" className="w-full" onClick={() => setOpen(true)}>
+          <FileText className="h-4 w-4" />
           Fazer uma proposta
-        </button>
+        </Button>
       </div>
     );
   }
