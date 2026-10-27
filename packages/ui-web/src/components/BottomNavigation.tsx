@@ -42,21 +42,21 @@ export function BottomNavigation({
         className,
       )}
     >
-      <ul className="mx-auto flex max-w-xl items-stretch justify-between px-2">
+      <ul className="mx-auto flex max-w-xl items-stretch justify-between px-1">
         {items.map((item) => {
           const isActive = activeHref === item.href || activeHref.startsWith(`${item.href}/`);
           const Icon = item.icon;
           return (
-            <li key={item.href} className="flex-1">
+            <li key={item.href} className="min-w-0 flex-1">
               <Anchor
                 href={item.href}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "flex flex-col items-center gap-0.5 px-2 py-3 text-[10px] font-medium leading-none transition-colors",
+                  "flex min-w-0 flex-col items-center gap-0.5 px-1 py-3 text-[10px] font-medium leading-none transition-colors",
                   isActive ? "text-ink-primary" : "text-ink-tertiary",
                 )}
               >
-                <span className="relative">
+                <span className="relative shrink-0">
                   <Icon className="h-[18px] w-[18px]" />
                   {!!item.badge && item.badge > 0 && (
                     <span
@@ -67,7 +67,7 @@ export function BottomNavigation({
                     </span>
                   )}
                 </span>
-                <span className="mt-0.5">{item.label}</span>
+                <span className="mt-0.5 max-w-full truncate">{item.label}</span>
                 {isActive && <span aria-hidden className="mt-0.5 h-1 w-1 rounded-full bg-ink-primary" />}
               </Anchor>
             </li>

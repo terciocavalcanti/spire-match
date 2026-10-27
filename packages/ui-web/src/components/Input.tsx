@@ -12,10 +12,10 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, icon, rightElement, error, id, ...props }, ref) => {
     const describedBy = error && id ? `${id}-error` : undefined;
     return (
-      <div className="w-full">
+      <div className="w-full min-w-0">
         <div
           className={cn(
-            "flex h-14 items-center gap-3 rounded-xl border bg-background-elevated px-4 transition-colors",
+            "flex h-14 min-w-0 items-center gap-3 rounded-xl border bg-background-elevated px-4 transition-colors",
             error ? "border-status-danger" : "border-border-subtle focus-within:border-brand-olive",
           )}
         >
@@ -26,7 +26,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             aria-invalid={Boolean(error)}
             aria-describedby={describedBy}
             className={cn(
-              "h-full flex-1 bg-transparent text-bodyLg text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0",
+              "h-full min-w-0 flex-1 bg-transparent text-bodyLg text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0",
               className,
             )}
             {...props}

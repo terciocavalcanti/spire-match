@@ -103,37 +103,43 @@ export default function DescobrirPage() {
 
             <div className="mt-6 flex items-start justify-center gap-6">
               <div className="flex w-16 flex-col items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => act("DISLIKE")}
-                  aria-label="Descartar"
-                  className="flex h-16 w-16 items-center justify-center rounded-full border border-border-subtle bg-background-elevated text-ink-secondary"
-                >
-                  <X className="h-6 w-6" />
-                </button>
+                <div className="flex h-16 items-center justify-center">
+                  <button
+                    type="button"
+                    onClick={() => act("DISLIKE")}
+                    aria-label="Descartar"
+                    className="flex h-16 w-16 items-center justify-center rounded-full border border-border-subtle bg-background-elevated text-ink-secondary"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
                 <span className="text-caption text-ink-tertiary">Descartar</span>
               </div>
               <div className="flex w-16 flex-col items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => act("FAVORITE")}
-                  aria-label="Salvar"
-                  className="flex h-14 w-14 items-center justify-center rounded-full border border-border-subtle bg-background-elevated text-ink-secondary"
-                >
-                  <Bookmark className="h-5 w-5" />
-                </button>
+                <div className="flex h-16 items-center justify-center">
+                  <button
+                    type="button"
+                    onClick={() => act("FAVORITE")}
+                    aria-label="Salvar"
+                    className="flex h-14 w-14 items-center justify-center rounded-full border border-border-subtle bg-background-elevated text-ink-secondary"
+                  >
+                    <Bookmark className="h-5 w-5" />
+                  </button>
+                </div>
                 <span className="text-caption text-ink-tertiary">Salvar</span>
               </div>
               <div className="flex w-16 flex-col items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => act("LIKE")}
-                  aria-label="Tenho interesse"
-                  className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-charcoal text-ink-inverse"
-                >
-                  <Heart className="h-6 w-6 fill-current" />
-                </button>
-                <span className="text-caption text-ink-tertiary">Tenho interesse</span>
+                <div className="flex h-16 items-center justify-center">
+                  <button
+                    type="button"
+                    onClick={() => act("LIKE")}
+                    aria-label="Quero"
+                    className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-charcoal text-ink-inverse"
+                  >
+                    <Heart className="h-6 w-6 fill-current" />
+                  </button>
+                </div>
+                <span className="text-caption text-ink-tertiary">Quero</span>
               </div>
             </div>
           </>
