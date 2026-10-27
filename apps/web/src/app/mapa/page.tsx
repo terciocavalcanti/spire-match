@@ -75,7 +75,7 @@ export default function MapaPage() {
             userLocation={geo.location}
             selectedPropertyId={selected?.property.id}
             onSelect={setSelectedId}
-            className="h-[58dvh] w-full bg-background-subtle"
+            className="isolate h-[58dvh] w-full bg-background-subtle"
           />
 
           {selected && (
