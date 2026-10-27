@@ -1,39 +1,28 @@
 "use client";
 
-import "maplibre-gl/dist/maplibre-gl.css";
+import "leaflet/dist/leaflet.css";
 
 import type { PropertySummary } from "@spire/contracts";
 import { haversineDistanceMeters } from "@spire/domain";
-import * as maplibregl from "maplibre-gl";
+import L from "leaflet";
 import { useEffect, useRef } from "react";
 
 const NEARBY_RADIUS_METERS = 1_000;
 
-/** Polígono aproximado de um círculo geográfico (GeoJSON), usado para o raio de 1km. */
-function circlePolygon(center: { lat: number; lng: number }, radiusMeters: number, steps = 64): GeoJSON.Feature<GeoJSON.Polygon> {
-  const coords: [number, number][] = [];
-  const earthRadius = 6_371_000;
-  const latRad = (center.lat * Math.PI) / 180;
-  for (let i = 0; i <= steps; i++) {
-    const bearing = (i / steps) * 2 * Math.PI;
-    const dLat = (radiusMeters * Math.cos(bearing)) / earthRadius;
-    const dLng = (radiusMeters * Math.sin(bearing)) / (earthRadius * Math.cos(latRad));
-    coords.push([center.lng + (dLng * 180) / Math.PI, center.lat + (dLat * 180) / Math.PI]);
-  }
-  return {
-    type: "Feature",
-    properties: {},
-    geometry: { type: "Polygon", coordinates: [coords] },
-  };
-}
-
-// Turbopack não resolve o worker interno do MapLibre via `new URL(..., import.meta.url)`
-// corretamente em dev; servimos o worker como asset estático (public/maplibre-gl-worker.mjs,
-// copiado de node_modules/maplibre-gl/dist/) e apontamos explicitamente para ele.
-// Atenção: ao atualizar a versão do maplibre-gl, recopiar esse arquivo também.
-if (typeof window !== "undefined") {
-  maplibregl.setWorkerUrl("/maplibre-gl-worker.mjs");
-}
+/**
+ * Tile server bruto do OpenStreetMap — decisão explícita do usuário,
+ * ciente do trade-off: a política de uso do OSM
+ * (https://operations.osmfoundation.org/policies/tiles/) não permite uso
+ * pesado/comercial/automatizado sem acordo prévio, e a OSMF pode bloquear o
+ * domínio/IP sem aviso se o tráfego crescer. Tentamos primeiro o basemap
+ * "gratuito" da CARTO (Positron), mas a CARTO passou a exigir cadastro de
+ * chave de API mesmo no tier free — não é mais keyless. Caminho de saída,
+ * sem mudar nenhum código: configurar NEXT_PUBLIC_MAPTILER_API_KEY (infra já
+ * pronta no projeto/Coolify) ou uma chave da CARTO, e trocar TILE_URL abaixo
+ * para o endpoint correspondente.
+ */
+const TILE_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+const TILE_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
 export interface MapPoint {
   property: PropertySummary;
@@ -50,53 +39,22 @@ export interface PropertyMapProps {
   className?: string;
 }
 
-/** Executa `cb` assim que o estilo do mapa estiver pronto para receber source/layer. */
-function whenStyleReady(map: maplibregl.Map, cb: () => void) {
-  if (map.isStyleLoaded()) cb();
-  else map.once("load", cb);
-}
-
-/**
- * Com NEXT_PUBLIC_MAPTILER_API_KEY configurada, usa o provedor licenciado
- * real (cartografia completa em qualquer zoom). Sem a chave — pendência
- * externa documentada — cai para o estilo de demonstração do próprio
- * MapLibre (demotiles.maplibre.org), que só tem dados até zoom ~6 (nível
- * país/continente): a interação (marcadores, seleção, clustering futuro)
- * já funciona de ponta a ponta, mas o fundo cartográfico de bairro só
- * aparece com um provedor real configurado.
- *
- * Deliberadamente NÃO usamos o tile server bruto do OSM aqui, nem em dev:
- * a política de uso do OSM proíbe consumo automatizado/embarcado sem
- * permissão explícita (https://operations.osmfoundation.org/policies/tiles/),
- * e o prompt mestre veta depender dele em produção — manter um único
- * caminho (demo vs. MapTiler) evita criar um hábito que teria de ser
- * removido depois.
- */
-function resolveStyle(): string {
-  const maptilerKey = process.env.NEXT_PUBLIC_MAPTILER_API_KEY;
-  if (maptilerKey) {
-    return `https://api.maptiler.com/maps/streets-v2/style.json?key=${maptilerKey}`;
-  }
-  return "https://demotiles.maplibre.org/style.json";
-}
-
 export function PropertyMap({ points, center, userLocation, selectedPropertyId, onSelect, className }: PropertyMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<maplibregl.Map | null>(null);
-  const markersRef = useRef<Map<string, maplibregl.Marker>>(new Map());
-  const userMarkerRef = useRef<maplibregl.Marker | null>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const markersRef = useRef<Map<string, L.Marker>>(new Map());
+  const userMarkerRef = useRef<L.Marker | null>(null);
+  const userRadiusRef = useRef<L.Circle | null>(null);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
-    const map = new maplibregl.Map({
-      container: containerRef.current,
-      style: resolveStyle(),
-      center: [center.lng, center.lat],
-      zoom: 13,
-      attributionControl: { compact: true },
-    });
-    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+    const map = L.map(containerRef.current, { zoomControl: false, attributionControl: true }).setView(
+      [center.lat, center.lng],
+      13,
+    );
+    L.control.zoom({ position: "topright" }).addTo(map);
+    L.tileLayer(TILE_URL, { attribution: TILE_ATTRIBUTION, maxZoom: 19 }).addTo(map);
     mapRef.current = map;
     const markers = markersRef.current;
 
@@ -107,6 +65,7 @@ export function PropertyMap({ points, center, userLocation, selectedPropertyId, 
       // outros efeitos nunca tentem reaproveitar um marcador preso a esta instância.
       markers.clear();
       userMarkerRef.current = null;
+      userRadiusRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- mapa é inicializado uma vez; recentralização é feita via flyTo abaixo
   }, []);
@@ -126,14 +85,8 @@ export function PropertyMap({ points, center, userLocation, selectedPropertyId, 
       const size = isSelected ? 44 : 36;
       const isNearby = Boolean(userLocation) && haversineDistanceMeters(userLocation!, location) <= NEARBY_RADIUS_METERS;
 
-      // position:absolute (não relative) é essencial: o CSS do próprio MapLibre espera
-      // que o elemento raiz do marcador fique fora do fluxo normal do documento (como o
-      // dele mesmo define via `.maplibregl-marker`). Um `relative` aqui empilha os
-      // marcadores em fluxo normal, um atrás do outro, e o `transform: translate(...)`
-      // do MapLibre passa a somar-se a essa posição de fluxo em vez de partir de (0,0) —
-      // o efeito só fica visível/grande quando há muitos marcadores antes dele no DOM.
       const wrapper = document.createElement("div");
-      wrapper.style.cssText = `position:absolute;top:0;left:0;width:${size}px;height:${size}px;`;
+      wrapper.style.cssText = `position:relative;width:${size}px;height:${size}px;`;
 
       if (isNearby) {
         const ping = document.createElement("span");
@@ -143,26 +96,26 @@ export function PropertyMap({ points, center, userLocation, selectedPropertyId, 
         wrapper.appendChild(ping);
       }
 
-      const el = document.createElement("button");
-      el.type = "button";
-      el.setAttribute(
+      const button = document.createElement("button");
+      button.type = "button";
+      button.setAttribute(
         "aria-label",
         `${point.property.title} — ${point.score ?? "?"}% match${isNearby ? " — a menos de 1km de você" : ""}`,
       );
-      el.style.cssText = `
+      button.style.cssText = `
         position:relative;display:flex;align-items:center;justify-content:center;
         width:${size}px;height:${size}px;border-radius:999px;
         background:${isSelected ? "#2A2820" : "#333B28"};color:#F7F4EC;
         font-family:Inter,sans-serif;font-weight:600;font-size:${isSelected ? 14 : 12}px;
         border:2px solid #F7F4EC;box-shadow:0 2px 8px rgba(33,31,25,0.25);cursor:pointer;
       `;
-      el.textContent = point.score !== undefined ? String(point.score) : "•";
-      el.onclick = () => onSelect(point.property.id);
-      wrapper.appendChild(el);
+      button.textContent = point.score !== undefined ? String(point.score) : "•";
+      button.onclick = () => onSelect(point.property.id);
+      wrapper.appendChild(button);
 
-      const marker = new maplibregl.Marker({ element: wrapper })
-        .setLngLat([location.lng, location.lat])
-        .addTo(map);
+      const marker = L.marker([location.lat, location.lng], {
+        icon: L.divIcon({ html: wrapper, className: "", iconSize: [size, size], iconAnchor: [size / 2, size / 2] }),
+      }).addTo(map);
       markersRef.current.set(point.property.id, marker);
     }
   }, [points, selectedPropertyId, onSelect, userLocation]);
@@ -170,7 +123,7 @@ export function PropertyMap({ points, center, userLocation, selectedPropertyId, 
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
-    map.flyTo({ center: [center.lng, center.lat], essential: true });
+    map.flyTo([center.lat, center.lng], map.getZoom(), { duration: 1 });
   }, [center.lat, center.lng]);
 
   // Marcador "você está aqui" + raio de 1km, acompanhando a posição em tempo real.
@@ -181,47 +134,42 @@ export function PropertyMap({ points, center, userLocation, selectedPropertyId, 
     if (!userLocation) {
       userMarkerRef.current?.remove();
       userMarkerRef.current = null;
-      whenStyleReady(map, () => {
-        const source = map.getSource("user-radius") as maplibregl.GeoJSONSource | undefined;
-        source?.setData({ type: "FeatureCollection", features: [] });
-      });
+      userRadiusRef.current?.remove();
+      userRadiusRef.current = null;
       return;
     }
 
-    // Sempre recria o marcador (em vez de reaproveitar via ref) para nunca ficar preso a
-    // uma instância de mapa antiga — o mesmo princípio do efeito de marcadores de imóveis
-    // acima. Evita um marcador "órfão" caso o mapa seja recriado (ex.: remount em dev).
-    userMarkerRef.current?.remove();
-    const dot = document.createElement("div");
-    dot.setAttribute("aria-hidden", "true");
-    dot.style.cssText = "position:absolute;top:0;left:0;width:18px;height:18px;";
-    dot.innerHTML = `
-      <span class="animate-ping" style="position:absolute;inset:-6px;border-radius:999px;background:rgba(59,110,165,0.5);"></span>
-      <span style="position:relative;display:block;width:18px;height:18px;border-radius:999px;background:#3B6EA5;border:3px solid #F7F4EC;box-shadow:0 1px 4px rgba(33,31,25,0.35);"></span>
-    `;
-    userMarkerRef.current = new maplibregl.Marker({ element: dot }).setLngLat([userLocation.lng, userLocation.lat]).addTo(map);
+    const latLng: L.LatLngTuple = [userLocation.lat, userLocation.lng];
 
-    whenStyleReady(map, () => {
-      const circle = circlePolygon(userLocation, NEARBY_RADIUS_METERS);
-      const source = map.getSource("user-radius") as maplibregl.GeoJSONSource | undefined;
-      if (source) {
-        source.setData(circle);
-        return;
-      }
-      map.addSource("user-radius", { type: "geojson", data: circle });
-      map.addLayer({
-        id: "user-radius-fill",
-        type: "fill",
-        source: "user-radius",
-        paint: { "fill-color": "#333B28", "fill-opacity": 0.08 },
-      });
-      map.addLayer({
-        id: "user-radius-line",
-        type: "line",
-        source: "user-radius",
-        paint: { "line-color": "#333B28", "line-width": 1.5, "line-opacity": 0.4, "line-dasharray": [2, 2] },
-      });
-    });
+    if (userRadiusRef.current) {
+      userRadiusRef.current.setLatLng(latLng);
+    } else {
+      userRadiusRef.current = L.circle(latLng, {
+        radius: NEARBY_RADIUS_METERS,
+        color: "#333B28",
+        weight: 1.5,
+        opacity: 0.4,
+        fillColor: "#333B28",
+        fillOpacity: 0.08,
+        dashArray: "4,4",
+      }).addTo(map);
+    }
+
+    if (userMarkerRef.current) {
+      userMarkerRef.current.setLatLng(latLng);
+    } else {
+      const dot = document.createElement("div");
+      dot.setAttribute("aria-hidden", "true");
+      dot.style.cssText = "position:relative;width:18px;height:18px;";
+      dot.innerHTML = `
+        <span class="animate-ping" style="position:absolute;inset:-6px;border-radius:999px;background:rgba(59,110,165,0.5);"></span>
+        <span style="position:relative;display:block;width:18px;height:18px;border-radius:999px;background:#3B6EA5;border:3px solid #F7F4EC;box-shadow:0 1px 4px rgba(33,31,25,0.35);"></span>
+      `;
+      userMarkerRef.current = L.marker(latLng, {
+        icon: L.divIcon({ html: dot, className: "", iconSize: [18, 18], iconAnchor: [9, 9] }),
+        zIndexOffset: 1000,
+      }).addTo(map);
+    }
   }, [userLocation]);
 
   return <div ref={containerRef} className={className} role="application" aria-label="Mapa de imóveis" />;

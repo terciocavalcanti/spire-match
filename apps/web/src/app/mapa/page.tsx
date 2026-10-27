@@ -2,13 +2,21 @@
 
 import { Button, EmptyState, MatchBadge } from "@spire/ui-web";
 import { BedDouble, Car, List, LocateFixed, Ruler } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { AppShell } from "@/components/layout/AppShell";
-import { PropertyMap } from "@/components/map/PropertyMap";
 import { useGeolocation } from "@/hooks/use-geolocation";
 import { useMatches } from "@/hooks/use-matches";
+
+// Leaflet acessa `window` no carregamento do módulo — precisa ficar fora do
+// caminho de SSR (o próprio componente já é "use client", mas o Next ainda
+// faz SSR de componentes client por padrão).
+const PropertyMap = dynamic(() => import("@/components/map/PropertyMap").then((m) => m.PropertyMap), {
+  ssr: false,
+  loading: () => <div className="h-[58dvh] w-full animate-pulse bg-background-subtle" aria-hidden />,
+});
 
 const currencyFormatter = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
@@ -61,12 +69,6 @@ export default function MapaPage() {
         </div>
       ) : (
         <div className="relative">
-          {!process.env.NEXT_PUBLIC_MAPTILER_API_KEY && (
-            <div className="absolute inset-x-4 top-3 z-10 rounded-xl bg-background-elevated/95 px-3 py-2 text-caption text-ink-secondary shadow-sm sm:inset-x-6">
-              Mapa de demonstração sem cartografia detalhada — um provedor de mapas licenciado (MapTiler) está
-              pendente de configuração. Os selos de Match e a seleção de imóveis já funcionam normalmente.
-            </div>
-          )}
           <PropertyMap
             points={points}
             center={center}
