@@ -46,8 +46,13 @@ export default function MapaPage() {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={geo.request}
-              className="flex items-center gap-1.5 rounded-pill bg-background-subtle px-3 py-1.5 text-bodySm text-ink-secondary"
+              onClick={geo.toggle}
+              aria-pressed={geo.status === "granted"}
+              className={`flex items-center gap-1.5 rounded-pill px-3 py-1.5 text-bodySm ${
+                geo.status === "granted"
+                  ? "bg-chip-activeBg text-chip-activeFg"
+                  : "bg-background-subtle text-ink-secondary"
+              }`}
             >
               <LocateFixed className="h-3.5 w-3.5" />
               {geo.status === "granted" ? "Localização ativa" : "Minha localização"}

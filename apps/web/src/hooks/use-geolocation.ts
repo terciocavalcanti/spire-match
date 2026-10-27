@@ -46,5 +46,20 @@ export function useGeolocation() {
     );
   }, []);
 
-  return { status, location, request };
+  /** Desativa o acompanhamento em tempo real — o usuário pode reativar a qualquer momento com `request()`. */
+  const clear = useCallback(() => {
+    if (watchIdRef.current !== null && typeof navigator !== "undefined" && navigator.geolocation) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+    }
+    watchIdRef.current = null;
+    setStatus("idle");
+    setLocation(null);
+  }, []);
+
+  const toggle = useCallback(() => {
+    if (watchIdRef.current !== null) clear();
+    else request();
+  }, [clear, request]);
+
+  return { status, location, request, clear, toggle };
 }
