@@ -70,6 +70,7 @@ export default function MapaPage() {
           <PropertyMap
             points={points}
             center={center}
+            userLocation={geo.location}
             selectedPropertyId={selected?.property.id}
             onSelect={setSelectedId}
             className="h-[58dvh] w-full bg-background-subtle"

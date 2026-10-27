@@ -217,6 +217,9 @@ importers:
       '@spire/design-tokens':
         specifier: workspace:*
         version: link:../../packages/design-tokens
+      '@spire/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
       '@spire/ui-web':
         specifier: workspace:*
         version: link:../../packages/ui-web
@@ -251,6 +254,9 @@ importers:
       '@spire/configs':
         specifier: workspace:*
         version: link:../../packages/configs
+      '@types/geojson':
+        specifier: ^7946.0.16
+        version: 7946.0.16
       '@types/node':
         specifier: ^22.10.5
         version: 22.20.5

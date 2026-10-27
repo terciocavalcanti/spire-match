@@ -1,31 +1,48 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export type GeolocationStatus = "idle" | "requesting" | "granted" | "denied" | "unsupported";
 
 /**
  * Localização somente durante a sessão visível, atrás de gesto explícito do
- * usuário (`request()`) — nunca solicitada automaticamente no mount. Ver
- * docs/architecture/ADR_PWA_GEOLOCATION_LIMITS.md.
+ * usuário (`request()`) — nunca solicitada automaticamente no mount. Após o
+ * gesto, usa `watchPosition()` para acompanhar o deslocamento em tempo real
+ * enquanto a tela estiver aberta (permitido pelo ADR — ver
+ * docs/architecture/ADR_PWA_GEOLOCATION_LIMITS.md, item 1); o watch é
+ * encerrado no unmount, nunca persiste em segundo plano.
  */
 export function useGeolocation() {
   const [status, setStatus] = useState<GeolocationStatus>("idle");
-  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [location, setLocation] = useState<{ lat: number; lng: number; accuracy: number | null } | null>(null);
+  const watchIdRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (watchIdRef.current !== null && typeof navigator !== "undefined" && navigator.geolocation) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+      }
+    };
+  }, []);
 
   const request = useCallback(() => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
       setStatus("unsupported");
       return;
     }
+    if (watchIdRef.current !== null) return;
     setStatus("requesting");
-    navigator.geolocation.getCurrentPosition(
+    watchIdRef.current = navigator.geolocation.watchPosition(
       (position) => {
-        setLocation({ lat: position.coords.latitude, lng: position.coords.longitude });
+        setLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+          accuracy: position.coords.accuracy ?? null,
+        });
         setStatus("granted");
       },
       () => setStatus("denied"),
-      { enableHighAccuracy: false, timeout: 10_000, maximumAge: 60_000 },
+      { enableHighAccuracy: true, timeout: 10_000, maximumAge: 30_000 },
     );
   }, []);
 

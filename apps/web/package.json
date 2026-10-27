@@ -18,6 +18,7 @@
     "@spire/api-client": "workspace:*",
     "@spire/contracts": "workspace:*",
     "@spire/design-tokens": "workspace:*",
+    "@spire/domain": "workspace:*",
     "@spire/ui-web": "workspace:*",
     "lucide-react": "^1.60.0",
     "maplibre-gl": "^6.15.0",
@@ -30,6 +31,7 @@
   },
   "devDependencies": {
     "@spire/configs": "workspace:*",
+    "@types/geojson": "^7946.0.16",
     "@types/node": "^22.10.5",
     "@types/react": "^19.0.7",
     "@types/react-dom": "^19.0.3",
