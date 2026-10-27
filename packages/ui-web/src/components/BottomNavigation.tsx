@@ -52,12 +52,12 @@ export function BottomNavigation({
                 href={item.href}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "flex flex-col items-center gap-1 px-2 py-3 text-caption font-medium transition-colors",
+                  "flex flex-col items-center gap-0.5 px-2 py-3 text-[10px] font-medium leading-none transition-colors",
                   isActive ? "text-ink-primary" : "text-ink-tertiary",
                 )}
               >
                 <span className="relative">
-                  <Icon className="h-5 w-5" />
+                  <Icon className="h-[18px] w-[18px]" />
                   {!!item.badge && item.badge > 0 && (
                     <span
                       aria-hidden
@@ -67,7 +67,7 @@ export function BottomNavigation({
                     </span>
                   )}
                 </span>
-                {item.label}
+                <span className="mt-0.5">{item.label}</span>
                 {isActive && <span aria-hidden className="mt-0.5 h-1 w-1 rounded-full bg-ink-primary" />}
               </Anchor>
             </li>

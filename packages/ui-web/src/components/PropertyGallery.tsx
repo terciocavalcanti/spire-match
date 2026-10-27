@@ -1,9 +1,8 @@
 "use client";
 
 import type { PropertyImage } from "@spire/contracts";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import * as React from "react";
-
-import { cn } from "../lib/cn";
 
 export interface PropertyGalleryProps {
   images: PropertyImage[];
@@ -30,28 +29,25 @@ export function PropertyGallery({ images, title, topLeftSlot, topRightSlot }: Pr
       </div>
 
       {images.length > 1 && (
-        <span className="absolute bottom-4 right-4 rounded-pill bg-background-elevated/90 px-2.5 py-1 text-caption text-ink-primary">
-          {index + 1}/{images.length}
-        </span>
-      )}
-
-      {images.length > 1 && (
-        <div className="absolute inset-x-0 bottom-0 flex justify-between px-2 pb-2">
+        <div className="absolute inset-x-0 bottom-4 flex items-center justify-between px-4">
           <button
             type="button"
             aria-label="Foto anterior"
             onClick={() => setIndex((i) => (i - 1 + images.length) % images.length)}
-            className={cn("h-10 w-10 rounded-full bg-background-elevated/80 text-ink-primary")}
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-background-elevated/90 text-ink-primary shadow-sm transition-transform active:scale-95"
           >
-            ←
+            <ChevronLeft className="h-5 w-5" />
           </button>
+          <span className="rounded-pill bg-background-elevated/90 px-2.5 py-1 text-caption text-ink-primary shadow-sm">
+            {index + 1}/{images.length}
+          </span>
           <button
             type="button"
             aria-label="Próxima foto"
             onClick={() => setIndex((i) => (i + 1) % images.length)}
-            className="h-10 w-10 rounded-full bg-background-elevated/80 text-ink-primary"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-background-elevated/90 text-ink-primary shadow-sm transition-transform active:scale-95"
           >
-            →
+            <ChevronRight className="h-5 w-5" />
           </button>
         </div>
       )}

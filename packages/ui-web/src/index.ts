@@ -2,6 +2,7 @@ export { cn } from "./lib/cn";
 export { Button, type ButtonProps } from "./components/Button";
 export { Card } from "./components/Card";
 export { Input, type InputProps } from "./components/Input";
+export { CurrencyInput, type CurrencyInputProps } from "./components/CurrencyInput";
 export { EmptyState, type EmptyStateProps } from "./components/EmptyState";
 export { PropertyCard, type PropertyCardProps } from "./components/PropertyCard";
 export { FilterChip, type FilterChipProps } from "./components/FilterChip";

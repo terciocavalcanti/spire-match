@@ -1,7 +1,7 @@
 "use client";
 
 import type { BuyerPreferences, ListingPurpose, PaymentMethod } from "@spire/contracts";
-import { Button, Input } from "@spire/ui-web";
+import { Button, CurrencyInput, Input } from "@spire/ui-web";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { X } from "lucide-react";
 import { useState } from "react";
@@ -69,8 +69,8 @@ interface PreferencesFormFieldsProps {
 function PreferencesFormFields({ initialPreferences, onSaved }: PreferencesFormFieldsProps) {
   const queryClient = useQueryClient();
 
-  const [budgetMin, setBudgetMin] = useState(initialPreferences.budgetMin?.toString() ?? "");
-  const [budgetMax, setBudgetMax] = useState(initialPreferences.budgetMax?.toString() ?? "");
+  const [budgetMin, setBudgetMin] = useState<number | null>(initialPreferences.budgetMin ?? null);
+  const [budgetMax, setBudgetMax] = useState<number | null>(initialPreferences.budgetMax ?? null);
   const [neighborhoods, setNeighborhoods] = useState<string[]>(initialPreferences.desiredNeighborhoods);
   const [minAreaSqm, setMinAreaSqm] = useState(initialPreferences.minAreaSqm?.toString() ?? "");
   const [minBedrooms, setMinBedrooms] = useState<number | null>(initialPreferences.minBedrooms);
@@ -83,8 +83,8 @@ function PreferencesFormFields({ initialPreferences, onSaved }: PreferencesFormF
   const mutation = useMutation({
     mutationFn: () =>
       apiClient.preferences.update({
-        budgetMin: budgetMin ? Number(budgetMin) : null,
-        budgetMax: budgetMax ? Number(budgetMax) : null,
+        budgetMin,
+        budgetMax,
         desiredNeighborhoods: neighborhoods,
         minAreaSqm: minAreaSqm ? Number(minAreaSqm) : null,
         minBedrooms,
@@ -114,8 +114,8 @@ function PreferencesFormFields({ initialPreferences, onSaved }: PreferencesFormF
       <div>
         <label className="text-bodySm font-medium text-ink-secondary">Orçamento (R$)</label>
         <div className="mt-1.5 grid grid-cols-2 gap-3">
-          <Input type="number" placeholder="Mínimo" value={budgetMin} onChange={(e) => setBudgetMin(e.target.value)} />
-          <Input type="number" placeholder="Máximo" value={budgetMax} onChange={(e) => setBudgetMax(e.target.value)} />
+          <CurrencyInput placeholder="Mínimo" value={budgetMin} onChange={setBudgetMin} />
+          <CurrencyInput placeholder="Máximo" value={budgetMax} onChange={setBudgetMax} />
         </div>
       </div>
 

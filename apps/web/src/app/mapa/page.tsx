@@ -72,11 +72,11 @@ export default function MapaPage() {
             center={center}
             selectedPropertyId={selected?.property.id}
             onSelect={setSelectedId}
-            className="h-[65vh] w-full bg-background-subtle"
+            className="h-[58dvh] w-full bg-background-subtle"
           />
 
           {selected && (
-            <div className="relative -mt-6 mx-4 overflow-hidden rounded-2xl border border-border-subtle bg-background-elevated shadow-lg sm:mx-6">
+            <div className="relative -mt-6 mx-4 mb-4 overflow-hidden rounded-2xl border border-border-subtle bg-background-elevated shadow-lg sm:mx-6">
               <div className="flex gap-3 p-3">
                 <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-background-subtle">
                   {selected.property.coverImageUrl && (

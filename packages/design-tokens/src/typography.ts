@@ -21,6 +21,7 @@ export const typography = {
     displayMd: { fontFamily: "display", size: "26px", lineHeight: "32px", weight: 500 }, // "Atlântico Residence"
     displaySm: { fontFamily: "display", size: "22px", lineHeight: "28px", weight: 500 }, // headings de seção
     price: { fontFamily: "display", size: "26px", lineHeight: "32px", weight: 500 }, // "R$ 2.980.000"
+    priceSm: { fontFamily: "display", size: "19px", lineHeight: "24px", weight: 500 }, // preço em PropertyCard (grades de 2 colunas)
     bodyLg: { fontFamily: "body", size: "16px", lineHeight: "24px", weight: 400 },
     bodyMd: { fontFamily: "body", size: "14px", lineHeight: "20px", weight: 400 },
     bodySm: { fontFamily: "body", size: "13px", lineHeight: "18px", weight: 400 },

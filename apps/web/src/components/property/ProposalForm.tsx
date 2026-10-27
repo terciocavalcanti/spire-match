@@ -1,7 +1,7 @@
 "use client";
 
 import type { PaymentMethod, PropertyDetail } from "@spire/contracts";
-import { Button, Input } from "@spire/ui-web";
+import { Button, CurrencyInput } from "@spire/ui-web";
 import { CheckCircle2, FileText } from "lucide-react";
 import { useState } from "react";
 
@@ -16,7 +16,7 @@ const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
 
 export function ProposalForm({ property }: { property: PropertyDetail }) {
   const [open, setOpen] = useState(false);
-  const [amount, setAmount] = useState(String(property.price));
+  const [amount, setAmount] = useState<number | null>(property.price);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | undefined>(property.acceptedPaymentMethods[0]);
   const [message, setMessage] = useState("");
   const createProposal = useCreateProposal();
@@ -50,7 +50,7 @@ export function ProposalForm({ property }: { property: PropertyDetail }) {
         <div>
           <label className="text-bodySm font-medium text-ink-secondary">Valor da proposta</label>
           <div className="mt-1.5">
-            <Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} />
+            <CurrencyInput value={amount} onChange={setAmount} />
           </div>
         </div>
 
@@ -93,11 +93,11 @@ export function ProposalForm({ property }: { property: PropertyDetail }) {
 
         <Button
           className="w-full"
-          disabled={!amount || Number(amount) <= 0 || !paymentMethod || createProposal.isPending}
+          disabled={!amount || amount <= 0 || !paymentMethod || createProposal.isPending}
           onClick={() =>
             createProposal.mutate({
               propertyId: property.id,
-              amount: Number(amount),
+              amount: amount!,
               paymentMethod: paymentMethod!,
               message: message.trim() || undefined,
             })

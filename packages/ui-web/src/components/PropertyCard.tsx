@@ -81,7 +81,7 @@ export function PropertyCard({
       </div>
 
       <Anchor href={`/imoveis/${property.slug}`} className="block px-4 py-3">
-        <p className="text-price font-display text-ink-primary">{currencyFormatter.format(property.price)}</p>
+        <p className="text-priceSm font-display text-ink-primary">{currencyFormatter.format(property.price)}</p>
         <p className="mt-0.5 text-bodySm text-ink-secondary">
           {property.neighborhood}, {property.city}
         </p>

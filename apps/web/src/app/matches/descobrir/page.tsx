@@ -3,7 +3,7 @@
 import type { MatchResult } from "@spire/contracts";
 import { EmptyState, MatchBadge } from "@spire/ui-web";
 import { useQueryClient } from "@tanstack/react-query";
-import { BedDouble, Car, Heart, MapPin, Ruler, Sparkles, X } from "lucide-react";
+import { BedDouble, Bookmark, Car, Heart, MapPin, Ruler, Sparkles, X } from "lucide-react";
 import { useState } from "react";
 
 import { AppShell } from "@/components/layout/AppShell";
@@ -101,36 +101,40 @@ export default function DescobrirPage() {
               <SwipeCard match={current} />
             </div>
 
-            <div className="mt-6 flex items-center justify-center gap-6">
-              <button
-                type="button"
-                onClick={() => act("DISLIKE")}
-                aria-label="Descartar"
-                className="flex h-16 w-16 items-center justify-center rounded-full border border-border-subtle bg-background-elevated text-ink-secondary"
-              >
-                <X className="h-6 w-6" />
-              </button>
-              <button
-                type="button"
-                onClick={() => act("FAVORITE")}
-                aria-label="Salvar"
-                className="flex h-14 w-14 items-center justify-center rounded-full border border-border-subtle bg-background-elevated text-ink-secondary"
-              >
-                <Heart className="h-5 w-5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => act("LIKE")}
-                aria-label="Tenho interesse"
-                className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-charcoal text-ink-inverse"
-              >
-                <Heart className="h-6 w-6 fill-current" />
-              </button>
-            </div>
-            <div className="mt-3 flex items-center justify-center gap-6 text-caption text-ink-tertiary">
-              <span>Descartar</span>
-              <span>Salvar</span>
-              <span>Tenho interesse</span>
+            <div className="mt-6 flex items-start justify-center gap-6">
+              <div className="flex w-16 flex-col items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => act("DISLIKE")}
+                  aria-label="Descartar"
+                  className="flex h-16 w-16 items-center justify-center rounded-full border border-border-subtle bg-background-elevated text-ink-secondary"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+                <span className="text-caption text-ink-tertiary">Descartar</span>
+              </div>
+              <div className="flex w-16 flex-col items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => act("FAVORITE")}
+                  aria-label="Salvar"
+                  className="flex h-14 w-14 items-center justify-center rounded-full border border-border-subtle bg-background-elevated text-ink-secondary"
+                >
+                  <Bookmark className="h-5 w-5" />
+                </button>
+                <span className="text-caption text-ink-tertiary">Salvar</span>
+              </div>
+              <div className="flex w-16 flex-col items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => act("LIKE")}
+                  aria-label="Tenho interesse"
+                  className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-charcoal text-ink-inverse"
+                >
+                  <Heart className="h-6 w-6 fill-current" />
+                </button>
+                <span className="text-caption text-ink-tertiary">Tenho interesse</span>
+              </div>
             </div>
           </>
         )}
