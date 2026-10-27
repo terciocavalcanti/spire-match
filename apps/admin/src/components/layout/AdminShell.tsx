@@ -1,12 +1,13 @@
 "use client";
 
 import { AdminSidebar, Button } from "@spire/ui-web";
-import { ShieldAlert } from "lucide-react";
+import { Bell, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { useUnreadNotificationsCount } from "@/hooks/use-notifications";
 import { apiClient } from "@/lib/api-client";
 import { hasAdminAccess } from "@/lib/roles";
 
@@ -20,6 +21,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { data: user, isLoading } = useCurrentUser();
+  const { data: unread } = useUnreadNotificationsCount(Boolean(user && hasAdminAccess(user.roles)));
 
   useEffect(() => {
     if (!isLoading && user === null) router.replace("/entrar");
@@ -60,7 +62,22 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-dvh bg-background-base">
       <AdminSidebar groups={ADMIN_NAV_GROUPS} activeHref={pathname} LinkComponent={NextLink} />
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center justify-end gap-3 border-b border-border-subtle bg-background-elevated px-6 py-4">
+        <header className="flex items-center justify-end gap-4 border-b border-border-subtle bg-background-elevated px-6 py-4">
+          <Link
+            href="/admin/notificacoes"
+            aria-label="Notificações"
+            className="relative flex h-9 w-9 items-center justify-center rounded-full text-ink-secondary hover:bg-background-subtle hover:text-ink-primary"
+          >
+            <Bell className="h-5 w-5" />
+            {!!unread && unread.count > 0 && (
+              <span
+                aria-hidden
+                className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-status-hot px-1 text-[10px] text-ink-inverse"
+              >
+                {unread.count > 9 ? "9+" : unread.count}
+              </span>
+            )}
+          </Link>
           {user && (
             <div className="flex items-center gap-2">
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-background-subtle text-sm font-semibold text-ink-secondary">

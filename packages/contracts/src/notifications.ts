@@ -8,6 +8,7 @@ export const NOTIFICATION_TYPES = [
   "PROPOSAL_UPDATE",
   "RADAR_HIT",
   "EXCLUSIVE_NEW",
+  "LEAD_SIGNAL",
   "SYSTEM",
 ] as const;
 export const notificationTypeSchema = z.enum(NOTIFICATION_TYPES);

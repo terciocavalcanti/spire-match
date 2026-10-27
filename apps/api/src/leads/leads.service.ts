@@ -9,7 +9,7 @@ import type {
   UpdateLeadStageRequest,
 } from "@spire/contracts";
 import { computeLeadScore } from "@spire/domain";
-import { and, desc, eq, gte, ne } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, ne } from "drizzle-orm";
 
 import type { Database } from "../database/client";
 import { DATABASE } from "../database/database.module";
@@ -21,12 +21,28 @@ import {
   leads,
   properties,
   proposals,
+  roleAssignments,
+  roles,
   userInteractions,
   users,
   visits,
 } from "../database/schema";
+import { NotificationsService } from "../notifications/notifications.service";
 
 import { toLead, toLeadActivity } from "./lead-mapper";
+
+// Papéis que compõem o time comercial — recebem notificação in-app quando
+// um comprador faz contato, agenda visita ou envia proposta. O diretório de
+// corretores (`brokers`) não tem conta de login própria (ver schema), então
+// não é possível notificar um corretor específico — apenas o time com
+// acesso ao painel administrativo.
+const COMMERCIAL_TEAM_ROLES = ["ADMIN", "SUPER_ADMIN", "SALES_MANAGER"] as const;
+
+const SIGNAL_NOTIFICATION_TITLES: Partial<Record<LeadActivityType, (buyerName: string) => string>> = {
+  CONTACT: (buyerName) => `${buyerName} pediu contato`,
+  VISIT_SCHEDULED: (buyerName) => `${buyerName} agendou uma visita`,
+  PROPOSAL_RECEIVED: (buyerName) => `${buyerName} enviou uma proposta`,
+};
 
 function decodeCursor(cursor: string | undefined): number {
   if (!cursor) return 0;
@@ -58,7 +74,10 @@ const AUTO_ADVANCE_TARGET: Partial<Record<LeadActivityType, LeadStage>> = {
 
 @Injectable()
 export class LeadsService {
-  constructor(@Inject(DATABASE) private readonly db: Database) {}
+  constructor(
+    @Inject(DATABASE) private readonly db: Database,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   /** Cria o lead na primeira ação comercial do comprador, ou retorna o existente. */
   private async ensureLead(userId: string, sourcePropertyId?: string): Promise<typeof leads.$inferSelect> {
@@ -125,6 +144,34 @@ export class LeadsService {
       .update(leads)
       .set({ score, stage: nextStage, updatedAt: new Date() })
       .where(eq(leads.id, lead.id));
+
+    const buildTitle = SIGNAL_NOTIFICATION_TITLES[type];
+    if (buildTitle) {
+      await this.notifyCommercialTeam(userId, buildTitle, description, lead.id);
+    }
+  }
+
+  /** Avisa o time comercial (papéis ADMIN/SUPER_ADMIN/SALES_MANAGER) via inbox do painel. */
+  private async notifyCommercialTeam(
+    buyerUserId: string,
+    buildTitle: (buyerName: string) => string,
+    body: string,
+    leadId: string,
+  ): Promise<void> {
+    const [buyer] = await this.db.select({ name: users.name }).from(users).where(eq(users.id, buyerUserId)).limit(1);
+    const title = buildTitle(buyer?.name ?? "Um comprador");
+
+    const recipients = await this.db
+      .selectDistinct({ userId: roleAssignments.userId })
+      .from(roleAssignments)
+      .innerJoin(roles, eq(roles.id, roleAssignments.roleId))
+      .where(inArray(roles.name, COMMERCIAL_TEAM_ROLES));
+
+    await Promise.all(
+      recipients.map((recipient) =>
+        this.notifications.notify(recipient.userId, "LEAD_SIGNAL", title, body, `/admin/leads/${leadId}`),
+      ),
+    );
   }
 
   async list(query: LeadListQuery): Promise<{ items: Lead[]; nextCursor: string | null }> {
