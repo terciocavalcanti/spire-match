@@ -27,7 +27,7 @@ export default function MatchPertoPage() {
     <AppShell>
       <div className="px-4 py-6 sm:px-6">
         <h1 className="font-display text-2xl text-ink-primary">Alerta de oportunidade</h1>
-        <p className="mt-1 text-bodyMd text-ink-secondary">Matches perto de você enquanto usa o SPIRE MATCH.</p>
+        <p className="mt-1 text-bodyMd text-ink-secondary">Matches perto de você enquanto usa o VALORI MATCH.</p>
 
         {geo.status === "idle" || geo.status === "denied" || geo.status === "unsupported" ? (
           <div className="mt-6">

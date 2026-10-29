@@ -31,8 +31,8 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(
     app,
     new DocumentBuilder()
-      .setTitle("SPIRE MATCH API")
-      .setDescription("API REST da plataforma SPIRE MATCH — /api/v1")
+      .setTitle("VALORI MATCH API")
+      .setDescription("API REST da plataforma VALORI MATCH — /api/v1")
       .setVersion("1.0.0")
       .addCookieAuth("spire_session")
       .build(),
@@ -42,7 +42,7 @@ async function bootstrap() {
   const port = config.get("PORT", { infer: true });
   await app.listen(port);
    
-  console.log(`SPIRE MATCH API ouvindo em http://localhost:${port}/api/v1 (docs em /api/docs)`);
+  console.log(`VALORI MATCH API ouvindo em http://localhost:${port}/api/v1 (docs em /api/docs)`);
 }
 
 bootstrap();

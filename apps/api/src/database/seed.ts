@@ -33,7 +33,7 @@ async function main() {
 
   const demoAccounts = [
     { name: "Tércio (Demo Comprador)", email: "demo.comprador@spirematch.com.br", role: "BUYER" as const },
-    { name: "Admin SPIRE (Demo)", email: "demo.admin@spirematch.com.br", role: "ADMIN" as const },
+    { name: "Admin VALORI (Demo)", email: "demo.admin@spirematch.com.br", role: "ADMIN" as const },
   ];
 
   for (const account of demoAccounts) {

@@ -21,16 +21,16 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "SPIRE MATCH — O imóvel certo, no lugar certo, na hora certa",
-    template: "%s · SPIRE MATCH",
+    default: "VALORI MATCH — O imóvel certo, no lugar certo, na hora certa",
+    template: "%s · VALORI MATCH",
   },
   description:
-    "SPIRE MATCH cruza seu perfil com a carteira de imóveis certa para você: compatibilidade explicável, visitas e atendimento especializado.",
+    "VALORI MATCH cruza seu perfil com a carteira de imóveis certa para você: compatibilidade explicável, visitas e atendimento especializado.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "SPIRE MATCH",
+    title: "VALORI MATCH",
   },
 };
 

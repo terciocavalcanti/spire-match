@@ -9,8 +9,8 @@ const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-display", disp
 const inter = Inter({ subsets: ["latin"], variable: "--font-body", display: "swap" });
 
 export const metadata: Metadata = {
-  title: { default: "Painel comercial · SPIRE MATCH", template: "%s · SPIRE MATCH" },
-  description: "Painel comercial SPIRE MATCH — leads, imóveis, agenda e inteligência comercial.",
+  title: { default: "Painel comercial · VALORI MATCH", template: "%s · VALORI MATCH" },
+  description: "Painel comercial VALORI MATCH — leads, imóveis, agenda e inteligência comercial.",
   robots: { index: false, follow: false },
 };
 

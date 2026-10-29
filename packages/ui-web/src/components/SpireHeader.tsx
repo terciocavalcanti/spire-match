@@ -33,7 +33,7 @@ export function SpireHeader({
       <div className="flex items-center justify-between px-4 py-4 sm:px-6">
         <div className="flex items-center gap-2 text-ink-primary">
           <SpireMark className="h-5 w-5" />
-          <span className="font-display text-lg tracking-[0.2em]">SPIRE</span>
+          <span className="font-display text-lg tracking-[0.2em]">VALORI</span>
         </div>
 
         {user !== undefined && (

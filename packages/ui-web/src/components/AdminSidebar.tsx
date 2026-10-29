@@ -37,7 +37,7 @@ export function AdminSidebar({ groups, activeHref, LinkComponent, className }: A
       <div className="flex items-center gap-2 px-2 text-ink-primary">
         <SpireMark className="h-5 w-5" />
         <div className="leading-none">
-          <p className="font-display text-base tracking-[0.2em]">SPIRE</p>
+          <p className="font-display text-base tracking-[0.2em]">VALORI</p>
           <p className="text-[10px] tracking-[0.3em] text-ink-secondary">MATCH</p>
         </div>
       </div>

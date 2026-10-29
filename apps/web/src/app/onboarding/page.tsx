@@ -33,7 +33,7 @@ export default function OnboardingPage() {
 
       <div className="mt-10 flex items-center gap-2 text-ink-primary">
         <SpireMark className="h-5 w-5" />
-        <span className="font-display text-base tracking-[0.2em]">SPIRE MATCH</span>
+        <span className="font-display text-base tracking-[0.2em]">VALORI MATCH</span>
       </div>
 
       <h1 className="mt-6 font-display text-2xl text-ink-primary">

@@ -35,7 +35,7 @@ export default function SplashPage() {
         <div className="mb-10 flex items-center gap-2 text-ink-primary">
           <SpireMark className="h-6 w-6" />
           <div className="leading-none">
-            <p className="font-display text-xl tracking-[0.25em]">SPIRE</p>
+            <p className="font-display text-xl tracking-[0.25em]">VALORI</p>
             <p className="text-caption tracking-[0.3em] text-ink-secondary">MATCH</p>
           </div>
         </div>
@@ -43,9 +43,9 @@ export default function SplashPage() {
         <h1 className="max-w-sm font-display text-4xl leading-tight text-ink-primary">
           O imóvel certo,
           <br />
-          no <em className="italic">lugar</em> certo,
+          no lugar certo,
           <br />
-          na <em className="italic">hora</em> certa.
+          na hora certa.
         </h1>
 
         <div className="mt-10 flex items-center gap-1.5" aria-hidden>

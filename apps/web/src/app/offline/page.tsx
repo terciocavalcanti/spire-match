@@ -8,7 +8,7 @@ export default function OfflinePage() {
     <main className="flex min-h-dvh flex-col items-center justify-center gap-4 px-6 text-center">
       <div className="flex items-center gap-2 text-ink-primary">
         <SpireMark className="h-6 w-6" />
-        <span className="font-display text-lg tracking-[0.2em]">SPIRE MATCH</span>
+        <span className="font-display text-lg tracking-[0.2em]">VALORI MATCH</span>
       </div>
       <WifiOff className="h-8 w-8 text-ink-tertiary" aria-hidden />
       <h1 className="font-display text-2xl text-ink-primary">Você está sem conexão</h1>

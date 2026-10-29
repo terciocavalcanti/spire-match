@@ -74,7 +74,7 @@ export function InstallPwaCard() {
           <Download className="h-4 w-4" />
         </div>
         <div className="flex-1">
-          <p className="font-display text-bodyLg text-ink-primary">Instalar o SPIRE MATCH</p>
+          <p className="font-display text-bodyLg text-ink-primary">Instalar o VALORI MATCH</p>
           {ios ? (
             <p className="mt-1 text-bodySm text-ink-secondary">
               Toque em <Share className="mx-1 inline h-3.5 w-3.5" /> Compartilhar e depois em

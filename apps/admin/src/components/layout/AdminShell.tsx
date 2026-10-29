@@ -43,7 +43,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         <ShieldAlert className="h-10 w-10 text-status-danger" aria-hidden />
         <h1 className="font-display text-2xl text-ink-primary">Acesso restrito</h1>
         <p className="max-w-sm text-bodyMd text-ink-secondary">
-          A conta {user.email} não tem permissão para acessar o painel comercial SPIRE.
+          A conta {user.email} não tem permissão para acessar o painel comercial VALORI.
         </p>
         <Button
           variant="outline"

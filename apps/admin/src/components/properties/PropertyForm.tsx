@@ -280,7 +280,7 @@ export function PropertyForm({ property, brokers, isSubmitting, onSubmit, onCanc
       <div className="flex flex-wrap items-center gap-6">
         <label className="flex items-center gap-2 text-bodySm text-ink-secondary">
           <input type="checkbox" checked={form.isExclusive} onChange={(e) => set("isExclusive", e.target.checked)} className="h-4 w-4 rounded border-border-strong" />
-          SPIRE Exclusive
+          VALORI Exclusive
         </label>
         {form.isExclusive && (
           <select

@@ -33,7 +33,7 @@ export default function ExclusivosPage() {
   return (
     <AppShell>
       <div className="px-4 py-6 sm:px-6">
-        <h1 className="font-display text-2xl text-ink-primary">SPIRE Exclusive</h1>
+        <h1 className="font-display text-2xl text-ink-primary">VALORI Exclusive</h1>
         <p className="mt-1 text-bodyMd text-ink-secondary">Oportunidades únicas, antes de todos.</p>
 
         {isLoading ? (
