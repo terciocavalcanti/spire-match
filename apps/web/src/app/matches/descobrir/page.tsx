@@ -3,7 +3,7 @@
 import type { MatchResult } from "@spire/contracts";
 import { EmptyState, MatchBadge } from "@spire/ui-web";
 import { useQueryClient } from "@tanstack/react-query";
-import { BedDouble, Bookmark, Car, Heart, MapPin, Ruler, Sparkles, X } from "lucide-react";
+import { BedDouble, Car, Heart, MapPin, Ruler, Save, Sparkles, X } from "lucide-react";
 import { useState } from "react";
 
 import { AppShell } from "@/components/layout/AppShell";
@@ -123,7 +123,7 @@ export default function DescobrirPage() {
                     aria-label="Salvar"
                     className="flex h-14 w-14 items-center justify-center rounded-full border border-border-subtle bg-background-elevated text-ink-secondary"
                   >
-                    <Bookmark className="h-5 w-5" />
+                    <Save className="h-5 w-5" />
                   </button>
                 </div>
                 <span className="text-caption text-ink-tertiary">Salvar</span>
