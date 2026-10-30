@@ -19,3 +19,5 @@ export * from "./radars";
 export * from "./leads";
 export * from "./developments";
 export * from "./units";
+export * from "./settings";
+export * from "./commissions";

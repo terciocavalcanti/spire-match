@@ -8,6 +8,7 @@ import { AiSearchModule } from "./ai-search/ai-search.module";
 import { AuthModule } from "./auth/auth.module";
 import { BrokersModule } from "./brokers/brokers.module";
 import { BuyerProfileModule } from "./buyer-profile/buyer-profile.module";
+import { CommissionsModule } from "./commissions/commissions.module";
 import { validateEnv } from "./config/env";
 import { ContactsModule } from "./contacts/contacts.module";
 import { DatabaseModule } from "./database/database.module";
@@ -23,6 +24,8 @@ import { PropertiesModule } from "./properties/properties.module";
 import { ProposalsModule } from "./proposals/proposals.module";
 import { QueueModule } from "./queue/queue.module";
 import { RadarsModule } from "./radars/radars.module";
+import { ReportsModule } from "./reports/reports.module";
+import { SettingsModule } from "./settings/settings.module";
 import { ToursModule } from "./tours/tours.module";
 import { UnitsModule } from "./units/units.module";
 import { VisitsModule } from "./visits/visits.module";
@@ -35,6 +38,7 @@ import { VisitsModule } from "./visits/visits.module";
     }),
     DatabaseModule,
     QueueModule,
+    SettingsModule,
     HealthModule,
     AuthModule,
     BuyerProfileModule,
@@ -50,7 +54,9 @@ import { VisitsModule } from "./visits/visits.module";
     ContactsModule,
     RadarsModule,
     ToursModule,
+    CommissionsModule,
     LeadsModule,
+    ReportsModule,
     InternalModule,
     AdminUsersModule,
     DevelopmentsModule,

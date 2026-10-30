@@ -74,7 +74,9 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
       setStageError(
         stageDraft === "PERDIDO"
           ? "Informe o motivo da perda para concluir esta mudança de estágio."
-          : "Não foi possível atualizar o estágio. Tente novamente.",
+          : stageDraft === "GANHO"
+            ? "Informe o valor da venda (VGV) para concluir esta mudança de estágio."
+            : "Não foi possível atualizar o estágio. Tente novamente.",
       );
     }
   };
@@ -193,7 +195,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                 type="number"
                 value={wonAmount}
                 onChange={(e) => setWonAmount(e.target.value)}
-                placeholder="Valor da venda (R$)"
+                placeholder="Valor da venda — VGV (obrigatório)"
                 className="mt-3 h-12 w-full rounded-xl border border-border-subtle bg-background-elevated px-3 text-bodyMd text-ink-primary placeholder:text-ink-tertiary focus:border-brand-olive focus:outline-none"
               />
             )}

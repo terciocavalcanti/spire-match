@@ -13,7 +13,11 @@ import {
   type BuyerPreferences,
   type AdminDevelopmentListQuery,
   type AdminUnitListQuery,
+  type AttributionReport,
   type ChangePasswordRequest,
+  type Commission,
+  type CommissionListQuery,
+  type CommissionsSummary,
   type Contact,
   type CreateAdminUserRequest,
   type CreateAdminUserResponse,
@@ -41,6 +45,7 @@ import {
   type LeadDetail,
   type LeadListQuery,
   type LoginRequest,
+  type MarkCommissionReceivedRequest,
   type MatchResult,
   type Notification,
   type NotificationListQuery,
@@ -53,6 +58,7 @@ import {
   type Radar,
   type RecalculateMatchesRequest,
   type RegisterRequest,
+  type ReportsQuery,
   type ResetPasswordRequest,
   type SessionResponse,
   type Tour,
@@ -65,6 +71,8 @@ import {
   type UpdatePropertyRequest,
   type UpdateUnitRequest,
   type VerifyEmailRequest,
+  type VgvReport,
+  type VgvReportQuery,
   type Visit,
   type VisitSlot,
   apiErrorSchema,
@@ -370,5 +378,20 @@ export class SpireApiClient {
       this.request<Unit>(`/units/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
     import: (payload: ImportUnitsRequest) =>
       this.request<ImportUnitsResponse>("/units/import", { method: "POST", body: JSON.stringify(payload) }),
+  };
+
+  commissions = {
+    list: (query: Partial<CommissionListQuery> = {}) =>
+      this.request<{ items: Commission[]; nextCursor: string | null }>(`/commissions${toQueryString(query)}`),
+    summary: (query: Partial<ReportsQuery> = {}) => this.request<CommissionsSummary>(`/commissions/summary${toQueryString(query)}`),
+    markReceived: (id: string, payload: MarkCommissionReceivedRequest) =>
+      this.request<Commission>(`/commissions/${id}/mark-received`, { method: "POST", body: JSON.stringify(payload) }),
+  };
+
+  reports = {
+    vgv: (query: Partial<VgvReportQuery> = {}) => this.request<VgvReport>(`/reports/vgv${toQueryString(query)}`),
+    attribution: (query: Partial<ReportsQuery> = {}) => this.request<AttributionReport>(`/reports/attribution${toQueryString(query)}`),
+    attributionCsvUrl: (query: Partial<ReportsQuery> = {}) => `${this.baseUrl}/reports/attribution/export.csv${toQueryString(query)}`,
+    pdfUrl: (query: Partial<ReportsQuery> = {}) => `${this.baseUrl}/reports/export.pdf${toQueryString(query)}`,
   };
 }

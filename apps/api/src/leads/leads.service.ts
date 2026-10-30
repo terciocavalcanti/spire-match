@@ -11,6 +11,7 @@ import type {
 import { computeLeadScore } from "@spire/domain";
 import { and, desc, eq, gte, inArray, ne } from "drizzle-orm";
 
+import { CommissionsService } from "../commissions/commissions.service";
 import type { Database } from "../database/client";
 import { DATABASE } from "../database/database.module";
 import {
@@ -18,6 +19,7 @@ import {
   contacts,
   favorites,
   leadActivities,
+  leadTouchpoints,
   leads,
   properties,
   proposals,
@@ -77,6 +79,7 @@ export class LeadsService {
   constructor(
     @Inject(DATABASE) private readonly db: Database,
     private readonly notifications: NotificationsService,
+    private readonly commissions: CommissionsService,
   ) {}
 
   /** Cria o lead na primeira ação comercial do comprador, ou retorna o existente. */
@@ -96,6 +99,9 @@ export class LeadsService {
         type: "CREATED",
         description: "Lead criado a partir da primeira ação comercial do comprador.",
       });
+      // Sem touchpoint para CREATED de propósito: é um evento de
+      // bookkeeping, não um canal de atribuição — quem dispara a criação do
+      // lead (recordSignal, logo a seguir) já registra o canal real.
       return created;
     }
 
@@ -132,6 +138,7 @@ export class LeadsService {
     const lead = await this.ensureLead(userId, sourcePropertyId);
 
     await this.db.insert(leadActivities).values({ leadId: lead.id, type, description });
+    await this.db.insert(leadTouchpoints).values({ leadId: lead.id, channel: type });
 
     const signals = await this.countSignals(userId);
     const { score } = computeLeadScore(signals);
@@ -238,16 +245,31 @@ export class LeadsService {
     if (request.stage === "PERDIDO" && !request.lostReason) {
       throw new UnprocessableEntityException({ code: "LOST_REASON_REQUIRED", message: "Informe o motivo da perda" });
     }
+    if (request.stage === "GANHO" && lead.stage !== "GANHO" && request.wonAmount === undefined) {
+      throw new UnprocessableEntityException({ code: "WON_AMOUNT_REQUIRED", message: "Informe o valor da venda (VGV)" });
+    }
+
+    const wasAlreadyWon = lead.stage === "GANHO";
+    const wonAmount = request.stage === "GANHO" && request.wonAmount !== undefined ? request.wonAmount : lead.wonAmount ? Number(lead.wonAmount) : undefined;
 
     await this.db
       .update(leads)
       .set({
         stage: request.stage,
-        wonAmount: request.stage === "GANHO" && request.wonAmount !== undefined ? request.wonAmount.toFixed(2) : lead.wonAmount,
+        wonAmount: wonAmount !== undefined ? wonAmount.toFixed(2) : lead.wonAmount,
         lostReason: request.stage === "PERDIDO" ? (request.lostReason ?? null) : lead.lostReason,
         updatedAt: new Date(),
       })
       .where(eq(leads.id, leadId));
+
+    // Comissão é criada uma única vez, na transição real para GANHO — salvar
+    // o mesmo estágio de novo (ex.: corrigir o valor) nunca duplica.
+    if (request.stage === "GANHO" && !wasAlreadyWon && wonAmount !== undefined) {
+      await this.commissions.createForWonLead(
+        { id: lead.id, userId: lead.userId, assignedBrokerId: lead.assignedBrokerId, sourcePropertyId: lead.sourcePropertyId },
+        wonAmount,
+      );
+    }
 
     await this.db.insert(leadActivities).values({
       leadId,
