@@ -11,22 +11,32 @@ import {
   type AuthenticatedUser,
   type Broker,
   type BuyerPreferences,
+  type AdminDevelopmentListQuery,
+  type AdminUnitListQuery,
   type ChangePasswordRequest,
   type Contact,
   type CreateAdminUserRequest,
   type CreateAdminUserResponse,
   type CreateBrokerRequest,
   type CreateContactRequest,
+  type CreateDevelopmentBlockRequest,
+  type CreateDevelopmentRequest,
   type CreateInteractionRequest,
   type CreateLeadNoteRequest,
   type CreatePropertyRequest,
   type CreateProposalRequest,
   type CreateRadarRequest,
+  type CreateUnitRequest,
   type CreateVisitRequest,
+  type DevelopmentBlock,
+  type DevelopmentDetail,
+  type DevelopmentSummary,
   type Favorite,
   type ForgotPasswordRequest,
   type FunnelReport,
   type GenerateTourRequest,
+  type ImportUnitsRequest,
+  type ImportUnitsResponse,
   type Lead,
   type LeadDetail,
   type LeadListQuery,
@@ -46,11 +56,14 @@ import {
   type ResetPasswordRequest,
   type SessionResponse,
   type Tour,
+  type Unit,
   type UpdateAdminUserRolesRequest,
   type UpdateBrokerRequest,
   type UpdateBuyerPreferencesRequest,
+  type UpdateDevelopmentRequest,
   type UpdateLeadStageRequest,
   type UpdatePropertyRequest,
+  type UpdateUnitRequest,
   type VerifyEmailRequest,
   type Visit,
   type VisitSlot,
@@ -333,5 +346,29 @@ export class SpireApiClient {
     revokeSessions: (id: string) => this.request<{ revoked: true }>(`/admin-users/${id}/revoke-sessions`, { method: "POST" }),
     suspend: (id: string) => this.request<AdminUser>(`/admin-users/${id}/suspend`, { method: "POST" }),
     reactivate: (id: string) => this.request<AdminUser>(`/admin-users/${id}/reactivate`, { method: "POST" }),
+  };
+
+  developments = {
+    list: (query: Partial<AdminDevelopmentListQuery> = {}) =>
+      this.request<{ items: DevelopmentSummary[]; nextCursor: string | null }>(`/developments${toQueryString(query)}`),
+    detail: (id: string) => this.request<DevelopmentDetail>(`/developments/${id}`),
+    create: (payload: CreateDevelopmentRequest) =>
+      this.request<DevelopmentDetail>("/developments", { method: "POST", body: JSON.stringify(payload) }),
+    update: (id: string, payload: UpdateDevelopmentRequest) =>
+      this.request<DevelopmentDetail>(`/developments/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
+    addBlock: (id: string, payload: CreateDevelopmentBlockRequest) =>
+      this.request<DevelopmentBlock>(`/developments/${id}/blocks`, { method: "POST", body: JSON.stringify(payload) }),
+    removeBlock: (id: string, blockId: string) =>
+      this.request<{ removed: true }>(`/developments/${id}/blocks/${blockId}`, { method: "DELETE" }),
+  };
+
+  units = {
+    list: (query: Partial<AdminUnitListQuery> = {}) =>
+      this.request<{ items: Unit[]; nextCursor: string | null }>(`/units${toQueryString(query)}`),
+    create: (payload: CreateUnitRequest) => this.request<Unit>("/units", { method: "POST", body: JSON.stringify(payload) }),
+    update: (id: string, payload: UpdateUnitRequest) =>
+      this.request<Unit>(`/units/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
+    import: (payload: ImportUnitsRequest) =>
+      this.request<ImportUnitsResponse>("/units/import", { method: "POST", body: JSON.stringify(payload) }),
   };
 }

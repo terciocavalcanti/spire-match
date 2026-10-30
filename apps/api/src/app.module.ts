@@ -11,6 +11,7 @@ import { BuyerProfileModule } from "./buyer-profile/buyer-profile.module";
 import { validateEnv } from "./config/env";
 import { ContactsModule } from "./contacts/contacts.module";
 import { DatabaseModule } from "./database/database.module";
+import { DevelopmentsModule } from "./developments/developments.module";
 import { FavoritesModule } from "./favorites/favorites.module";
 import { HealthModule } from "./health/health.module";
 import { InteractionsModule } from "./interactions/interactions.module";
@@ -23,6 +24,7 @@ import { ProposalsModule } from "./proposals/proposals.module";
 import { QueueModule } from "./queue/queue.module";
 import { RadarsModule } from "./radars/radars.module";
 import { ToursModule } from "./tours/tours.module";
+import { UnitsModule } from "./units/units.module";
 import { VisitsModule } from "./visits/visits.module";
 
 @Module({
@@ -51,6 +53,8 @@ import { VisitsModule } from "./visits/visits.module";
     LeadsModule,
     InternalModule,
     AdminUsersModule,
+    DevelopmentsModule,
+    UnitsModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

@@ -43,6 +43,13 @@
       "when": 1793401379455,
       "tag": "0005_bizarre_toad_men",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793402603025,
+      "tag": "0006_hot_blink",
+      "breakpoints": true
     }
   ]
 }

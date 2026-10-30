@@ -16,3 +16,5 @@ export * from "./tours";
 export * from "./leads";
 export * from "./admin";
 export * from "./admin-users";
+export * from "./developments";
+export * from "./units";
