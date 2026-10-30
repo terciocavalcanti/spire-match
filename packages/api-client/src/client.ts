@@ -2,6 +2,8 @@ import {
   type AddFavoriteRequest,
   type AdminOverview,
   type AdminPropertyListQuery,
+  type AdminUser,
+  type AdminUserListQuery,
   type AdminVisitListQuery,
   type AiSearchRequest,
   type AiSearchResponse,
@@ -9,7 +11,10 @@ import {
   type AuthenticatedUser,
   type Broker,
   type BuyerPreferences,
+  type ChangePasswordRequest,
   type Contact,
+  type CreateAdminUserRequest,
+  type CreateAdminUserResponse,
   type CreateBrokerRequest,
   type CreateContactRequest,
   type CreateInteractionRequest,
@@ -41,6 +46,7 @@ import {
   type ResetPasswordRequest,
   type SessionResponse,
   type Tour,
+  type UpdateAdminUserRolesRequest,
   type UpdateBrokerRequest,
   type UpdateBuyerPreferencesRequest,
   type UpdateLeadStageRequest,
@@ -157,6 +163,9 @@ export class SpireApiClient {
         method: "POST",
         body: JSON.stringify(payload),
       }),
+
+    changePassword: (payload: ChangePasswordRequest) =>
+      this.request<{ changed: true }>("/auth/password", { method: "POST", body: JSON.stringify(payload) }),
   };
 
   me = {
@@ -312,5 +321,17 @@ export class SpireApiClient {
   tours = {
     generate: (payload: GenerateTourRequest) =>
       this.request<Tour>("/tours/generate", { method: "POST", body: JSON.stringify(payload) }),
+  };
+
+  adminUsers = {
+    list: (query: Partial<AdminUserListQuery> = {}) =>
+      this.request<{ items: AdminUser[]; nextCursor: string | null }>(`/admin-users${toQueryString(query)}`),
+    create: (payload: CreateAdminUserRequest) =>
+      this.request<CreateAdminUserResponse>("/admin-users", { method: "POST", body: JSON.stringify(payload) }),
+    updateRoles: (id: string, payload: UpdateAdminUserRolesRequest) =>
+      this.request<AdminUser>(`/admin-users/${id}/roles`, { method: "PATCH", body: JSON.stringify(payload) }),
+    revokeSessions: (id: string) => this.request<{ revoked: true }>(`/admin-users/${id}/revoke-sessions`, { method: "POST" }),
+    suspend: (id: string) => this.request<AdminUser>(`/admin-users/${id}/suspend`, { method: "POST" }),
+    reactivate: (id: string) => this.request<AdminUser>(`/admin-users/${id}/reactivate`, { method: "POST" }),
   };
 }

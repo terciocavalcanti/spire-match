@@ -63,4 +63,12 @@ export class SessionService {
       .set({ revokedAt: new Date() })
       .where(eq(userSessions.sessionTokenHash, tokenHash));
   }
+
+  /** Revoga todas as sessões ativas de um usuário — usado pelo admin (D1) ao suspender/forçar reautenticação. */
+  async revokeAllForUser(userId: string): Promise<void> {
+    await this.db
+      .update(userSessions)
+      .set({ revokedAt: new Date() })
+      .where(and(eq(userSessions.userId, userId), isNull(userSessions.revokedAt)));
+  }
 }

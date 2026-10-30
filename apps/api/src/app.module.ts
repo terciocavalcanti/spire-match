@@ -3,6 +3,7 @@ import { ConfigModule } from "@nestjs/config";
 import { APP_GUARD } from "@nestjs/core";
 import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 
+import { AdminUsersModule } from "./admin-users/admin-users.module";
 import { AiSearchModule } from "./ai-search/ai-search.module";
 import { AuthModule } from "./auth/auth.module";
 import { BrokersModule } from "./brokers/brokers.module";
@@ -49,6 +50,7 @@ import { VisitsModule } from "./visits/visits.module";
     ToursModule,
     LeadsModule,
     InternalModule,
+    AdminUsersModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

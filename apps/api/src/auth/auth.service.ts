@@ -176,7 +176,25 @@ export class AuthService {
       roles: roleNames,
       avatarUrl: user.avatarUrl,
       profileCompleteness,
+      mustChangePassword: user.mustChangePassword,
       createdAt: user.createdAt.toISOString(),
     };
+  }
+
+  /** Troca de senha autenticada — exige a senha atual mesmo com sessão válida (defesa extra contra cookie roubado). */
+  async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<void> {
+    const [user] = await this.db.select().from(users).where(eq(users.id, userId)).limit(1);
+    if (!user) throw new UnauthorizedException({ code: "SESSION_INVALID", message: "Sessão inválida" });
+
+    const valid = await this.passwords.verify(user.passwordHash, currentPassword);
+    if (!valid) {
+      throw new UnauthorizedException({ code: "INVALID_CURRENT_PASSWORD", message: "Senha atual incorreta" });
+    }
+
+    const passwordHash = await this.passwords.hash(newPassword);
+    await this.db
+      .update(users)
+      .set({ passwordHash, mustChangePassword: false, updatedAt: new Date() })
+      .where(eq(users.id, userId));
   }
 }

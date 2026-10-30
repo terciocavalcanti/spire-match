@@ -39,6 +39,12 @@ export const verifyEmailRequestSchema = z.object({
 });
 export type VerifyEmailRequest = z.infer<typeof verifyEmailRequestSchema>;
 
+export const changePasswordRequestSchema = z.object({
+  currentPassword: z.string().min(1),
+  newPassword: passwordSchema,
+});
+export type ChangePasswordRequest = z.infer<typeof changePasswordRequestSchema>;
+
 export const authenticatedUserSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
@@ -47,6 +53,9 @@ export const authenticatedUserSchema = z.object({
   roles: z.array(roleSchema),
   avatarUrl: z.string().url().nullable(),
   profileCompleteness: z.number().min(0).max(100),
+  // Verdadeiro só para contas internas criadas pelo admin (D1) com senha
+  // temporária — o painel força a troca antes de liberar o resto da UI.
+  mustChangePassword: z.boolean(),
   createdAt: z.string().datetime(),
 });
 export type AuthenticatedUser = z.infer<typeof authenticatedUserSchema>;

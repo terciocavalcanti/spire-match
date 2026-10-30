@@ -4,6 +4,7 @@ import { ApiTags } from "@nestjs/swagger";
 import { Throttle } from "@nestjs/throttler";
 import {
   type AuthenticatedUser,
+  changePasswordRequestSchema,
   forgotPasswordRequestSchema,
   loginRequestSchema,
   registerRequestSchema,
@@ -115,5 +116,16 @@ export class AuthController {
   async me(@CurrentUserId() userId: string): Promise<{ user: AuthenticatedUser }> {
     const user = await this.authService.toAuthenticatedUser(userId);
     return { user };
+  }
+
+  @Post("auth/password")
+  @UseGuards(SessionAuthGuard)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  async changePassword(
+    @CurrentUserId() userId: string,
+    @Body(new ZodValidationPipe(changePasswordRequestSchema)) body: ReturnType<typeof changePasswordRequestSchema.parse>,
+  ): Promise<{ changed: true }> {
+    await this.authService.changePassword(userId, body.currentPassword, body.newPassword);
+    return { changed: true };
   }
 }

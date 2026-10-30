@@ -36,6 +36,13 @@
       "when": 1793111657410,
       "tag": "0004_tan_black_cat",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793401379455,
+      "tag": "0005_bizarre_toad_men",
+      "breakpoints": true
     }
   ]
 }

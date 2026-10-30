@@ -25,6 +25,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isLoading && user === null) router.replace("/entrar");
+    else if (user?.mustChangePassword) router.replace("/trocar-senha");
   }, [isLoading, user, router]);
 
   if (isLoading || user === undefined) {
@@ -36,6 +37,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   }
 
   if (!user) return null; // redirecionando para /entrar
+  if (user.mustChangePassword) return null; // redirecionando para /trocar-senha
 
   if (!hasAdminAccess(user.roles)) {
     return (
