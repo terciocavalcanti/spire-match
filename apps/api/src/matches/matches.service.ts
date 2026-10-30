@@ -11,7 +11,14 @@ import { desc, eq, inArray, sql } from "drizzle-orm";
 
 import type { Database } from "../database/client";
 import { DATABASE } from "../database/database.module";
-import { buyerProfiles, matchResults, properties, userInteractions } from "../database/schema";
+import {
+  buyerProfiles,
+  matchResults,
+  properties,
+  roleAssignments,
+  roles,
+  userInteractions,
+} from "../database/schema";
 import { toPropertySummary } from "../properties/property-mapper";
 
 type PropertyRow = typeof properties.$inferSelect;
@@ -160,6 +167,34 @@ export class MatchesService {
     );
     await this.persist(userId, [result]);
     return this.toDto(result, property);
+  }
+
+  /**
+   * Recalcula e persiste o score deste imóvel para todo comprador (papel
+   * BUYER) — disparado de forma assíncrona (fila `match-recalc-property`,
+   * ver QueueService) quando um imóvel é criado/editado no admin, em vez de
+   * recalcular tudo de forma síncrona dentro da requisição HTTP.
+   */
+  async recalculateForProperty(propertyId: string): Promise<{ buyersScored: number }> {
+    const [property] = await this.db.select().from(properties).where(eq(properties.id, propertyId)).limit(1);
+    if (!property) return { buyersScored: 0 };
+
+    const buyerRows = await this.db
+      .select({ userId: roleAssignments.userId })
+      .from(roleAssignments)
+      .innerJoin(roles, eq(roles.id, roleAssignments.roleId))
+      .where(eq(roles.name, "BUYER"));
+
+    const propertyInput = toPropertyMatchInput(property);
+    for (const { userId } of buyerRows) {
+      // Sem localização ao vivo em segundo plano — o peso de proximidade é
+      // redistribuído automaticamente (mesma regra do caminho síncrono).
+      const buyer = await this.buildBuyerProfile(userId, null);
+      const result = computeMatchScore(buyer, propertyInput, DEFAULT_MATCH_WEIGHTS, DEFAULT_MATCH_RULESET_VERSION);
+      await this.persist(userId, [result]);
+    }
+
+    return { buyersScored: buyerRows.length };
   }
 
   async computeForPropertyIds(

@@ -1,0 +1,15 @@
+{
+  "extends": "@spire/configs/tsconfig/base.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "Node10",
+    "target": "ES2022",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "declaration": false,
+    "noEmit": false,
+    "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo"
+  },
+  "include": ["src"],
+  "exclude": ["**/*.test.ts"]
+}

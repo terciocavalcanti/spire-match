@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import type { Database } from "../database/client";
 import { DATABASE } from "../database/database.module";
 import { buyerProfiles } from "../database/schema";
+import { QueueService } from "../queue/queue.service";
 
 type BuyerProfileRow = typeof buyerProfiles.$inferSelect;
 
@@ -38,7 +39,10 @@ const EMPTY_PREFERENCES: BuyerPreferences = {
 
 @Injectable()
 export class BuyerProfileService {
-  constructor(@Inject(DATABASE) private readonly db: Database) {}
+  constructor(
+    @Inject(DATABASE) private readonly db: Database,
+    private readonly queue: QueueService,
+  ) {}
 
   async get(userId: string): Promise<BuyerPreferences> {
     const [row] = await this.db.select().from(buyerProfiles).where(eq(buyerProfiles.userId, userId)).limit(1);
@@ -75,6 +79,7 @@ export class BuyerProfileService {
       .onConflictDoUpdate({ target: buyerProfiles.userId, set: values })
       .returning();
 
+    await this.queue.enqueueRecalcForBuyer(userId);
     return toDto(row!);
   }
 }

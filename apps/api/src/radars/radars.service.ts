@@ -58,14 +58,34 @@ export class RadarsService {
   }
 
   /**
-   * Checagem sob demanda: compara o critério salvo contra o catálogo atual e
-   * notifica só os imóveis ainda não vistos por este radar. Sem worker em
-   * background (ver nota em `database/schema/radars.ts`) — disparada ao
-   * criar o radar e pelo botão "Verificar agora" na tela.
+   * Checagem sob demanda, com verificação de dono: compara o critério salvo
+   * contra o catálogo atual e notifica só os imóveis ainda não vistos por
+   * este radar. Disparada ao criar o radar e pelo botão "Verificar agora".
    */
   async check(userId: string, radarId: string): Promise<{ newMatches: number }> {
     const [radar] = await this.db.select().from(radars).where(and(eq(radars.id, radarId), eq(radars.userId, userId))).limit(1);
     if (!radar) throw new NotFoundException({ code: "RADAR_NOT_FOUND", message: "Radar não encontrado" });
+    return this.performCheck(radar);
+  }
+
+  /**
+   * Varre todos os radares ativos — chamada pelo job `radar-sweep` do
+   * apps/worker (a cada `RADAR_SWEEP_INTERVAL_MINUTES`), substituindo o
+   * "sem worker em background" documentado em `database/schema/radars.ts`.
+   */
+  async sweep(): Promise<{ radarsChecked: number; newMatchesTotal: number }> {
+    const activeRadars = await this.db.select().from(radars).where(eq(radars.active, true));
+    let newMatchesTotal = 0;
+    for (const radar of activeRadars) {
+      const { newMatches } = await this.performCheck(radar);
+      newMatchesTotal += newMatches;
+    }
+    return { radarsChecked: activeRadars.length, newMatchesTotal };
+  }
+
+  private async performCheck(radar: typeof radars.$inferSelect): Promise<{ newMatches: number }> {
+    const radarId = radar.id;
+    const userId = radar.userId;
 
     const seen = await this.db
       .select({ propertyId: radarSeenProperties.propertyId })

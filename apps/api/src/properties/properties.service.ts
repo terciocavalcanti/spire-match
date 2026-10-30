@@ -14,6 +14,7 @@ import { and, asc, desc, eq, gte, ilike, inArray, lte, or, sql } from "drizzle-o
 import type { Database } from "../database/client";
 import { DATABASE } from "../database/database.module";
 import { properties, propertyImages, propertyPriceHistory } from "../database/schema";
+import { QueueService } from "../queue/queue.service";
 
 import { toPropertyDetail, toPropertySummary } from "./property-mapper";
 
@@ -43,7 +44,10 @@ export interface PropertyPage {
 
 @Injectable()
 export class PropertiesService {
-  constructor(@Inject(DATABASE) private readonly db: Database) {}
+  constructor(
+    @Inject(DATABASE) private readonly db: Database,
+    private readonly queue: QueueService,
+  ) {}
 
   async search(query: PropertySearchQuery): Promise<PropertyPage> {
     const offset = decodeCursor(query.cursor);
@@ -220,6 +224,7 @@ export class PropertiesService {
     if (!row) throw new Error("Falha ao criar imóvel");
 
     await this.db.insert(propertyPriceHistory).values({ propertyId: row.id, price: row.price });
+    await this.queue.enqueueRecalcForProperty(row.id);
 
     return toPropertyDetail(row, []);
   }
@@ -269,6 +274,7 @@ export class PropertiesService {
     }
 
     const images = await this.db.select().from(propertyImages).where(eq(propertyImages.propertyId, id));
+    await this.queue.enqueueRecalcForProperty(id);
     return toPropertyDetail(row, images);
   }
 }

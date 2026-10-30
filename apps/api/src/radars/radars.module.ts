@@ -10,5 +10,6 @@ import { RadarsService } from "./radars.service";
   imports: [AuthModule, NotificationsModule],
   controllers: [RadarsController],
   providers: [RadarsService],
+  exports: [RadarsService],
 })
 export class RadarsModule {}

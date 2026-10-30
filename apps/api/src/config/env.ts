@@ -18,6 +18,12 @@ const envSchema = z.object({
     .default("http://localhost:3000,http://localhost:3001")
     .transform((v) => v.split(",").map((origin) => origin.trim())),
 
+  // Fila assíncrona (Marco C) — Redis já provisionado no docker-compose
+  // desde o Marco A. INTERNAL_API_KEY protege as rotas /internal/*, chamadas
+  // só pelo apps/worker (nunca pelo navegador).
+  REDIS_URL: z.string().default("redis://localhost:6379"),
+  INTERNAL_API_KEY: z.string().min(16, "INTERNAL_API_KEY precisa ter pelo menos 16 caracteres"),
+
   // Pendências externas reais (ver docs/deployment/DEPLOY_HOSTINGER.md) —
   // ausentes em dev, nunca simuladas como ativas em produção.
   MAPTILER_API_KEY: z.string().optional(),

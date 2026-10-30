@@ -223,8 +223,10 @@ Aguarde ~1 minuto e confira se tudo subiu saudável:
 ```bash
 docker compose --env-file .env -f infrastructure/docker/docker-compose.prod.yml ps
 ```
-Você deve ver `postgres`, `redis`, `api`, `web`, `admin` e `caddy` com status
-`running` (e `healthy` nos que têm healthcheck).
+Você deve ver `postgres`, `redis`, `api`, `worker`, `web`, `admin` e `caddy`
+com status `running` (e `healthy` nos que têm healthcheck). O `worker` não
+expõe porta nem domínio — processa a fila assíncrona de recálculo de match e
+varredura de radares (Marco C), chamando a API de volta via `INTERNAL_API_KEY`.
 
 ### 4.5. Conferir o HTTPS
 
