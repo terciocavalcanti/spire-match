@@ -16,6 +16,7 @@ import { DatabaseModule } from "./database/database.module";
 import { DevelopmentsModule } from "./developments/developments.module";
 import { FavoritesModule } from "./favorites/favorites.module";
 import { HealthModule } from "./health/health.module";
+import { IntegrationsStatusModule } from "./integrations-status/integrations-status.module";
 import { InteractionsModule } from "./interactions/interactions.module";
 import { InternalModule } from "./internal/internal.module";
 import { LeadsModule } from "./leads/leads.module";
@@ -63,6 +64,7 @@ import { VisitsModule } from "./visits/visits.module";
     AdminUsersModule,
     DevelopmentsModule,
     UnitsModule,
+    IntegrationsStatusModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

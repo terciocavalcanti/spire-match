@@ -43,6 +43,7 @@ import {
   type GenerateTourRequest,
   type ImportUnitsRequest,
   type ImportUnitsResponse,
+  type IntegrationStatusEntry,
   type Lead,
   type LeadDetail,
   type LeadListQuery,
@@ -418,5 +419,9 @@ export class SpireApiClient {
       this.request<{ saved: true }>("/settings/commission-rate", { method: "PATCH", body: JSON.stringify(payload) }),
     updateRadarSweepInterval: (payload: UpdateRadarSweepIntervalRequest) =>
       this.request<{ saved: true }>("/settings/radar-sweep-interval", { method: "PATCH", body: JSON.stringify(payload) }),
+  };
+
+  integrationsStatus = {
+    list: () => this.request<{ items: IntegrationStatusEntry[] }>("/integrations-status"),
   };
 }
