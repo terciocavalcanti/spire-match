@@ -2,6 +2,7 @@ import { Inject, Injectable, NotFoundException, UnprocessableEntityException } f
 import type { DevelopmentPartnerAccess, GrantDevelopmentPartnerAccessRequest, MyDevelopmentPartnerAccess } from "@spire/contracts";
 import { and, eq } from "drizzle-orm";
 
+import { AuditLogService } from "../audit/audit-log.service";
 import { computeDevelopmentStats } from "../campaigns/development-stats";
 import type { Database } from "../database/client";
 import { DATABASE } from "../database/database.module";
@@ -9,7 +10,10 @@ import { developmentPartnerAccess, developments, roleAssignments, roles, users }
 
 @Injectable()
 export class DevelopmentPartnerAccessService {
-  constructor(@Inject(DATABASE) private readonly db: Database) {}
+  constructor(
+    @Inject(DATABASE) private readonly db: Database,
+    private readonly auditLog: AuditLogService,
+  ) {}
 
   async list(): Promise<DevelopmentPartnerAccess[]> {
     const rows = await this.db
@@ -62,6 +66,14 @@ export class DevelopmentPartnerAccessService {
       .limit(1))[0];
     if (!access) throw new Error("Falha ao conceder acesso");
 
+    await this.auditLog.record({
+      actorUserId: grantedByUserId,
+      action: "development_partner_access.granted",
+      entityType: "development_partner_access",
+      entityId: access.id,
+      metadata: { developmentId: development.id, userId: user.id },
+    });
+
     return {
       id: access.id,
       developmentId: development.id,
@@ -73,10 +85,17 @@ export class DevelopmentPartnerAccessService {
     };
   }
 
-  async revoke(id: string): Promise<void> {
+  async revoke(id: string, actorUserId: string): Promise<void> {
     const [access] = await this.db.select().from(developmentPartnerAccess).where(eq(developmentPartnerAccess.id, id)).limit(1);
     if (!access) throw new NotFoundException({ code: "ACCESS_NOT_FOUND", message: "Acesso não encontrado" });
     await this.db.delete(developmentPartnerAccess).where(eq(developmentPartnerAccess.id, id));
+    await this.auditLog.record({
+      actorUserId,
+      action: "development_partner_access.revoked",
+      entityType: "development_partner_access",
+      entityId: id,
+      metadata: { developmentId: access.developmentId, userId: access.userId },
+    });
   }
 
   async listMine(userId: string): Promise<MyDevelopmentPartnerAccess[]> {

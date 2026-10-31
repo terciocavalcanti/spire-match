@@ -5,6 +5,7 @@ import type { AdminUser, AdminUserListQuery, CreateAdminUserRequest, CreateAdmin
 import { STAFF_ROLES } from "@spire/contracts";
 import { and, eq, ilike, inArray, or } from "drizzle-orm";
 
+import { AuditLogService } from "../audit/audit-log.service";
 import { PasswordService } from "../auth/password.service";
 import { SessionService } from "../auth/session.service";
 import type { Database } from "../database/client";
@@ -43,6 +44,7 @@ export class AdminUsersService {
     @Inject(DATABASE) private readonly db: Database,
     private readonly passwords: PasswordService,
     private readonly sessions: SessionService,
+    private readonly auditLog: AuditLogService,
   ) {}
 
   private async rolesForUser(userId: string): Promise<Role[]> {
@@ -109,7 +111,7 @@ export class AdminUsersService {
     return { ...toAdminUser(created, request.roles), temporaryPassword };
   }
 
-  async updateRoles(id: string, requestedRoles: Role[]): Promise<AdminUser> {
+  async updateRoles(id: string, requestedRoles: Role[], actorUserId: string): Promise<AdminUser> {
     const [user] = await this.db.select().from(users).where(eq(users.id, id)).limit(1);
     if (!user) throw new NotFoundException({ code: "USER_NOT_FOUND", message: "Usuário não encontrado" });
 
@@ -125,6 +127,14 @@ export class AdminUsersService {
     if (roleRows.length > 0) {
       await this.db.insert(roleAssignments).values(roleRows.map((r) => ({ userId: id, roleId: r.id })));
     }
+
+    await this.auditLog.record({
+      actorUserId,
+      action: "admin_user.roles_updated",
+      entityType: "user",
+      entityId: id,
+      metadata: { before: current, after: requestedRoles },
+    });
 
     return toAdminUser(user, requestedRoles);
   }
@@ -152,10 +162,11 @@ export class AdminUsersService {
     await this.sessions.revokeAllForUser(id);
   }
 
-  async setStatus(id: string, status: "ACTIVE" | "SUSPENDED"): Promise<AdminUser> {
+  async setStatus(id: string, status: "ACTIVE" | "SUSPENDED", actorUserId: string): Promise<AdminUser> {
     const [row] = await this.db.update(users).set({ status, updatedAt: new Date() }).where(eq(users.id, id)).returning();
     if (!row) throw new NotFoundException({ code: "USER_NOT_FOUND", message: "Usuário não encontrado" });
     if (status === "SUSPENDED") await this.sessions.revokeAllForUser(id);
+    await this.auditLog.record({ actorUserId, action: `admin_user.${status === "SUSPENDED" ? "suspended" : "reactivated"}`, entityType: "user", entityId: id });
     return toAdminUser(row, await this.rolesForUser(id));
   }
 }

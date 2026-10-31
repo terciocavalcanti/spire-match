@@ -8,6 +8,8 @@ import {
   type AiSearchRequest,
   type AiSearchResponse,
   type AssignLeadRequest,
+  type AuditLog,
+  type AuditLogListQuery,
   type AuthenticatedUser,
   type Broker,
   type BuyerPreferences,
@@ -497,6 +499,11 @@ export class SpireApiClient {
 
   integrationsStatus = {
     list: () => this.request<{ items: IntegrationStatusEntry[] }>("/integrations-status"),
+  };
+
+  auditLogs = {
+    list: (query: Partial<AuditLogListQuery> = {}) =>
+      this.request<{ items: AuditLog[]; nextCursor: string | null }>(`/audit-logs${toQueryString(query)}`),
   };
 
   ownerLeads = {

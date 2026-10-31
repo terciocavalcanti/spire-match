@@ -8,6 +8,7 @@ import {
   updateLeadStageRequestSchema,
 } from "@spire/contracts";
 
+import { CurrentUserId } from "../auth/decorators/current-user-id.decorator";
 import { SessionAuthGuard } from "../auth/guards/session-auth.guard";
 import { Roles } from "../common/decorators/roles.decorator";
 import { RolesGuard } from "../common/guards/roles.guard";
@@ -50,9 +51,10 @@ export class LeadsController {
   @Patch(":id/stage")
   async updateStage(
     @Param("id") id: string,
+    @CurrentUserId() actorUserId: string,
     @Body(new ZodValidationPipe(updateLeadStageRequestSchema)) body: ReturnType<typeof updateLeadStageRequestSchema.parse>,
   ) {
-    return this.leads.updateStage(id, body);
+    return this.leads.updateStage(id, body, actorUserId);
   }
 
   @Patch(":id/assign")

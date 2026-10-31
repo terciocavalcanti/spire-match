@@ -5,6 +5,7 @@ import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 
 import { AdminUsersModule } from "./admin-users/admin-users.module";
 import { AiSearchModule } from "./ai-search/ai-search.module";
+import { AuditLogModule } from "./audit/audit-log.module";
 import { AuthModule } from "./auth/auth.module";
 import { AutomationsModule } from "./automations/automations.module";
 import { BrokersModule } from "./brokers/brokers.module";
@@ -48,6 +49,7 @@ import { VisitsModule } from "./visits/visits.module";
     DatabaseModule,
     QueueModule,
     SettingsModule,
+    AuditLogModule,
     HealthModule,
     AuthModule,
     BuyerProfileModule,

@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from "@ne
 import { ApiTags } from "@nestjs/swagger";
 import { adminUserListQuerySchema, createAdminUserRequestSchema, updateAdminUserRolesRequestSchema } from "@spire/contracts";
 
+import { CurrentUserId } from "../auth/decorators/current-user-id.decorator";
 import { SessionAuthGuard } from "../auth/guards/session-auth.guard";
 import { Roles } from "../common/decorators/roles.decorator";
 import { RolesGuard } from "../common/guards/roles.guard";
@@ -34,9 +35,10 @@ export class AdminUsersController {
   @Patch(":id/roles")
   async updateRoles(
     @Param("id") id: string,
+    @CurrentUserId() actorUserId: string,
     @Body(new ZodValidationPipe(updateAdminUserRolesRequestSchema)) body: ReturnType<typeof updateAdminUserRolesRequestSchema.parse>,
   ) {
-    return this.adminUsers.updateRoles(id, body.roles);
+    return this.adminUsers.updateRoles(id, body.roles, actorUserId);
   }
 
   @Post(":id/revoke-sessions")
@@ -46,12 +48,12 @@ export class AdminUsersController {
   }
 
   @Post(":id/suspend")
-  async suspend(@Param("id") id: string) {
-    return this.adminUsers.setStatus(id, "SUSPENDED");
+  async suspend(@Param("id") id: string, @CurrentUserId() actorUserId: string) {
+    return this.adminUsers.setStatus(id, "SUSPENDED", actorUserId);
   }
 
   @Post(":id/reactivate")
-  async reactivate(@Param("id") id: string) {
-    return this.adminUsers.setStatus(id, "ACTIVE");
+  async reactivate(@Param("id") id: string, @CurrentUserId() actorUserId: string) {
+    return this.adminUsers.setStatus(id, "ACTIVE", actorUserId);
   }
 }

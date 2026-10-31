@@ -8,6 +8,7 @@ import {
   updateRadarSweepIntervalRequestSchema,
 } from "@spire/contracts";
 
+import { AuditLogService } from "../audit/audit-log.service";
 import { CurrentUserId } from "../auth/decorators/current-user-id.decorator";
 import { SessionAuthGuard } from "../auth/guards/session-auth.guard";
 import { Roles } from "../common/decorators/roles.decorator";
@@ -31,6 +32,7 @@ export class SettingsController {
   constructor(
     private readonly settings: SettingsService,
     private readonly matches: MatchesService,
+    private readonly auditLog: AuditLogService,
   ) {}
 
   @Get()
@@ -58,6 +60,7 @@ export class SettingsController {
     }
 
     await this.settings.set("matchWeights", body.weights, userId);
+    await this.auditLog.record({ actorUserId: userId, action: "settings.match_weights_updated", entityType: "platform_settings", metadata: { weights: body.weights } });
     const { enqueued } = await this.matches.enqueueRecalculationForAllBuyers();
     return { saved: true, recalculationEnqueuedFor: enqueued };
   }
@@ -68,6 +71,7 @@ export class SettingsController {
     @Body(new ZodValidationPipe(updateCommissionRateRequestSchema)) body: ReturnType<typeof updateCommissionRateRequestSchema.parse>,
   ) {
     await this.settings.set("commissionDefaultRate", body.rate, userId);
+    await this.auditLog.record({ actorUserId: userId, action: "settings.commission_rate_updated", entityType: "platform_settings", metadata: { rate: body.rate } });
     return { saved: true };
   }
 
@@ -77,6 +81,7 @@ export class SettingsController {
     @Body(new ZodValidationPipe(updateRadarSweepIntervalRequestSchema)) body: ReturnType<typeof updateRadarSweepIntervalRequestSchema.parse>,
   ) {
     await this.settings.set("radarSweepIntervalMinutes", body.minutes, userId);
+    await this.auditLog.record({ actorUserId: userId, action: "settings.radar_sweep_interval_updated", entityType: "platform_settings", metadata: { minutes: body.minutes } });
     return { saved: true };
   }
 
@@ -86,6 +91,7 @@ export class SettingsController {
     @Body(new ZodValidationPipe(updateDemandMatchThresholdRequestSchema)) body: ReturnType<typeof updateDemandMatchThresholdRequestSchema.parse>,
   ) {
     await this.settings.set("demandMatchThreshold", body.threshold, userId);
+    await this.auditLog.record({ actorUserId: userId, action: "settings.demand_match_threshold_updated", entityType: "platform_settings", metadata: { threshold: body.threshold } });
     return { saved: true };
   }
 }

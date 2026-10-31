@@ -10,6 +10,7 @@ import type {
 } from "@spire/contracts";
 import { and, desc, eq, ilike, or } from "drizzle-orm";
 
+import { AuditLogService } from "../audit/audit-log.service";
 import type { Database } from "../database/client";
 import { DATABASE } from "../database/database.module";
 import { brokers, ownerLeadActivities, ownerLeads, roleAssignments, roles, users } from "../database/schema";
@@ -33,6 +34,7 @@ export class OwnerLeadsService {
     @Inject(DATABASE) private readonly db: Database,
     private readonly properties: PropertiesService,
     private readonly privateMarket: PrivateMarketService,
+    private readonly auditLog: AuditLogService,
   ) {}
 
   /** Garante que o papel OWNER esteja atribuído — mesmo padrão de AuthService.register atribuindo BUYER no autocadastro. */
@@ -202,7 +204,7 @@ export class OwnerLeadsService {
    * Engine (Marco C). O admin ainda precisa revisar/editar antes de publicar
    * como AVAILABLE — DRAFT nunca aparece no catálogo público.
    */
-  async publish(id: string, request: PublishOwnerLeadRequest): Promise<OwnerLeadDetail> {
+  async publish(id: string, request: PublishOwnerLeadRequest, actorUserId: string): Promise<OwnerLeadDetail> {
     const [ownerLead] = await this.db.select().from(ownerLeads).where(eq(ownerLeads.id, id)).limit(1);
     if (!ownerLead) throw new NotFoundException({ code: "OWNER_LEAD_NOT_FOUND", message: "Captação não encontrada" });
     if (ownerLead.stage !== "APROVADO") {
@@ -243,6 +245,13 @@ export class OwnerLeadsService {
       ownerLeadId: id,
       type: "PUBLISHED",
       description: `Captação publicada no catálogo como rascunho: "${property.title}".`,
+    });
+    await this.auditLog.record({
+      actorUserId,
+      action: "owner_lead.published",
+      entityType: "owner_lead",
+      entityId: id,
+      metadata: { linkedPropertyId: property.id, price },
     });
 
     return this.getDetail(id);

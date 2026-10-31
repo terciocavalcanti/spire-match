@@ -11,6 +11,7 @@ import type {
 import { computeLeadScore } from "@spire/domain";
 import { and, desc, eq, gte, inArray, ne } from "drizzle-orm";
 
+import { AuditLogService } from "../audit/audit-log.service";
 import { CommissionsService } from "../commissions/commissions.service";
 import type { Database } from "../database/client";
 import { DATABASE } from "../database/database.module";
@@ -80,6 +81,7 @@ export class LeadsService {
     @Inject(DATABASE) private readonly db: Database,
     private readonly notifications: NotificationsService,
     private readonly commissions: CommissionsService,
+    private readonly auditLog: AuditLogService,
   ) {}
 
   /** Cria o lead na primeira ação comercial do comprador, ou retorna o existente. */
@@ -238,7 +240,7 @@ export class LeadsService {
     };
   }
 
-  async updateStage(leadId: string, request: UpdateLeadStageRequest): Promise<LeadDetail> {
+  async updateStage(leadId: string, request: UpdateLeadStageRequest, actorUserId: string): Promise<LeadDetail> {
     const [lead] = await this.db.select().from(leads).where(eq(leads.id, leadId)).limit(1);
     if (!lead) throw new NotFoundException({ code: "LEAD_NOT_FOUND", message: "Lead não encontrado" });
 
@@ -276,6 +278,16 @@ export class LeadsService {
       type: "STAGE_CHANGED",
       description: `Estágio alterado de ${lead.stage} para ${request.stage}${request.lostReason ? ` — motivo: ${request.lostReason}` : ""}`,
     });
+
+    if (request.stage === "GANHO" || request.stage === "PERDIDO") {
+      await this.auditLog.record({
+        actorUserId,
+        action: `lead.stage_${request.stage === "GANHO" ? "ganho" : "perdido"}`,
+        entityType: "lead",
+        entityId: leadId,
+        metadata: { from: lead.stage, to: request.stage, wonAmount: wonAmount ?? null, lostReason: request.lostReason ?? null },
+      });
+    }
 
     return this.getDetail(leadId);
   }

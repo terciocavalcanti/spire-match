@@ -46,8 +46,8 @@ export class DevelopmentPartnerAccessController {
   @Delete(":id")
   @UseGuards(SessionAuthGuard, RolesGuard)
   @Roles(...CRM_ROLES)
-  async revoke(@Param("id") id: string) {
-    await this.access.revoke(id);
+  async revoke(@Param("id") id: string, @CurrentUserId() actorUserId: string) {
+    await this.access.revoke(id, actorUserId);
     return { revoked: true };
   }
 }

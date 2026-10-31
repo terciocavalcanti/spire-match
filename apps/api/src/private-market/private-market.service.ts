@@ -8,6 +8,7 @@ import type {
 } from "@spire/contracts";
 import { and, desc, eq, ilike } from "drizzle-orm";
 
+import { AuditLogService } from "../audit/audit-log.service";
 import type { Database } from "../database/client";
 import { DATABASE } from "../database/database.module";
 import { ownerLeads, privateMarketConsents, privateMarketContactRequests, privateMarketOffers } from "../database/schema";
@@ -29,6 +30,7 @@ export class PrivateMarketService {
   constructor(
     @Inject(DATABASE) private readonly db: Database,
     private readonly leads: LeadsService,
+    private readonly auditLog: AuditLogService,
   ) {}
 
   /**
@@ -103,6 +105,14 @@ export class PrivateMarketService {
       .where(eq(privateMarketOffers.id, offerId));
 
     const [updated] = await this.db.select().from(privateMarketOffers).where(eq(privateMarketOffers.id, offerId)).limit(1);
+
+    await this.auditLog.record({
+      actorUserId: userId,
+      action: `private_market_offer.${request.status === "ELEGIVEL" ? "verified_eligible" : "verified_inactive"}`,
+      entityType: "private_market_offer",
+      entityId: offerId,
+    });
+
     return toPrivateMarketOfferAdmin(updated!);
   }
 

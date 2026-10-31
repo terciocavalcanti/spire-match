@@ -89,8 +89,9 @@ export class OwnerLeadsController {
   @Roles(...CRM_ROLES)
   async publish(
     @Param("id") id: string,
+    @CurrentUserId() actorUserId: string,
     @Body(new ZodValidationPipe(publishOwnerLeadRequestSchema)) body: ReturnType<typeof publishOwnerLeadRequestSchema.parse>,
   ) {
-    return this.ownerLeads.publish(id, body);
+    return this.ownerLeads.publish(id, body, actorUserId);
   }
 }
