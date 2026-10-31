@@ -1,118 +1,118 @@
-# SPIRE MATCH
+# VALORI MATCH
 
-> "O imóvel certo, no lugar certo, na hora certa."
+Plataforma de inteligência comercial imobiliária: PWA para compradores,
+painel comercial para corretores/admin, API e worker assíncrono. Monorepo
+pnpm + Turborepo, 100% em pt-BR.
 
-Plataforma de inteligência comercial imobiliária: PWA para compradores e
-proprietários, painel comercial para corretores/gestores, API própria,
-motor de compatibilidade (Match Engine) e CRM — preparada para operação real
-na Hostinger VPS KVM 2 e para um futuro app React Native.
+Para o histórico de especificação original (prompt mestre, referências
+visuais, matriz de 24 telas) que deu origem a este projeto, ver
+`README_COMECE_AQUI.md` e `PROMPT_MESTRE_ANTIGRAVITY.md`. Este README
+documenta o produto **já implementado**, do jeito que ele roda hoje.
 
-**Status atual:** Marco A (Fundação e fidelidade visual) em andamento. Ver o
-plano completo e os marcos A–F em `docs/product/` e no histórico de
-aprovação da conversa que originou este repositório.
+## Arquitetura (visão rápida)
 
-## Estrutura do monorepo
+- `apps/web` — PWA do comprador/proprietário (Next.js).
+- `apps/admin` — painel comercial (Next.js).
+- `apps/api` — API REST (NestJS + Drizzle/Postgres + BullMQ/Redis).
+- `apps/worker` — jobs assíncronos (recálculo de Match, varredura de radares, automações) — mesma base de código da API, processo separado.
+- `packages/contracts` — schemas Zod compartilhados (request/response).
+- `packages/domain` — regras de negócio puras (Match Engine, score de lead, parsing de busca por IA, roteirização de tour).
+- `packages/design-tokens` — paleta de cores e tokens compartilhados entre web/admin (Tailwind).
+- `packages/ui-web` — componentes React compartilhados entre web/admin.
 
-```text
-apps/
-  web/      PWA comprador/proprietário — Next.js (porta 3000)
-  admin/    Painel comercial SPIRE — Next.js (porta 3001)
-  api/      API REST /api/v1 — NestJS (porta 4000)
-  worker/   Jobs BullMQ (Marco B+)
-packages/
-  contracts/      Schemas Zod + DTOs — fonte única de verdade dos tipos
-  api-client/     SDK TypeScript isomórfico (web, admin, futuro RN)
-  domain/         Match Engine e regras de negócio puras/testáveis
-  design-tokens/  Cores, tipografia, espaçamento extraídos das 24 telas
-  ui-web/         Componentes React compartilhados (web + admin)
-  configs/        eslint, tsconfig, prettier compartilhados
-infrastructure/
-  docker/   docker-compose de desenvolvimento e produção
-  caddy/    Reverse proxy / HTTPS automático
-docs/       Produto, arquitetura, API, banco, segurança, QA, deploy
-design/referencias/   Imagens originais de referência — não alterar
-```
+Detalhe completo em `docs/architecture/ARCHITECTURE.md`.
 
-## Pré-requisitos locais
+## Pré-requisitos
 
-- Node.js 22 LTS ou superior (ver `.node-version`)
-- pnpm 9 (via Corepack: `corepack enable && corepack prepare pnpm@9.15.4 --activate`)
-- Docker Desktop com backend WSL2 (Windows) — para Postgres+PostGIS, Redis, Mailhog
+- Node.js ≥ 22
+- pnpm 9 (`corepack enable` já resolve a versão fixada em `package.json`)
+- Docker (para Postgres/Redis/Mailhog locais)
 
-## Subindo o ambiente local
+## Rodando do zero (máquina nova)
 
 ```bash
-# 1. Variáveis de ambiente (copiar cada .env.example para .env)
+pnpm install
+
+# sobe Postgres (porta 5433), Redis (6379) e Mailhog (SMTP de teste) locais
+docker compose -f infrastructure/docker/docker-compose.dev.yml up -d
+
+# copie os .env.example — os defaults já funcionam sem editar nada
 cp .env.example .env
 cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env
 cp apps/admin/.env.example apps/admin/.env
+cp apps/worker/.env.example apps/worker/.env
 
-# 2. Infraestrutura (Postgres+PostGIS, Redis, Mailhog)
-# --env-file é necessário: o Compose não lê .env da raiz automaticamente
-# quando o arquivo docker-compose está em outra pasta.
-docker compose --env-file .env -f infrastructure/docker/docker-compose.dev.yml up -d
+# INTERNAL_API_KEY vem em branco no .env.example (protege as rotas /internal/*
+# entre api e worker) e a validação de ambiente exige pelo menos 16
+# caracteres — a API não sobe sem isso. Gere um valor e cole em
+# apps/api/.env E apps/worker/.env (precisa ser o mesmo valor nos dois):
+node -e "console.log(require('crypto').randomBytes(24).toString('hex'))"
 
-# MinIO (storage S3-compatible) está em perfil opcional — só necessário a
-# partir do Marco B (upload de mídia). O Docker Hub/quay.io bloqueiam pull
-# anônimo da tag "latest" do MinIO; resolver login/imagem antes de ativar:
-#   docker compose --env-file .env -f infrastructure/docker/docker-compose.dev.yml --profile storage up -d
-
-# 3. Dependências do monorepo
-pnpm install
-
-# 4. Migrations + extensão PostGIS
 pnpm db:migrate
+pnpm db:seed      # cria usuários demo e dados ilustrativos (nunca dados reais)
 
-# 5. (Opcional) contas de demonstração — uso exclusivo de homologação
-pnpm db:seed
-
-# 6. Subir tudo em modo desenvolvimento
-pnpm dev
+pnpm dev          # web:3000  admin:3001  api:4000 (+worker)
 ```
 
-- Web (PWA comprador): http://localhost:3000
-- Admin (painel comercial): http://localhost:3001
-- API: http://localhost:4000/api/v1 — docs Swagger em http://localhost:4000/api/docs
-- MinIO console: http://localhost:9001 (perfil `storage`, opcional)
-- Mailhog (e-mails de teste): http://localhost:8026
+Credenciais demo criadas pelo seed (ver `apps/api/src/database/seed.ts`):
 
-Contas de demonstração (após `pnpm db:seed`, senha `SpireDemo#2026`):
+| Papel | E-mail | Senha |
+|---|---|---|
+| Comprador | `demo.comprador@spirematch.com.br` | `SpireDemo#2026` |
+| Admin | `demo.admin@spirematch.com.br` | `SpireDemo#2026` |
 
-| Papel | E-mail |
-|---|---|
-| Comprador | `demo.comprador@spirematch.com.br` |
-| Admin | `demo.admin@spirematch.com.br` |
-
-**Nunca rodar `db:seed` em produção** — o script se recusa a executar quando `NODE_ENV=production`.
-
-## Integrações externas pendentes
-
-Nenhuma credencial de terceiros é necessária para rodar localmente. Em
-produção, as seguintes integrações precisam ser configuradas antes de serem
-consideradas ativas (ver `apps/api/.env.example`):
-
-- Provedor de mapas licenciado (MapTiler ou equivalente)
-- Storage S3-compatible de produção (Cloudflare R2/Backblaze B2)
-- SMTP/provedor de e-mail transacional
-- WhatsApp Business Cloud API (Meta)
-- Provedor de LLM para o AI Concierge (fallback determinístico sempre disponível sem ele)
-
-## Comandos úteis
+## Comandos do dia a dia
 
 ```bash
-pnpm lint        # eslint em todo o monorepo
-pnpm typecheck   # tsc --noEmit em todo o monorepo
-pnpm test        # testes unitários (domain) e e2e da API
-pnpm build       # build de produção de todos os apps
+pnpm dev                          # todos os apps em modo watch
+pnpm turbo run typecheck lint test build   # gate completo (obrigatório antes de commit)
+pnpm test:e2e                     # suíte Playwright — requer `pnpm dev` rodando (ver docs/qa/TEST_PLAN.md)
+node scripts/load-test.mjs        # teste de carga local honesto (ver docs/qa/TEST_RESULTS.md)
+node scripts/export-openapi.mjs   # regenera apps/api/openapi.json a partir da API rodando
+pnpm db:generate                  # gera migração Drizzle a partir do schema
 ```
 
-## Documentação
+## O que precisa de credencial real antes de produção
 
-- Arquitetura e ADRs: `docs/architecture/`
-- Produto e matriz das 24 telas: `docs/product/`
-- API/OpenAPI: `docs/api/`
-- Banco de dados: `docs/database/`
-- Segurança/LGPD: `docs/security/`
-- QA e evidências visuais: `docs/qa/`
-- Deploy Hostinger: `docs/deployment/`
+Em desenvolvimento, estas integrações ficam deliberadamente desativadas
+(variável em branco no `.env`) — nenhuma é simulada como ativa:
+
+| Variável | Para quê | Fallback em dev |
+|---|---|---|
+| `MAPTILER_API_KEY` | mapas/geocodificação | desativado |
+| `S3_*` | upload de mídia (fotos de imóvel) | MinIO local opcional (`docker compose --profile storage up`) |
+| `SMTP_URL` | e-mail transacional | Mailhog local (porta 8026, UI em `http://localhost:8026`) |
+| `WHATSAPP_CLOUD_API_TOKEN` / `WHATSAPP_PHONE_NUMBER_ID` | notificação via WhatsApp | não implementado — ver `docs/operations/WHATSAPP_TEMPLATES.md` |
+| `LLM_PROVIDER_API_KEY` | busca em linguagem natural | desativado |
+| `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` | push web (W3C Push API) | par de dev já incluso, gere o seu em produção |
+
+Detalhe completo por variável em `docs/operations/PROVIDER_CONFIGURATION.md`.
+
+## Deploy
+
+Duas rotas documentadas e reais, não aspiracionais:
+
+- `docs/deployment/DEPLOY_COOLIFY.md` — via Coolify na Hostinger VPS (rota recomendada).
+- `docs/deployment/DEPLOY_HOSTINGER.md` — docker compose manual na mesma VPS.
+
+Antes de ir ao ar: `docs/deployment/PRODUCTION_LAUNCH_CHECKLIST.md`.
+Operação contínua: `docs/deployment/BACKUP_RESTORE.md` e
+`docs/deployment/ROLLBACK.md`.
+
+## Documentação completa
+
+| Área | Onde |
+|---|---|
+| Produto | `docs/product/` (PRD, jornadas, regras de negócio, matriz de telas) |
+| Arquitetura | `docs/architecture/` (visão geral + ADRs) |
+| UI | `docs/ui/` (design system, fidelidade visual) |
+| Banco de dados | `docs/database/` (ERD, migrações, índices) |
+| API | `docs/api/OPENAPI.md` + `apps/api/openapi.json` (Swagger UI em `/api/docs` com a API rodando) |
+| Segurança/LGPD | `docs/security/` (mapa de dados, RBAC, modelo de ameaças) |
+| QA | `docs/qa/` (plano de testes, últimos resultados reais, lacunas) |
+| Operações | `docs/operations/` (notificações, WhatsApp, provedores) |
+| Deploy | `docs/deployment/` |
+
+**Leitura obrigatória antes de prometer qualquer prazo de lançamento:**
+`docs/qa/GAPS_REPORT.md` — lista honesta do que ainda não está pronto.

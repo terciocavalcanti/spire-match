@@ -1,0 +1,2237 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/v1/settings": {
+      "get": {
+        "operationId": "SettingsController_get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "settings"
+        ]
+      }
+    },
+    "/api/v1/settings/match-weights": {
+      "patch": {
+        "operationId": "SettingsController_updateMatchWeights",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "settings"
+        ]
+      }
+    },
+    "/api/v1/settings/commission-rate": {
+      "patch": {
+        "operationId": "SettingsController_updateCommissionRate",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "settings"
+        ]
+      }
+    },
+    "/api/v1/settings/radar-sweep-interval": {
+      "patch": {
+        "operationId": "SettingsController_updateRadarSweepInterval",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "settings"
+        ]
+      }
+    },
+    "/api/v1/settings/demand-match-threshold": {
+      "patch": {
+        "operationId": "SettingsController_updateDemandMatchThreshold",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "settings"
+        ]
+      }
+    },
+    "/api/v1/settings/data-retention-days": {
+      "patch": {
+        "operationId": "SettingsController_updateDataRetentionDays",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "settings"
+        ]
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "operationId": "AuthController_register",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/forgot-password": {
+      "post": {
+        "operationId": "AuthController_forgotPassword",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/reset-password": {
+      "post": {
+        "operationId": "AuthController_resetPassword",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/verify-email": {
+      "post": {
+        "operationId": "AuthController_verifyEmail",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/me": {
+      "get": {
+        "operationId": "AuthController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/password": {
+      "post": {
+        "operationId": "AuthController_changePassword",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/matches": {
+      "get": {
+        "operationId": "MatchesController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "matches"
+        ]
+      }
+    },
+    "/api/v1/matches/recalculate": {
+      "post": {
+        "operationId": "MatchesController_recalculate",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "matches"
+        ]
+      }
+    },
+    "/api/v1/matches/{propertyId}": {
+      "get": {
+        "operationId": "MatchesController_getForProperty",
+        "parameters": [
+          {
+            "name": "propertyId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "matches"
+        ]
+      }
+    },
+    "/api/v1/audit-logs": {
+      "get": {
+        "operationId": "AuditLogController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "audit-logs"
+        ]
+      }
+    },
+    "/api/v1/health/live": {
+      "get": {
+        "operationId": "HealthController_live",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/api/v1/health/ready": {
+      "get": {
+        "operationId": "HealthController_ready",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/api/v1/me/preferences": {
+      "get": {
+        "operationId": "BuyerProfileController_get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "buyer-profile"
+        ]
+      },
+      "put": {
+        "operationId": "BuyerProfileController_update",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "buyer-profile"
+        ]
+      }
+    },
+    "/api/v1/properties/nearby": {
+      "get": {
+        "operationId": "PropertiesController_nearby",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "properties"
+        ]
+      }
+    },
+    "/api/v1/properties/admin": {
+      "get": {
+        "operationId": "PropertiesController_adminList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "properties"
+        ]
+      },
+      "post": {
+        "operationId": "PropertiesController_adminCreate",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "properties"
+        ]
+      }
+    },
+    "/api/v1/properties/admin/{id}": {
+      "patch": {
+        "operationId": "PropertiesController_adminUpdate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "properties"
+        ]
+      }
+    },
+    "/api/v1/properties": {
+      "get": {
+        "operationId": "PropertiesController_search",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "properties"
+        ]
+      }
+    },
+    "/api/v1/properties/by-id/{id}": {
+      "get": {
+        "operationId": "PropertiesController_findById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "properties"
+        ]
+      }
+    },
+    "/api/v1/properties/{slug}": {
+      "get": {
+        "operationId": "PropertiesController_findBySlug",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "properties"
+        ]
+      }
+    },
+    "/api/v1/favorites": {
+      "get": {
+        "operationId": "FavoritesController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "favorites"
+        ]
+      },
+      "post": {
+        "operationId": "FavoritesController_add",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "favorites"
+        ]
+      }
+    },
+    "/api/v1/favorites/{propertyId}": {
+      "delete": {
+        "operationId": "FavoritesController_remove",
+        "parameters": [
+          {
+            "name": "propertyId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "favorites"
+        ]
+      }
+    },
+    "/api/v1/interactions": {
+      "post": {
+        "operationId": "InteractionsController_create",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "interactions"
+        ]
+      }
+    },
+    "/api/v1/ai/search": {
+      "post": {
+        "operationId": "AiSearchController_search",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ai"
+        ]
+      }
+    },
+    "/api/v1/brokers": {
+      "get": {
+        "operationId": "BrokersController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "brokers"
+        ]
+      },
+      "post": {
+        "operationId": "BrokersController_create",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "brokers"
+        ]
+      }
+    },
+    "/api/v1/brokers/by-property/{propertyId}": {
+      "get": {
+        "operationId": "BrokersController_byProperty",
+        "parameters": [
+          {
+            "name": "propertyId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "brokers"
+        ]
+      }
+    },
+    "/api/v1/brokers/{id}": {
+      "patch": {
+        "operationId": "BrokersController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "brokers"
+        ]
+      },
+      "get": {
+        "operationId": "BrokersController_byId",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "brokers"
+        ]
+      }
+    },
+    "/api/v1/notifications/vapid-public-key": {
+      "get": {
+        "operationId": "NotificationsController_vapidPublicKey",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/api/v1/notifications": {
+      "get": {
+        "operationId": "NotificationsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/api/v1/notifications/unread-count": {
+      "get": {
+        "operationId": "NotificationsController_unreadCount",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/api/v1/notifications/{id}/read": {
+      "post": {
+        "operationId": "NotificationsController_markRead",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/api/v1/notifications/read-all": {
+      "post": {
+        "operationId": "NotificationsController_markAllRead",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/api/v1/notifications/push/subscribe": {
+      "post": {
+        "operationId": "NotificationsController_subscribe",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "notifications"
+        ]
+      },
+      "delete": {
+        "operationId": "NotificationsController_unsubscribe",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/api/v1/visits/availability": {
+      "get": {
+        "operationId": "VisitsController_availability",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "visits"
+        ]
+      }
+    },
+    "/api/v1/visits/admin": {
+      "get": {
+        "operationId": "VisitsController_adminAgenda",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "visits"
+        ]
+      }
+    },
+    "/api/v1/visits/mine": {
+      "get": {
+        "operationId": "VisitsController_mine",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "visits"
+        ]
+      }
+    },
+    "/api/v1/visits": {
+      "post": {
+        "operationId": "VisitsController_schedule",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "visits"
+        ]
+      }
+    },
+    "/api/v1/visits/{id}": {
+      "delete": {
+        "operationId": "VisitsController_cancel",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "visits"
+        ]
+      }
+    },
+    "/api/v1/leads/overview": {
+      "get": {
+        "operationId": "LeadsController_overview",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "leads"
+        ]
+      }
+    },
+    "/api/v1/leads/funnel-report": {
+      "get": {
+        "operationId": "LeadsController_funnelReport",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "leads"
+        ]
+      }
+    },
+    "/api/v1/leads": {
+      "get": {
+        "operationId": "LeadsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "leads"
+        ]
+      }
+    },
+    "/api/v1/leads/{id}": {
+      "get": {
+        "operationId": "LeadsController_detail",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "leads"
+        ]
+      }
+    },
+    "/api/v1/leads/{id}/stage": {
+      "patch": {
+        "operationId": "LeadsController_updateStage",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "leads"
+        ]
+      }
+    },
+    "/api/v1/leads/{id}/assign": {
+      "patch": {
+        "operationId": "LeadsController_assign",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "leads"
+        ]
+      }
+    },
+    "/api/v1/leads/{id}/notes": {
+      "post": {
+        "operationId": "LeadsController_addNote",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "leads"
+        ]
+      }
+    },
+    "/api/v1/commissions": {
+      "get": {
+        "operationId": "CommissionsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "commissions"
+        ]
+      }
+    },
+    "/api/v1/commissions/summary": {
+      "get": {
+        "operationId": "CommissionsController_summary",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "commissions"
+        ]
+      }
+    },
+    "/api/v1/commissions/{id}/mark-received": {
+      "post": {
+        "operationId": "CommissionsController_markReceived",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "commissions"
+        ]
+      }
+    },
+    "/api/v1/proposals/mine": {
+      "get": {
+        "operationId": "ProposalsController_mine",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "proposals"
+        ]
+      }
+    },
+    "/api/v1/proposals": {
+      "post": {
+        "operationId": "ProposalsController_create",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "proposals"
+        ]
+      }
+    },
+    "/api/v1/contacts/mine": {
+      "get": {
+        "operationId": "ContactsController_mine",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "contacts"
+        ]
+      }
+    },
+    "/api/v1/contacts": {
+      "post": {
+        "operationId": "ContactsController_create",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "contacts"
+        ]
+      }
+    },
+    "/api/v1/radars": {
+      "get": {
+        "operationId": "RadarsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "radars"
+        ]
+      },
+      "post": {
+        "operationId": "RadarsController_create",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "radars"
+        ]
+      }
+    },
+    "/api/v1/radars/{id}/check": {
+      "post": {
+        "operationId": "RadarsController_check",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "radars"
+        ]
+      }
+    },
+    "/api/v1/radars/{id}": {
+      "delete": {
+        "operationId": "RadarsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "radars"
+        ]
+      }
+    },
+    "/api/v1/tours/generate": {
+      "post": {
+        "operationId": "ToursController_generate",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "tours"
+        ]
+      }
+    },
+    "/api/v1/reports/vgv": {
+      "get": {
+        "operationId": "ReportsController_vgv",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/attribution": {
+      "get": {
+        "operationId": "ReportsController_attribution",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/attribution/export.csv": {
+      "get": {
+        "operationId": "ReportsController_exportAttributionCsv",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/export.pdf": {
+      "get": {
+        "operationId": "ReportsController_exportPdf",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/automations": {
+      "get": {
+        "operationId": "AutomationsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "automations"
+        ]
+      }
+    },
+    "/api/v1/automations/{type}": {
+      "patch": {
+        "operationId": "AutomationsController_update",
+        "parameters": [
+          {
+            "name": "type",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "automations"
+        ]
+      }
+    },
+    "/api/v1/automations/{type}/run": {
+      "post": {
+        "operationId": "AutomationsController_run",
+        "parameters": [
+          {
+            "name": "type",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "automations"
+        ]
+      }
+    },
+    "/api/v1/admin-users": {
+      "get": {
+        "operationId": "AdminUsersController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "admin-users"
+        ]
+      },
+      "post": {
+        "operationId": "AdminUsersController_create",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "admin-users"
+        ]
+      }
+    },
+    "/api/v1/admin-users/{id}/roles": {
+      "patch": {
+        "operationId": "AdminUsersController_updateRoles",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "admin-users"
+        ]
+      }
+    },
+    "/api/v1/admin-users/{id}/revoke-sessions": {
+      "post": {
+        "operationId": "AdminUsersController_revokeSessions",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "admin-users"
+        ]
+      }
+    },
+    "/api/v1/admin-users/{id}/suspend": {
+      "post": {
+        "operationId": "AdminUsersController_suspend",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "admin-users"
+        ]
+      }
+    },
+    "/api/v1/admin-users/{id}/reactivate": {
+      "post": {
+        "operationId": "AdminUsersController_reactivate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "admin-users"
+        ]
+      }
+    },
+    "/api/v1/developments": {
+      "get": {
+        "operationId": "DevelopmentsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "developments"
+        ]
+      },
+      "post": {
+        "operationId": "DevelopmentsController_create",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "developments"
+        ]
+      }
+    },
+    "/api/v1/developments/{id}": {
+      "get": {
+        "operationId": "DevelopmentsController_detail",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "developments"
+        ]
+      },
+      "patch": {
+        "operationId": "DevelopmentsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "developments"
+        ]
+      }
+    },
+    "/api/v1/developments/{id}/blocks": {
+      "post": {
+        "operationId": "DevelopmentsController_addBlock",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "developments"
+        ]
+      }
+    },
+    "/api/v1/developments/{id}/blocks/{blockId}": {
+      "delete": {
+        "operationId": "DevelopmentsController_removeBlock",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "blockId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "developments"
+        ]
+      }
+    },
+    "/api/v1/units": {
+      "get": {
+        "operationId": "UnitsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "units"
+        ]
+      },
+      "post": {
+        "operationId": "UnitsController_create",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "units"
+        ]
+      }
+    },
+    "/api/v1/units/{id}": {
+      "patch": {
+        "operationId": "UnitsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "units"
+        ]
+      }
+    },
+    "/api/v1/units/import": {
+      "post": {
+        "operationId": "UnitsController_importRows",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "units"
+        ]
+      }
+    },
+    "/api/v1/integrations-status": {
+      "get": {
+        "operationId": "IntegrationsStatusController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "integrations-status"
+        ]
+      }
+    },
+    "/api/v1/owner-leads": {
+      "post": {
+        "operationId": "OwnerLeadsController_create",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "owner-leads"
+        ]
+      },
+      "get": {
+        "operationId": "OwnerLeadsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "owner-leads"
+        ]
+      }
+    },
+    "/api/v1/owner-leads/mine": {
+      "get": {
+        "operationId": "OwnerLeadsController_listMine",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "owner-leads"
+        ]
+      }
+    },
+    "/api/v1/owner-leads/{id}": {
+      "get": {
+        "operationId": "OwnerLeadsController_detail",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "owner-leads"
+        ]
+      }
+    },
+    "/api/v1/owner-leads/{id}/stage": {
+      "patch": {
+        "operationId": "OwnerLeadsController_updateStage",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "owner-leads"
+        ]
+      }
+    },
+    "/api/v1/owner-leads/{id}/assign": {
+      "patch": {
+        "operationId": "OwnerLeadsController_assign",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "owner-leads"
+        ]
+      }
+    },
+    "/api/v1/owner-leads/{id}/notes": {
+      "post": {
+        "operationId": "OwnerLeadsController_addNote",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "owner-leads"
+        ]
+      }
+    },
+    "/api/v1/owner-leads/{id}/publish": {
+      "post": {
+        "operationId": "OwnerLeadsController_publish",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "owner-leads"
+        ]
+      }
+    },
+    "/api/v1/private-market": {
+      "get": {
+        "operationId": "PrivateMarketController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "private-market"
+        ]
+      }
+    },
+    "/api/v1/private-market/by-owner-lead/{ownerLeadId}": {
+      "get": {
+        "operationId": "PrivateMarketController_getByOwnerLeadId",
+        "parameters": [
+          {
+            "name": "ownerLeadId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "private-market"
+        ]
+      }
+    },
+    "/api/v1/private-market/{id}/verify": {
+      "patch": {
+        "operationId": "PrivateMarketController_verify",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "private-market"
+        ]
+      }
+    },
+    "/api/v1/private-market/{id}/request-contact": {
+      "post": {
+        "operationId": "PrivateMarketController_requestContact",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "private-market"
+        ]
+      }
+    },
+    "/api/v1/demand-match": {
+      "get": {
+        "operationId": "DemandMatchController_get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "demand-match"
+        ]
+      }
+    },
+    "/api/v1/campaigns": {
+      "get": {
+        "operationId": "CampaignsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "campaigns"
+        ]
+      },
+      "post": {
+        "operationId": "CampaignsController_create",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
+    "/api/v1/campaigns/{id}": {
+      "get": {
+        "operationId": "CampaignsController_detail",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "campaigns"
+        ]
+      },
+      "patch": {
+        "operationId": "CampaignsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "campaigns"
+        ]
+      },
+      "delete": {
+        "operationId": "CampaignsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
+    "/api/v1/campaigns/{id}/stats": {
+      "get": {
+        "operationId": "CampaignsController_stats",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
+    "/api/v1/development-partner-access/mine": {
+      "get": {
+        "operationId": "DevelopmentPartnerAccessController_mine",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "development-partner-access"
+        ]
+      }
+    },
+    "/api/v1/development-partner-access": {
+      "get": {
+        "operationId": "DevelopmentPartnerAccessController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "development-partner-access"
+        ]
+      },
+      "post": {
+        "operationId": "DevelopmentPartnerAccessController_grant",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "development-partner-access"
+        ]
+      }
+    },
+    "/api/v1/development-partner-access/{id}": {
+      "delete": {
+        "operationId": "DevelopmentPartnerAccessController_revoke",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "development-partner-access"
+        ]
+      }
+    },
+    "/api/v1/market-indicators": {
+      "get": {
+        "operationId": "MarketIndicatorsController_listActive",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "market-indicators"
+        ]
+      },
+      "post": {
+        "operationId": "MarketIndicatorsController_create",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "market-indicators"
+        ]
+      }
+    },
+    "/api/v1/market-indicators/admin": {
+      "get": {
+        "operationId": "MarketIndicatorsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "market-indicators"
+        ]
+      }
+    },
+    "/api/v1/market-indicators/{id}": {
+      "patch": {
+        "operationId": "MarketIndicatorsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "market-indicators"
+        ]
+      },
+      "delete": {
+        "operationId": "MarketIndicatorsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "market-indicators"
+        ]
+      }
+    },
+    "/api/v1/partners": {
+      "get": {
+        "operationId": "PartnersController_listActive",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "partners"
+        ]
+      },
+      "post": {
+        "operationId": "PartnersController_create",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "partners"
+        ]
+      }
+    },
+    "/api/v1/partners/admin": {
+      "get": {
+        "operationId": "PartnersController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "partners"
+        ]
+      }
+    },
+    "/api/v1/partners/{id}": {
+      "patch": {
+        "operationId": "PartnersController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "partners"
+        ]
+      },
+      "delete": {
+        "operationId": "PartnersController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "partners"
+        ]
+      }
+    },
+    "/api/v1/me/data-requests": {
+      "post": {
+        "operationId": "MeDataRequestsController_create",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "data-subject-requests"
+        ]
+      },
+      "get": {
+        "operationId": "MeDataRequestsController_listMine",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "data-subject-requests"
+        ]
+      }
+    },
+    "/api/v1/data-subject-requests": {
+      "get": {
+        "operationId": "DataSubjectRequestsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "data-subject-requests"
+        ]
+      }
+    },
+    "/api/v1/data-subject-requests/{id}": {
+      "patch": {
+        "operationId": "DataSubjectRequestsController_resolve",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "data-subject-requests"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "VALORI MATCH API",
+    "description": "API REST da plataforma VALORI MATCH — /api/v1",
+    "version": "1.0.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "cookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "spire_session"
+      }
+    },
+    "schemas": {}
+  }
+}

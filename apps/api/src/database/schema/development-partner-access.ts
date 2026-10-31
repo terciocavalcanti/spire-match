@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { index, pgTable, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 
 import { developments } from "./developments";
 import { users } from "./users";
@@ -23,5 +23,8 @@ export const developmentPartnerAccess = pgTable(
     grantedAt: timestamp("granted_at", { withTimezone: true }).notNull().defaultNow(),
     grantedByUserId: uuid("granted_by_user_id").references(() => users.id, { onDelete: "set null" }),
   },
-  (table) => [uniqueIndex("development_partner_access_dev_user_uq").on(table.developmentId, table.userId)],
+  (table) => [
+    uniqueIndex("development_partner_access_dev_user_uq").on(table.developmentId, table.userId),
+    index("development_partner_access_user_id_idx").on(table.userId),
+  ],
 );

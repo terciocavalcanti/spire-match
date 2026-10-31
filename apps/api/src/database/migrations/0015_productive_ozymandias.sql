@@ -1,0 +1,2 @@
+CREATE INDEX "development_partner_access_user_id_idx" ON "development_partner_access" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "audit_logs_actor_user_id_idx" ON "audit_logs" USING btree ("actor_user_id");
