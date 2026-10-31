@@ -14,6 +14,7 @@ import { CampaignsModule } from "./campaigns/campaigns.module";
 import { CommissionsModule } from "./commissions/commissions.module";
 import { validateEnv } from "./config/env";
 import { ContactsModule } from "./contacts/contacts.module";
+import { DataSubjectRequestsModule } from "./data-subject-requests/data-subject-requests.module";
 import { DatabaseModule } from "./database/database.module";
 import { DemandMatchModule } from "./demand-match/demand-match.module";
 import { DevelopmentPartnerAccessModule } from "./development-partner-access/development-partner-access.module";
@@ -81,6 +82,7 @@ import { VisitsModule } from "./visits/visits.module";
     DevelopmentPartnerAccessModule,
     MarketIndicatorsModule,
     PartnersModule,
+    DataSubjectRequestsModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

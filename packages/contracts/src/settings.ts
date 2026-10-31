@@ -21,6 +21,7 @@ export const platformSettingsSchema = z.object({
   commissionDefaultRate: z.number().positive().max(0.5),
   radarSweepIntervalMinutes: z.number().int().positive(),
   demandMatchThreshold: z.number().int().positive(),
+  dataRetentionDays: z.number().int().positive(),
 });
 export type PlatformSettings = z.infer<typeof platformSettingsSchema>;
 
@@ -35,3 +36,6 @@ export type UpdateRadarSweepIntervalRequest = z.infer<typeof updateRadarSweepInt
 
 export const updateDemandMatchThresholdRequestSchema = z.object({ threshold: z.number().int().min(2).max(100) });
 export type UpdateDemandMatchThresholdRequest = z.infer<typeof updateDemandMatchThresholdRequestSchema>;
+
+export const updateDataRetentionDaysRequestSchema = z.object({ days: z.number().int().min(30).max(3650) });
+export type UpdateDataRetentionDaysRequest = z.infer<typeof updateDataRetentionDaysRequestSchema>;

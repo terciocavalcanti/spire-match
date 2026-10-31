@@ -1,17 +1,102 @@
 "use client";
 
-import { Card, EmptyState } from "@spire/ui-web";
+import { Button, Card, EmptyState } from "@spire/ui-web";
 import { useQueryClient } from "@tanstack/react-query";
-import { ChevronRight, EyeOff, Handshake, Key, ShieldCheck, TrendingUp } from "lucide-react";
+import { AlertTriangle, ChevronRight, Download, EyeOff, Handshake, Key, ShieldCheck, Trash2, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 import { AppShell } from "@/components/layout/AppShell";
 import { PreferencesForm } from "@/components/profile/PreferencesForm";
 import { InstallPwaCard } from "@/components/pwa/InstallPwaCard";
 import { PushNotificationsCard } from "@/components/pwa/PushNotificationsCard";
 import { CURRENT_USER_QUERY_KEY, useCurrentUser } from "@/hooks/use-current-user";
+import { useCreateDataRequest, useMyDataRequests } from "@/hooks/use-data-subject-requests";
 import { apiClient } from "@/lib/api-client";
+
+function downloadJson(data: unknown, filename: string) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function MyDataCard() {
+  const { data: myRequests } = useMyDataRequests();
+  const createRequest = useCreateDataRequest();
+  const [confirmingDeletion, setConfirmingDeletion] = useState(false);
+  const [exportMessage, setExportMessage] = useState<string | null>(null);
+
+  const hasPendingDeletion = myRequests?.items.some((r) => r.type === "EXCLUSAO" && r.status === "PENDENTE") ?? false;
+
+  return (
+    <Card className="p-4">
+      <h2 className="text-bodyMd font-medium text-ink-primary">Meus dados</h2>
+      <p className="mt-1 text-bodySm text-ink-secondary">Baixe uma cópia dos seus dados ou solicite a exclusão da sua conta.</p>
+
+      <Button
+        variant="outline"
+        size="sm"
+        className="mt-3 w-full"
+        disabled={createRequest.isPending}
+        onClick={() => {
+          setExportMessage(null);
+          createRequest.mutate(
+            { type: "EXPORTACAO" },
+            {
+              onSuccess: (res) => {
+                downloadJson(res.exportData, `meus-dados-valorimatch-${new Date().toISOString().slice(0, 10)}.json`);
+                setExportMessage("Download iniciado.");
+              },
+              onError: () => setExportMessage("Não foi possível gerar a exportação — tente novamente."),
+            },
+          )
+        }}
+      >
+        <Download className="h-4 w-4" aria-hidden />
+        Baixar meus dados
+      </Button>
+      {exportMessage && <p className="mt-2 text-caption text-ink-tertiary">{exportMessage}</p>}
+
+      {hasPendingDeletion ? (
+        <p className="mt-3 text-bodySm text-status-warm">Sua solicitação de exclusão está pendente — o time comercial vai analisar.</p>
+      ) : confirmingDeletion ? (
+        <div className="mt-3 rounded-xl border border-status-danger/30 bg-status-dangerBg/40 p-3">
+          <p className="flex items-start gap-2 text-bodySm text-status-danger">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+            Isso é irreversível: sua conta será anonimizada e sua sessão encerrada. A solicitação passa antes pelo time
+            comercial.
+          </p>
+          <div className="mt-2 flex gap-2">
+            <Button
+              size="sm"
+              disabled={createRequest.isPending}
+              onClick={() => createRequest.mutate({ type: "EXCLUSAO" }, { onSuccess: () => setConfirmingDeletion(false) })}
+            >
+              Confirmar solicitação
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setConfirmingDeletion(false)}>
+              Cancelar
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setConfirmingDeletion(true)}
+          className="mt-3 flex items-center gap-2 text-bodySm font-medium text-status-danger"
+        >
+          <Trash2 className="h-4 w-4" aria-hidden />
+          Solicitar exclusão da minha conta
+        </button>
+      )}
+    </Card>
+  );
+}
 
 export default function PerfilPage() {
   const router = useRouter();
@@ -146,6 +231,10 @@ export default function PerfilPage() {
           <div className="mt-4">
             <PreferencesForm />
           </div>
+        </div>
+
+        <div className="mt-6">
+          <MyDataCard />
         </div>
 
         <button

@@ -2,6 +2,7 @@
 
 import type {
   UpdateCommissionRateRequest,
+  UpdateDataRetentionDaysRequest,
   UpdateDemandMatchThresholdRequest,
   UpdateMatchWeightsRequest,
   UpdateRadarSweepIntervalRequest,
@@ -44,6 +45,14 @@ export function useUpdateDemandMatchThreshold() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (payload: UpdateDemandMatchThresholdRequest) => apiClient.settings.updateDemandMatchThreshold(payload),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: KEY }),
+  });
+}
+
+export function useUpdateDataRetentionDays() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: UpdateDataRetentionDaysRequest) => apiClient.settings.updateDataRetentionDays(payload),
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: KEY }),
   });
 }

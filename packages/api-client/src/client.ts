@@ -27,6 +27,7 @@ import {
   type CreateAdminUserResponse,
   type CreateBrokerRequest,
   type CreateContactRequest,
+  type CreateDataSubjectRequestRequest,
   type CreateDevelopmentBlockRequest,
   type CreateDevelopmentRequest,
   type CreateInteractionRequest,
@@ -42,6 +43,7 @@ import {
   type CreateMarketIndicatorRequest,
   type CreatePartnerRequest,
   type CreateVisitRequest,
+  type DataSubjectRequest,
   type DemandMatchQuery,
   type DemandMatchResult,
   type DevelopmentBlock,
@@ -91,6 +93,7 @@ import {
   type RecalculateMatchesRequest,
   type RegisterRequest,
   type ReportsQuery,
+  type ResolveDataSubjectRequestRequest,
   type ResetPasswordRequest,
   type RunAutomationResult,
   type SessionResponse,
@@ -102,6 +105,7 @@ import {
   type UpdateBuyerPreferencesRequest,
   type UpdateCampaignRequest,
   type UpdateCommissionRateRequest,
+  type UpdateDataRetentionDaysRequest,
   type UpdateDemandMatchThresholdRequest,
   type UpdateDevelopmentRequest,
   type UpdateMarketIndicatorRequest,
@@ -453,6 +457,8 @@ export class SpireApiClient {
       this.request<{ saved: true }>("/settings/radar-sweep-interval", { method: "PATCH", body: JSON.stringify(payload) }),
     updateDemandMatchThreshold: (payload: UpdateDemandMatchThresholdRequest) =>
       this.request<{ saved: true }>("/settings/demand-match-threshold", { method: "PATCH", body: JSON.stringify(payload) }),
+    updateDataRetentionDays: (payload: UpdateDataRetentionDaysRequest) =>
+      this.request<{ saved: true }>("/settings/data-retention-days", { method: "PATCH", body: JSON.stringify(payload) }),
   };
 
   demandMatch = {
@@ -504,6 +510,15 @@ export class SpireApiClient {
   auditLogs = {
     list: (query: Partial<AuditLogListQuery> = {}) =>
       this.request<{ items: AuditLog[]; nextCursor: string | null }>(`/audit-logs${toQueryString(query)}`),
+  };
+
+  dataSubjectRequests = {
+    create: (payload: CreateDataSubjectRequestRequest) =>
+      this.request<{ request: DataSubjectRequest; exportData: unknown | null }>("/me/data-requests", { method: "POST", body: JSON.stringify(payload) }),
+    mine: () => this.request<{ items: DataSubjectRequest[] }>("/me/data-requests"),
+    list: () => this.request<{ items: DataSubjectRequest[] }>("/data-subject-requests"),
+    resolve: (id: string, payload: ResolveDataSubjectRequestRequest) =>
+      this.request<DataSubjectRequest>(`/data-subject-requests/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
   };
 
   ownerLeads = {

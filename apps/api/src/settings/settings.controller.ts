@@ -3,6 +3,7 @@ import { ApiTags } from "@nestjs/swagger";
 import {
   type PlatformSettings,
   updateCommissionRateRequestSchema,
+  updateDataRetentionDaysRequestSchema,
   updateDemandMatchThresholdRequestSchema,
   updateMatchWeightsRequestSchema,
   updateRadarSweepIntervalRequestSchema,
@@ -37,13 +38,14 @@ export class SettingsController {
 
   @Get()
   async get(): Promise<PlatformSettings> {
-    const [{ weights, isDefault }, commissionDefaultRate, radarSweepIntervalMinutes, demandMatchThreshold] = await Promise.all([
+    const [{ weights, isDefault }, commissionDefaultRate, radarSweepIntervalMinutes, demandMatchThreshold, dataRetentionDays] = await Promise.all([
       this.settings.getMatchWeights(),
       this.settings.getCommissionRate(),
       this.settings.getRadarSweepIntervalMinutes(),
       this.settings.getDemandMatchThreshold(),
+      this.settings.getDataRetentionDays(),
     ]);
-    return { matchWeights: weights, matchWeightsIsDefault: isDefault, commissionDefaultRate, radarSweepIntervalMinutes, demandMatchThreshold };
+    return { matchWeights: weights, matchWeightsIsDefault: isDefault, commissionDefaultRate, radarSweepIntervalMinutes, demandMatchThreshold, dataRetentionDays };
   }
 
   @Patch("match-weights")
@@ -92,6 +94,16 @@ export class SettingsController {
   ) {
     await this.settings.set("demandMatchThreshold", body.threshold, userId);
     await this.auditLog.record({ actorUserId: userId, action: "settings.demand_match_threshold_updated", entityType: "platform_settings", metadata: { threshold: body.threshold } });
+    return { saved: true };
+  }
+
+  @Patch("data-retention-days")
+  async updateDataRetentionDays(
+    @CurrentUserId() userId: string,
+    @Body(new ZodValidationPipe(updateDataRetentionDaysRequestSchema)) body: ReturnType<typeof updateDataRetentionDaysRequestSchema.parse>,
+  ) {
+    await this.settings.set("dataRetentionDays", body.days, userId);
+    await this.auditLog.record({ actorUserId: userId, action: "settings.data_retention_days_updated", entityType: "platform_settings", metadata: { days: body.days } });
     return { saved: true };
   }
 }

@@ -9,6 +9,7 @@ import { AdminShell } from "@/components/layout/AdminShell";
 import {
   usePlatformSettings,
   useUpdateCommissionRate,
+  useUpdateDataRetentionDays,
   useUpdateDemandMatchThreshold,
   useUpdateMatchWeights,
   useUpdateRadarSweepInterval,
@@ -175,6 +176,36 @@ function DemandMatchThresholdCard({ threshold }: { threshold: number }) {
   );
 }
 
+function DataRetentionCard({ days }: { days: number }) {
+  const [draft, setDraft] = useState(days.toString());
+  const update = useUpdateDataRetentionDays();
+  const years = (Number(draft || days) / 365).toFixed(1);
+
+  return (
+    <Card className="p-5">
+      <h2 className="font-display text-lg text-ink-primary">Prazo de retenção de dados (LGPD)</h2>
+      <p className="mt-1 text-bodySm text-ink-secondary">
+        Exibido em Privacidade como referência do tempo de guarda de dados pessoais. Hoje é só informativo — a purga automática
+        ao fim do prazo ainda não existe (ver relatório de lacunas do Marco F).
+      </p>
+      <div className="mt-4 flex items-center gap-2">
+        <input
+          type="number"
+          min={30}
+          max={3650}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          className="h-10 w-24 rounded-xl border border-border-subtle bg-background-base px-3 text-bodyMd text-ink-primary"
+        />
+        <span className="text-bodySm text-ink-secondary">dias (≈ {years} anos)</span>
+        <Button size="sm" variant="outline" disabled={update.isPending || !draft} onClick={() => update.mutate({ days: Number(draft) })}>
+          Salvar
+        </Button>
+      </div>
+    </Card>
+  );
+}
+
 export default function ConfiguracoesPage() {
   const { data, isLoading } = usePlatformSettings();
 
@@ -199,6 +230,7 @@ export default function ConfiguracoesPage() {
           <CommissionRateCard key={data.commissionDefaultRate} rate={data.commissionDefaultRate} />
           <RadarIntervalCard key={data.radarSweepIntervalMinutes} minutes={data.radarSweepIntervalMinutes} />
           <DemandMatchThresholdCard key={data.demandMatchThreshold} threshold={data.demandMatchThreshold} />
+          <DataRetentionCard key={data.dataRetentionDays} days={data.dataRetentionDays} />
         </div>
       )}
     </AdminShell>

@@ -12,6 +12,9 @@ import { platformSettings } from "../database/schema";
 export const DEFAULT_COMMISSION_RATE = 0.05;
 export const DEFAULT_RADAR_SWEEP_INTERVAL_MINUTES = 15;
 export const DEFAULT_DEMAND_MATCH_THRESHOLD = 5;
+// 5 anos — prazo civil geral de prescrição (art. 206, CC) usado como
+// referência neutra na ausência de uma política jurídica própria definida.
+export const DEFAULT_DATA_RETENTION_DAYS = 1825;
 
 @Injectable()
 export class SettingsService {
@@ -57,6 +60,15 @@ export class SettingsService {
   /** Limiar mínimo de compradores para o Demand Match revelar uma contagem — anti-identificação (seção 4.8). */
   async getDemandMatchThreshold(): Promise<number> {
     return this.get<number>("demandMatchThreshold", DEFAULT_DEMAND_MATCH_THRESHOLD);
+  }
+
+  /**
+   * Prazo de retenção exibido em Privacidade (LGPD, Marco F) — hoje é só
+   * informativo/configurável, sem purga automática correspondente (ver
+   * relatório de lacunas do marco).
+   */
+  async getDataRetentionDays(): Promise<number> {
+    return this.get<number>("dataRetentionDays", DEFAULT_DATA_RETENTION_DAYS);
   }
 
   /**
