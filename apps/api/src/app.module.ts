@@ -23,9 +23,11 @@ import { IntegrationsStatusModule } from "./integrations-status/integrations-sta
 import { InteractionsModule } from "./interactions/interactions.module";
 import { InternalModule } from "./internal/internal.module";
 import { LeadsModule } from "./leads/leads.module";
+import { MarketIndicatorsModule } from "./market-indicators/market-indicators.module";
 import { MatchesModule } from "./matches/matches.module";
 import { NotificationsModule } from "./notifications/notifications.module";
 import { OwnerLeadsModule } from "./owner-leads/owner-leads.module";
+import { PartnersModule } from "./partners/partners.module";
 import { PrivateMarketModule } from "./private-market/private-market.module";
 import { PropertiesModule } from "./properties/properties.module";
 import { ProposalsModule } from "./proposals/proposals.module";
@@ -75,6 +77,8 @@ import { VisitsModule } from "./visits/visits.module";
     DemandMatchModule,
     CampaignsModule,
     DevelopmentPartnerAccessModule,
+    MarketIndicatorsModule,
+    PartnersModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

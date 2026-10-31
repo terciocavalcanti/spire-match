@@ -26,3 +26,5 @@ export * from "./owner-leads";
 export * from "./private-market";
 export * from "./campaigns";
 export * from "./development-partner-access";
+export * from "./market-indicators";
+export * from "./partners";

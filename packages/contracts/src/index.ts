@@ -28,3 +28,5 @@ export * from "./private-market";
 export * from "./demand-match";
 export * from "./campaigns";
 export * from "./development-partner-access";
+export * from "./market-indicators";
+export * from "./partners";

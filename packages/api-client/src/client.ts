@@ -37,6 +37,8 @@ import {
   type CampaignListQuery,
   type CampaignStats,
   type CreateCampaignRequest,
+  type CreateMarketIndicatorRequest,
+  type CreatePartnerRequest,
   type CreateVisitRequest,
   type DemandMatchQuery,
   type DemandMatchResult,
@@ -57,6 +59,7 @@ import {
   type LeadListQuery,
   type LoginRequest,
   type MarkCommissionReceivedRequest,
+  type MarketIndicator,
   type MatchResult,
   type MyDevelopmentPartnerAccess,
   type Notification,
@@ -67,6 +70,7 @@ import {
   type OwnerLead,
   type OwnerLeadDetail,
   type OwnerLeadListQuery,
+  type Partner,
   type PrivateMarketOffer,
   type PrivateMarketOfferAdmin,
   type PrivateMarketOfferListQuery,
@@ -98,6 +102,8 @@ import {
   type UpdateCommissionRateRequest,
   type UpdateDemandMatchThresholdRequest,
   type UpdateDevelopmentRequest,
+  type UpdateMarketIndicatorRequest,
+  type UpdatePartnerRequest,
   type UpdateLeadStageRequest,
   type UpdateMatchWeightsRequest,
   type UpdatePropertyRequest,
@@ -468,6 +474,25 @@ export class SpireApiClient {
     grant: (payload: GrantDevelopmentPartnerAccessRequest) =>
       this.request<DevelopmentPartnerAccess>("/development-partner-access", { method: "POST", body: JSON.stringify(payload) }),
     revoke: (id: string) => this.request<{ revoked: true }>(`/development-partner-access/${id}`, { method: "DELETE" }),
+  };
+
+  marketIndicators = {
+    listPublic: () => this.request<{ items: MarketIndicator[] }>("/market-indicators"),
+    list: () => this.request<{ items: MarketIndicator[] }>("/market-indicators/admin"),
+    create: (payload: CreateMarketIndicatorRequest) =>
+      this.request<MarketIndicator>("/market-indicators", { method: "POST", body: JSON.stringify(payload) }),
+    update: (id: string, payload: UpdateMarketIndicatorRequest) =>
+      this.request<MarketIndicator>(`/market-indicators/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
+    delete: (id: string) => this.request<{ deleted: true }>(`/market-indicators/${id}`, { method: "DELETE" }),
+  };
+
+  partners = {
+    listPublic: () => this.request<{ items: Partner[] }>("/partners"),
+    list: () => this.request<{ items: Partner[] }>("/partners/admin"),
+    create: (payload: CreatePartnerRequest) => this.request<Partner>("/partners", { method: "POST", body: JSON.stringify(payload) }),
+    update: (id: string, payload: UpdatePartnerRequest) =>
+      this.request<Partner>(`/partners/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
+    delete: (id: string) => this.request<{ deleted: true }>(`/partners/${id}`, { method: "DELETE" }),
   };
 
   integrationsStatus = {

@@ -13,6 +13,7 @@ import {
   Layers,
   Lock,
   Megaphone,
+  Handshake,
   Plug,
   Settings,
   ShieldCheck,
@@ -58,6 +59,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     label: "Growth",
     items: [
       { href: "/admin/campanhas", label: "Campanhas", icon: Megaphone },
+      { href: "/admin/parceiros", label: "Parceiros", icon: Handshake },
       { href: "/admin/relatorios", label: "Relatórios", icon: BarChart3 },
       { href: "/admin/financeiro", label: "Financeiro", icon: Wallet },
     ],

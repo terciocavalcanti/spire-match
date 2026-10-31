@@ -2,7 +2,7 @@
 
 import { Button, MatchBadge, PropertyGallery } from "@spire/ui-web";
 import { useQuery } from "@tanstack/react-query";
-import { BedDouble, Car, ChevronLeft, Heart, Ruler, Share2 } from "lucide-react";
+import { BedDouble, Car, ChevronLeft, Heart, MapPin, Ruler, Share2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useEffect, useRef } from "react";
@@ -176,6 +176,11 @@ export default function ImovelPage({ params }: { params: Promise<{ slug: string 
             </div>
           </div>
         )}
+
+        <div className="flex items-start gap-2 border-t border-border-subtle py-5 text-bodySm text-ink-tertiary">
+          <MapPin className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+          <p>Mapa de serviços e vizinhança (City/Life) — pendente de provedor licenciado.</p>
+        </div>
 
         <ProposalForm property={property} />
       </div>
