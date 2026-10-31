@@ -1,7 +1,7 @@
 "use client";
 
 import { AdminSidebar, Button } from "@spire/ui-web";
-import { Bell, ShieldAlert } from "lucide-react";
+import { Bell, Factory, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -9,7 +9,7 @@ import { useEffect } from "react";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useUnreadNotificationsCount } from "@/hooks/use-notifications";
 import { apiClient } from "@/lib/api-client";
-import { hasAdminAccess } from "@/lib/roles";
+import { hasAdminAccess, isDeveloperPartnerOnly } from "@/lib/roles";
 
 import { ADMIN_NAV_GROUPS } from "./nav-groups";
 
@@ -60,9 +60,13 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     );
   }
 
+  const navGroups = isDeveloperPartnerOnly(user.roles)
+    ? [{ label: "Incorporadora", items: [{ href: "/admin/incorporadoras", label: "Meus empreendimentos", icon: Factory }] }]
+    : ADMIN_NAV_GROUPS;
+
   return (
     <div className="flex min-h-dvh bg-background-base">
-      <AdminSidebar groups={ADMIN_NAV_GROUPS} activeHref={pathname} LinkComponent={NextLink} />
+      <AdminSidebar groups={navGroups} activeHref={pathname} LinkComponent={NextLink} />
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex items-center justify-end gap-4 border-b border-border-subtle bg-background-elevated px-6 py-4">
           <Link

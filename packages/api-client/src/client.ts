@@ -33,16 +33,22 @@ import {
   type CreateProposalRequest,
   type CreateRadarRequest,
   type CreateUnitRequest,
+  type Campaign,
+  type CampaignListQuery,
+  type CampaignStats,
+  type CreateCampaignRequest,
   type CreateVisitRequest,
   type DemandMatchQuery,
   type DemandMatchResult,
   type DevelopmentBlock,
   type DevelopmentDetail,
+  type DevelopmentPartnerAccess,
   type DevelopmentSummary,
   type Favorite,
   type ForgotPasswordRequest,
   type FunnelReport,
   type GenerateTourRequest,
+  type GrantDevelopmentPartnerAccessRequest,
   type ImportUnitsRequest,
   type ImportUnitsResponse,
   type IntegrationStatusEntry,
@@ -52,6 +58,7 @@ import {
   type LoginRequest,
   type MarkCommissionReceivedRequest,
   type MatchResult,
+  type MyDevelopmentPartnerAccess,
   type Notification,
   type NotificationListQuery,
   type AssignOwnerLeadRequest,
@@ -87,6 +94,7 @@ import {
   type UpdateAutomationRuleRequest,
   type UpdateBrokerRequest,
   type UpdateBuyerPreferencesRequest,
+  type UpdateCampaignRequest,
   type UpdateCommissionRateRequest,
   type UpdateDemandMatchThresholdRequest,
   type UpdateDevelopmentRequest,
@@ -441,6 +449,25 @@ export class SpireApiClient {
 
   demandMatch = {
     get: (query: DemandMatchQuery) => this.request<DemandMatchResult>(`/demand-match${toQueryString(query)}`),
+  };
+
+  campaigns = {
+    list: (query: Partial<CampaignListQuery> = {}) =>
+      this.request<{ items: Campaign[]; nextCursor: string | null }>(`/campaigns${toQueryString(query)}`),
+    detail: (id: string) => this.request<Campaign>(`/campaigns/${id}`),
+    stats: (id: string) => this.request<CampaignStats>(`/campaigns/${id}/stats`),
+    create: (payload: CreateCampaignRequest) => this.request<Campaign>("/campaigns", { method: "POST", body: JSON.stringify(payload) }),
+    update: (id: string, payload: UpdateCampaignRequest) =>
+      this.request<Campaign>(`/campaigns/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
+    delete: (id: string) => this.request<{ deleted: true }>(`/campaigns/${id}`, { method: "DELETE" }),
+  };
+
+  developmentPartnerAccess = {
+    list: () => this.request<{ items: DevelopmentPartnerAccess[] }>("/development-partner-access"),
+    mine: () => this.request<{ items: MyDevelopmentPartnerAccess[] }>("/development-partner-access/mine"),
+    grant: (payload: GrantDevelopmentPartnerAccessRequest) =>
+      this.request<DevelopmentPartnerAccess>("/development-partner-access", { method: "POST", body: JSON.stringify(payload) }),
+    revoke: (id: string) => this.request<{ revoked: true }>(`/development-partner-access/${id}`, { method: "DELETE" }),
   };
 
   integrationsStatus = {

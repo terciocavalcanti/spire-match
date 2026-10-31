@@ -9,11 +9,13 @@ import { AuthModule } from "./auth/auth.module";
 import { AutomationsModule } from "./automations/automations.module";
 import { BrokersModule } from "./brokers/brokers.module";
 import { BuyerProfileModule } from "./buyer-profile/buyer-profile.module";
+import { CampaignsModule } from "./campaigns/campaigns.module";
 import { CommissionsModule } from "./commissions/commissions.module";
 import { validateEnv } from "./config/env";
 import { ContactsModule } from "./contacts/contacts.module";
 import { DatabaseModule } from "./database/database.module";
 import { DemandMatchModule } from "./demand-match/demand-match.module";
+import { DevelopmentPartnerAccessModule } from "./development-partner-access/development-partner-access.module";
 import { DevelopmentsModule } from "./developments/developments.module";
 import { FavoritesModule } from "./favorites/favorites.module";
 import { HealthModule } from "./health/health.module";
@@ -71,6 +73,8 @@ import { VisitsModule } from "./visits/visits.module";
     OwnerLeadsModule,
     PrivateMarketModule,
     DemandMatchModule,
+    CampaignsModule,
+    DevelopmentPartnerAccessModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

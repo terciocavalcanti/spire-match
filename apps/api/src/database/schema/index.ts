@@ -24,3 +24,5 @@ export * from "./commissions";
 export * from "./automation-rules";
 export * from "./owner-leads";
 export * from "./private-market";
+export * from "./campaigns";
+export * from "./development-partner-access";
