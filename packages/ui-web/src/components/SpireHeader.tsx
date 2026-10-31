@@ -57,7 +57,7 @@ export function SpireHeader({
               <button
                 type="button"
                 onClick={onAvatarClick}
-                aria-label={`Perfil de ${user.name}`}
+                aria-label={user.avatarUrl ? `Perfil de ${user.name}` : `${initials(user.name)}, perfil de ${user.name}`}
                 className="h-10 w-10 overflow-hidden rounded-full border border-border-subtle bg-background-subtle"
               >
                 {user.avatarUrl ? (

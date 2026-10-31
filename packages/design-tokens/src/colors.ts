@@ -16,7 +16,7 @@ export const colors = {
     ink: {
       primary: "#211F19", // texto principal (headings, preços)
       secondary: "#5B5748", // texto secundário (metadados: m², bairro)
-      tertiary: "#8A8574", // texto terciário / placeholder
+      tertiary: "#686357", // texto terciário / placeholder (ajustado p/ contraste AA 4.5:1 — Marco F5)
       inverse: "#F7F4EC", // texto sobre fundos escuros
     },
     brand: {
@@ -36,15 +36,15 @@ export const colors = {
       matchHighBg: "#333B28",
       matchHighFg: "#F7F4EC",
       priceDrop: "#2E6F55", // indicador de redução de preço (ícone seta verde)
-      hot: "#C65532", // lead score "muito quente"
+      hot: "#A8431F", // lead score "muito quente" (ajustado p/ contraste AA 4.5:1 — Marco F5)
       hotBg: "#F7DCCF",
-      warm: "#B98A3E", // lead score "aquecendo"
+      warm: "#7A5A18", // lead score "aquecendo" (ajustado p/ contraste AA 4.5:1 — Marco F5)
       warmBg: "#F3E6CC",
-      info: "#3B6EA5", // badges informativos ("Em análise")
+      info: "#2F5F8F", // badges informativos ("Em análise") (ajustado p/ contraste AA 4.5:1 — Marco F5)
       infoBg: "#DCE8F5",
       success: "#2E6F55",
       successBg: "#DCEAE0",
-      danger: "#B5473A",
+      danger: "#9C3C30", // ajustado p/ contraste AA 4.5:1 — Marco F5
       dangerBg: "#F6DEDA",
     },
     chip: {

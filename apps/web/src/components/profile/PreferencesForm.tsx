@@ -55,6 +55,7 @@ function TagInput({
         }}
         onBlur={add}
         placeholder={placeholder}
+        aria-label={placeholder}
         className="mt-2 h-11 w-full rounded-xl border border-border-subtle bg-background-elevated px-3 text-bodyMd text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:border-brand-olive"
       />
     </div>
@@ -114,8 +115,8 @@ function PreferencesFormFields({ initialPreferences, onSaved }: PreferencesFormF
       <div>
         <label className="text-bodySm font-medium text-ink-secondary">Orçamento (R$)</label>
         <div className="mt-1.5 grid grid-cols-2 gap-3">
-          <CurrencyInput placeholder="Mínimo" value={budgetMin} onChange={setBudgetMin} />
-          <CurrencyInput placeholder="Máximo" value={budgetMax} onChange={setBudgetMax} />
+          <CurrencyInput placeholder="Mínimo" aria-label="Orçamento mínimo" value={budgetMin} onChange={setBudgetMin} />
+          <CurrencyInput placeholder="Máximo" aria-label="Orçamento máximo" value={budgetMax} onChange={setBudgetMax} />
         </div>
       </div>
 
@@ -127,9 +128,11 @@ function PreferencesFormFields({ initialPreferences, onSaved }: PreferencesFormF
       </div>
 
       <div>
-        <label className="text-bodySm font-medium text-ink-secondary">Metragem mínima (m²)</label>
+        <label htmlFor="min-area-sqm" className="text-bodySm font-medium text-ink-secondary">
+          Metragem mínima (m²)
+        </label>
         <div className="mt-1.5">
-          <Input type="number" value={minAreaSqm} onChange={(e) => setMinAreaSqm(e.target.value)} />
+          <Input id="min-area-sqm" type="number" value={minAreaSqm} onChange={(e) => setMinAreaSqm(e.target.value)} />
         </div>
       </div>
 

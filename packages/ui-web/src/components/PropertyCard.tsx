@@ -42,7 +42,7 @@ export function PropertyCard({
   return (
     <div className={cn("overflow-hidden rounded-2xl border border-border-subtle bg-background-elevated", className)} {...props}>
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-background-subtle">
-        <Anchor href={`/imoveis/${property.slug}`} aria-label={property.title}>
+        <Anchor href={`/imoveis/${property.slug}`} aria-label={property.coverImageUrl ? property.title : `${property.title}, sem foto`}>
           {property.coverImageUrl ? (
             <img
               src={property.coverImageUrl}

@@ -14,6 +14,7 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
+    "test:e2e": "turbo run test:e2e",
     "clean": "turbo run clean && rimraf node_modules",
     "db:generate": "pnpm --filter @spire/api db:generate",
     "db:migrate": "pnpm --filter @spire/api db:migrate",

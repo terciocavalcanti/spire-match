@@ -30,6 +30,7 @@ Thumbs.db
 coverage/
 playwright-report/
 test-results/
+tests/e2e/support/.auth/
 
 # Database
 *.sqlite

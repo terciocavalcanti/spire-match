@@ -10,6 +10,7 @@ export interface CurrencyInputProps {
   value: number | null;
   onChange: (value: number | null) => void;
   placeholder?: string;
+  "aria-label"?: string;
   error?: string;
   className?: string;
 }
@@ -21,7 +22,7 @@ export interface CurrencyInputProps {
  * fica a vírgula enquanto o usuário digita).
  */
 export const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
-  ({ id, value, onChange, placeholder, error, className }, ref) => {
+  ({ id, value, onChange, placeholder, "aria-label": ariaLabel, error, className }, ref) => {
     const describedBy = error && id ? `${id}-error` : undefined;
     const display = value === null || Number.isNaN(value) ? "" : currencyFormatter.format(value);
 
@@ -48,6 +49,7 @@ export const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputPro
             inputMode="numeric"
             aria-invalid={Boolean(error)}
             aria-describedby={describedBy}
+            aria-label={ariaLabel ?? placeholder}
             value={display}
             onChange={handleChange}
             placeholder={placeholder ?? "R$ 0,00"}

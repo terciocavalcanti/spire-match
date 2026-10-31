@@ -71,10 +71,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         <header className="flex items-center justify-end gap-4 border-b border-border-subtle bg-background-elevated px-6 py-4">
           <Link
             href="/admin/notificacoes"
-            aria-label="Notificações"
+            aria-label={!!unread && unread.count > 0 ? `Notificações, ${unread.count > 9 ? "9+" : unread.count} não lidas` : "Notificações"}
             className="relative flex h-9 w-9 items-center justify-center rounded-full text-ink-secondary hover:bg-background-subtle hover:text-ink-primary"
           >
-            <Bell className="h-5 w-5" />
+            <Bell className="h-5 w-5" aria-hidden />
             {!!unread && unread.count > 0 && (
               <span
                 aria-hidden
