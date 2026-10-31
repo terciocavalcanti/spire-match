@@ -57,6 +57,13 @@
       "when": 1793403720989,
       "tag": "0007_neat_sunspot",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793404794021,
+      "tag": "0008_slippery_fixer",
+      "breakpoints": true
     }
   ]
 }

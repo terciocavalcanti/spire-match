@@ -11,6 +11,7 @@ const envSchema = z.object({
   API_INTERNAL_URL: z.string().default("http://localhost:4000"),
   INTERNAL_API_KEY: z.string().min(16, "INTERNAL_API_KEY precisa ter pelo menos 16 caracteres"),
   RADAR_SWEEP_INTERVAL_MINUTES: z.coerce.number().int().positive().default(15),
+  AUTOMATION_TICK_INTERVAL_MINUTES: z.coerce.number().int().positive().default(10),
 });
 
 export type WorkerEnv = z.infer<typeof envSchema>;

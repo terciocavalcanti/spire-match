@@ -1,6 +1,7 @@
 import { Controller, Param, Post, UseGuards } from "@nestjs/common";
 import { ApiExcludeController } from "@nestjs/swagger";
 
+import { AutomationsService } from "../automations/automations.service";
 import { InternalGuard } from "../common/guards/internal.guard";
 import { MatchesService } from "../matches/matches.service";
 import { RadarsService } from "../radars/radars.service";
@@ -18,6 +19,7 @@ export class InternalController {
   constructor(
     private readonly matches: MatchesService,
     private readonly radars: RadarsService,
+    private readonly automations: AutomationsService,
   ) {}
 
   @Post("matches/recalculate-buyer/:userId")
@@ -34,5 +36,14 @@ export class InternalController {
   @Post("radars/sweep")
   async sweepRadars() {
     return this.radars.sweep();
+  }
+
+  @Post("automations/tick")
+  async automationsTick() {
+    const [leadAutoAssigned, slaReminded] = await Promise.all([
+      this.automations.runLeadAutoAssign(),
+      this.automations.runSlaReminders(),
+    ]);
+    return { leadAutoAssigned, slaReminded };
   }
 }

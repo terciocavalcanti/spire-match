@@ -31,6 +31,7 @@ export const LEAD_ACTIVITY_TYPES = [
   "PROPOSAL_RECEIVED",
   "ASSIGNED",
   "NOTE",
+  "SLA_REMINDER_SENT",
 ] as const;
 export const leadActivityTypeSchema = z.enum(LEAD_ACTIVITY_TYPES);
 export type LeadActivityType = z.infer<typeof leadActivityTypeSchema>;

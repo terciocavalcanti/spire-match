@@ -21,3 +21,4 @@ export * from "./developments";
 export * from "./units";
 export * from "./settings";
 export * from "./commissions";
+export * from "./automation-rules";

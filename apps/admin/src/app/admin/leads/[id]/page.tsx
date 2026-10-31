@@ -3,6 +3,7 @@
 import type { LeadStage } from "@spire/contracts";
 import { Button, Card } from "@spire/ui-web";
 import {
+  AlarmClock,
   CalendarCheck,
   CalendarX,
   FileText,
@@ -30,6 +31,7 @@ const ACTIVITY_ICONS = {
   PROPOSAL_RECEIVED: FileText,
   ASSIGNED: UserPlus,
   NOTE: StickyNote,
+  SLA_REMINDER_SENT: AlarmClock,
 } as const;
 
 export default function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {

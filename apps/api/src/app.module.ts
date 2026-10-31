@@ -6,6 +6,7 @@ import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import { AdminUsersModule } from "./admin-users/admin-users.module";
 import { AiSearchModule } from "./ai-search/ai-search.module";
 import { AuthModule } from "./auth/auth.module";
+import { AutomationsModule } from "./automations/automations.module";
 import { BrokersModule } from "./brokers/brokers.module";
 import { BuyerProfileModule } from "./buyer-profile/buyer-profile.module";
 import { CommissionsModule } from "./commissions/commissions.module";
@@ -57,6 +58,7 @@ import { VisitsModule } from "./visits/visits.module";
     CommissionsModule,
     LeadsModule,
     ReportsModule,
+    AutomationsModule,
     InternalModule,
     AdminUsersModule,
     DevelopmentsModule,

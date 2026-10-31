@@ -1,10 +1,11 @@
 import { Queue, Worker } from "bullmq";
 
 import { loadEnv } from "./env";
+import { processAutomationTick } from "./jobs/automation-tick";
 import { processRadarSweep } from "./jobs/radar-sweep";
 import { processRecalcBuyer } from "./jobs/recalc-buyer";
 import { processRecalcProperty } from "./jobs/recalc-property";
-import { QUEUE_RADAR_SWEEP, QUEUE_RECALC_BUYER, QUEUE_RECALC_PROPERTY } from "./queues";
+import { QUEUE_AUTOMATION_TICK, QUEUE_RADAR_SWEEP, QUEUE_RECALC_BUYER, QUEUE_RECALC_PROPERTY } from "./queues";
 import { createRedisConnection } from "./redis";
 
 const env = loadEnv();
@@ -23,15 +24,16 @@ async function main(): Promise<void> {
     connection,
   });
   const radarSweepWorker = new Worker(QUEUE_RADAR_SWEEP, (job) => processRadarSweep(job, env), { connection });
+  const automationTickWorker = new Worker(QUEUE_AUTOMATION_TICK, (job) => processAutomationTick(job, env), { connection });
 
-  for (const worker of [recalcBuyerWorker, recalcPropertyWorker, radarSweepWorker]) {
+  for (const worker of [recalcBuyerWorker, recalcPropertyWorker, radarSweepWorker, automationTickWorker]) {
     worker.on("completed", (job) => console.log(`[${worker.name}] job ${job.id} concluído`));
     worker.on("failed", (job, err) => console.error(`[${worker.name}] job ${job?.id} falhou:`, err.message));
   }
 
-  // O sweep de radares é o único job repetível — agendado aqui no boot do
-  // worker. BullMQ deduplica por chave de repetição, então reiniciar o worker
-  // não cria agendamentos duplicados.
+  // Sweep de radares e tick de automações são os únicos jobs repetíveis —
+  // agendados aqui no boot do worker. BullMQ deduplica por chave de
+  // repetição, então reiniciar o worker não cria agendamentos duplicados.
   const radarSweepQueue = new Queue(QUEUE_RADAR_SWEEP, { connection });
   await radarSweepQueue.add(
     "sweep",
@@ -43,14 +45,30 @@ async function main(): Promise<void> {
     },
   );
 
+  const automationTickQueue = new Queue(QUEUE_AUTOMATION_TICK, { connection });
+  await automationTickQueue.add(
+    "tick",
+    {},
+    {
+      ...DEFAULT_JOB_OPTIONS,
+      repeat: { every: env.AUTOMATION_TICK_INTERVAL_MINUTES * 60_000 },
+      jobId: "automation-tick-repeatable",
+    },
+  );
+
   console.log(
-    `VALORI MATCH worker no ar — fila de recálculo de match ativa, varredura de radares a cada ${env.RADAR_SWEEP_INTERVAL_MINUTES} min.`,
+    `VALORI MATCH worker no ar — recálculo de match ativo, varredura de radares a cada ${env.RADAR_SWEEP_INTERVAL_MINUTES} min, automações a cada ${env.AUTOMATION_TICK_INTERVAL_MINUTES} min.`,
   );
 
   async function shutdown(): Promise<void> {
     console.log("Encerrando worker...");
-    await Promise.all([recalcBuyerWorker.close(), recalcPropertyWorker.close(), radarSweepWorker.close()]);
-    await radarSweepQueue.close();
+    await Promise.all([
+      recalcBuyerWorker.close(),
+      recalcPropertyWorker.close(),
+      radarSweepWorker.close(),
+      automationTickWorker.close(),
+    ]);
+    await Promise.all([radarSweepQueue.close(), automationTickQueue.close()]);
     await connection.quit();
     process.exit(0);
   }

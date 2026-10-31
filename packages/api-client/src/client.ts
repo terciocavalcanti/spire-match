@@ -14,6 +14,8 @@ import {
   type AdminDevelopmentListQuery,
   type AdminUnitListQuery,
   type AttributionReport,
+  type AutomationRule,
+  type AutomationType,
   type ChangePasswordRequest,
   type Commission,
   type CommissionListQuery,
@@ -60,10 +62,12 @@ import {
   type RegisterRequest,
   type ReportsQuery,
   type ResetPasswordRequest,
+  type RunAutomationResult,
   type SessionResponse,
   type Tour,
   type Unit,
   type UpdateAdminUserRolesRequest,
+  type UpdateAutomationRuleRequest,
   type UpdateBrokerRequest,
   type UpdateBuyerPreferencesRequest,
   type UpdateDevelopmentRequest,
@@ -393,5 +397,12 @@ export class SpireApiClient {
     attribution: (query: Partial<ReportsQuery> = {}) => this.request<AttributionReport>(`/reports/attribution${toQueryString(query)}`),
     attributionCsvUrl: (query: Partial<ReportsQuery> = {}) => `${this.baseUrl}/reports/attribution/export.csv${toQueryString(query)}`,
     pdfUrl: (query: Partial<ReportsQuery> = {}) => `${this.baseUrl}/reports/export.pdf${toQueryString(query)}`,
+  };
+
+  automations = {
+    list: () => this.request<{ items: AutomationRule[] }>("/automations"),
+    update: (type: AutomationType, payload: UpdateAutomationRuleRequest) =>
+      this.request<AutomationRule>(`/automations/${type}`, { method: "PATCH", body: JSON.stringify(payload) }),
+    run: (type: AutomationType) => this.request<RunAutomationResult>(`/automations/${type}/run`, { method: "POST" }),
   };
 }
