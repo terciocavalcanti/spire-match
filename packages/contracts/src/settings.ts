@@ -20,6 +20,7 @@ export const platformSettingsSchema = z.object({
   matchWeightsIsDefault: z.boolean(),
   commissionDefaultRate: z.number().positive().max(0.5),
   radarSweepIntervalMinutes: z.number().int().positive(),
+  demandMatchThreshold: z.number().int().positive(),
 });
 export type PlatformSettings = z.infer<typeof platformSettingsSchema>;
 
@@ -31,3 +32,6 @@ export type UpdateCommissionRateRequest = z.infer<typeof updateCommissionRateReq
 
 export const updateRadarSweepIntervalRequestSchema = z.object({ minutes: z.number().int().positive().max(1440) });
 export type UpdateRadarSweepIntervalRequest = z.infer<typeof updateRadarSweepIntervalRequestSchema>;
+
+export const updateDemandMatchThresholdRequestSchema = z.object({ threshold: z.number().int().min(2).max(100) });
+export type UpdateDemandMatchThresholdRequest = z.infer<typeof updateDemandMatchThresholdRequestSchema>;

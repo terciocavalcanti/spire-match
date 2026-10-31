@@ -26,7 +26,10 @@ export class PrivateMarketController {
   @UseGuards(SessionAuthGuard, RolesGuard)
   @Roles(...CRM_ROLES)
   async getByOwnerLeadId(@Param("ownerLeadId") ownerLeadId: string) {
-    return this.privateMarket.getByOwnerLeadId(ownerLeadId);
+    // Nest não serializa um retorno `null` como JSON (envia corpo vazio sem
+    // Content-Type) — envolvido em objeto para o cliente sempre receber JSON válido.
+    const offer = await this.privateMarket.getByOwnerLeadId(ownerLeadId);
+    return { offer };
   }
 
   @Patch(":id/verify")

@@ -9,6 +9,7 @@ import { AdminShell } from "@/components/layout/AdminShell";
 import {
   usePlatformSettings,
   useUpdateCommissionRate,
+  useUpdateDemandMatchThreshold,
   useUpdateMatchWeights,
   useUpdateRadarSweepInterval,
 } from "@/hooks/use-settings";
@@ -145,6 +146,35 @@ function RadarIntervalCard({ minutes }: { minutes: number }) {
   );
 }
 
+function DemandMatchThresholdCard({ threshold }: { threshold: number }) {
+  const [draft, setDraft] = useState(threshold.toString());
+  const update = useUpdateDemandMatchThreshold();
+
+  return (
+    <Card className="p-5">
+      <h2 className="font-display text-lg text-ink-primary">Limiar do Demand Match</h2>
+      <p className="mt-1 text-bodySm text-ink-secondary">
+        Número mínimo de compradores compatíveis para revelar uma contagem ao time comercial — abaixo disso, o sistema mostra
+        &quot;indisponível&quot; para não arriscar identificar compradores individuais.
+      </p>
+      <div className="mt-4 flex items-center gap-2">
+        <input
+          type="number"
+          min={2}
+          max={100}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          className="h-10 w-24 rounded-xl border border-border-subtle bg-background-base px-3 text-bodyMd text-ink-primary"
+        />
+        <span className="text-bodySm text-ink-secondary">compradores</span>
+        <Button size="sm" variant="outline" disabled={update.isPending || !draft} onClick={() => update.mutate({ threshold: Number(draft) })}>
+          Salvar
+        </Button>
+      </div>
+    </Card>
+  );
+}
+
 export default function ConfiguracoesPage() {
   const { data, isLoading } = usePlatformSettings();
 
@@ -168,6 +198,7 @@ export default function ConfiguracoesPage() {
           </div>
           <CommissionRateCard key={data.commissionDefaultRate} rate={data.commissionDefaultRate} />
           <RadarIntervalCard key={data.radarSweepIntervalMinutes} minutes={data.radarSweepIntervalMinutes} />
+          <DemandMatchThresholdCard key={data.demandMatchThreshold} threshold={data.demandMatchThreshold} />
         </div>
       )}
     </AdminShell>

@@ -25,3 +25,4 @@ export * from "./settings";
 export * from "./integrations-status";
 export * from "./owner-leads";
 export * from "./private-market";
+export * from "./demand-match";

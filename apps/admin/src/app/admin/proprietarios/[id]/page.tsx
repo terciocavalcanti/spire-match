@@ -7,6 +7,7 @@ import Link from "next/link";
 import { use, useState } from "react";
 
 import { AdminShell } from "@/components/layout/AdminShell";
+import { DemandMatchWidget } from "@/components/owner-leads/DemandMatchWidget";
 import { PrivateMarketOfferCard } from "@/components/owner-leads/PrivateMarketOfferCard";
 import { useBrokers } from "@/hooks/use-admin-brokers";
 import {
@@ -104,6 +105,8 @@ export default function OwnerLeadDetailPage({ params }: { params: Promise<{ id: 
             </div>
             {ownerLead.description && <p className="mt-3 text-bodySm text-ink-secondary">{ownerLead.description}</p>}
           </Card>
+
+          <DemandMatchWidget ownerLead={ownerLead} />
 
           <PrivateMarketOfferCard ownerLeadId={ownerLead.id} />
 

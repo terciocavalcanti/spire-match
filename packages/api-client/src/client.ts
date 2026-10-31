@@ -34,6 +34,8 @@ import {
   type CreateRadarRequest,
   type CreateUnitRequest,
   type CreateVisitRequest,
+  type DemandMatchQuery,
+  type DemandMatchResult,
   type DevelopmentBlock,
   type DevelopmentDetail,
   type DevelopmentSummary,
@@ -86,6 +88,7 @@ import {
   type UpdateBrokerRequest,
   type UpdateBuyerPreferencesRequest,
   type UpdateCommissionRateRequest,
+  type UpdateDemandMatchThresholdRequest,
   type UpdateDevelopmentRequest,
   type UpdateLeadStageRequest,
   type UpdateMatchWeightsRequest,
@@ -432,6 +435,12 @@ export class SpireApiClient {
       this.request<{ saved: true }>("/settings/commission-rate", { method: "PATCH", body: JSON.stringify(payload) }),
     updateRadarSweepInterval: (payload: UpdateRadarSweepIntervalRequest) =>
       this.request<{ saved: true }>("/settings/radar-sweep-interval", { method: "PATCH", body: JSON.stringify(payload) }),
+    updateDemandMatchThreshold: (payload: UpdateDemandMatchThresholdRequest) =>
+      this.request<{ saved: true }>("/settings/demand-match-threshold", { method: "PATCH", body: JSON.stringify(payload) }),
+  };
+
+  demandMatch = {
+    get: (query: DemandMatchQuery) => this.request<DemandMatchResult>(`/demand-match${toQueryString(query)}`),
   };
 
   integrationsStatus = {
@@ -458,7 +467,8 @@ export class SpireApiClient {
   privateMarket = {
     list: (query: Partial<PrivateMarketOfferListQuery> = {}) =>
       this.request<{ items: PrivateMarketOffer[]; nextCursor: string | null }>(`/private-market${toQueryString(query)}`),
-    byOwnerLeadId: (ownerLeadId: string) => this.request<PrivateMarketOfferAdmin | null>(`/private-market/by-owner-lead/${ownerLeadId}`),
+    byOwnerLeadId: (ownerLeadId: string) =>
+      this.request<{ offer: PrivateMarketOfferAdmin | null }>(`/private-market/by-owner-lead/${ownerLeadId}`).then((r) => r.offer),
     verify: (id: string, payload: VerifyPrivateMarketOfferRequest) =>
       this.request<PrivateMarketOfferAdmin>(`/private-market/${id}/verify`, { method: "PATCH", body: JSON.stringify(payload) }),
     requestContact: (id: string, payload: RequestPrivateMarketContactRequest = { message: "" }) =>

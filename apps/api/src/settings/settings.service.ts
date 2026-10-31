@@ -11,6 +11,7 @@ import { platformSettings } from "../database/schema";
 // aqui, não escondidos em números mágicos espalhados pelo código.
 export const DEFAULT_COMMISSION_RATE = 0.05;
 export const DEFAULT_RADAR_SWEEP_INTERVAL_MINUTES = 15;
+export const DEFAULT_DEMAND_MATCH_THRESHOLD = 5;
 
 @Injectable()
 export class SettingsService {
@@ -51,6 +52,11 @@ export class SettingsService {
 
   async setRadarSweepLastRunAt(at: Date): Promise<void> {
     await this.set("radarSweepLastRunAt", at.toISOString());
+  }
+
+  /** Limiar mínimo de compradores para o Demand Match revelar uma contagem — anti-identificação (seção 4.8). */
+  async getDemandMatchThreshold(): Promise<number> {
+    return this.get<number>("demandMatchThreshold", DEFAULT_DEMAND_MATCH_THRESHOLD);
   }
 
   /**

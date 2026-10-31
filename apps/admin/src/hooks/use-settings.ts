@@ -1,6 +1,11 @@
 "use client";
 
-import type { UpdateCommissionRateRequest, UpdateMatchWeightsRequest, UpdateRadarSweepIntervalRequest } from "@spire/contracts";
+import type {
+  UpdateCommissionRateRequest,
+  UpdateDemandMatchThresholdRequest,
+  UpdateMatchWeightsRequest,
+  UpdateRadarSweepIntervalRequest,
+} from "@spire/contracts";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { apiClient } from "@/lib/api-client";
@@ -31,6 +36,14 @@ export function useUpdateRadarSweepInterval() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (payload: UpdateRadarSweepIntervalRequest) => apiClient.settings.updateRadarSweepInterval(payload),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: KEY }),
+  });
+}
+
+export function useUpdateDemandMatchThreshold() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: UpdateDemandMatchThresholdRequest) => apiClient.settings.updateDemandMatchThreshold(payload),
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: KEY }),
   });
 }

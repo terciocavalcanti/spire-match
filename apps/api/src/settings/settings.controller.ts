@@ -3,6 +3,7 @@ import { ApiTags } from "@nestjs/swagger";
 import {
   type PlatformSettings,
   updateCommissionRateRequestSchema,
+  updateDemandMatchThresholdRequestSchema,
   updateMatchWeightsRequestSchema,
   updateRadarSweepIntervalRequestSchema,
 } from "@spire/contracts";
@@ -34,12 +35,13 @@ export class SettingsController {
 
   @Get()
   async get(): Promise<PlatformSettings> {
-    const [{ weights, isDefault }, commissionDefaultRate, radarSweepIntervalMinutes] = await Promise.all([
+    const [{ weights, isDefault }, commissionDefaultRate, radarSweepIntervalMinutes, demandMatchThreshold] = await Promise.all([
       this.settings.getMatchWeights(),
       this.settings.getCommissionRate(),
       this.settings.getRadarSweepIntervalMinutes(),
+      this.settings.getDemandMatchThreshold(),
     ]);
-    return { matchWeights: weights, matchWeightsIsDefault: isDefault, commissionDefaultRate, radarSweepIntervalMinutes };
+    return { matchWeights: weights, matchWeightsIsDefault: isDefault, commissionDefaultRate, radarSweepIntervalMinutes, demandMatchThreshold };
   }
 
   @Patch("match-weights")
@@ -75,6 +77,15 @@ export class SettingsController {
     @Body(new ZodValidationPipe(updateRadarSweepIntervalRequestSchema)) body: ReturnType<typeof updateRadarSweepIntervalRequestSchema.parse>,
   ) {
     await this.settings.set("radarSweepIntervalMinutes", body.minutes, userId);
+    return { saved: true };
+  }
+
+  @Patch("demand-match-threshold")
+  async updateDemandMatchThreshold(
+    @CurrentUserId() userId: string,
+    @Body(new ZodValidationPipe(updateDemandMatchThresholdRequestSchema)) body: ReturnType<typeof updateDemandMatchThresholdRequestSchema.parse>,
+  ) {
+    await this.settings.set("demandMatchThreshold", body.threshold, userId);
     return { saved: true };
   }
 }
