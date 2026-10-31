@@ -23,6 +23,7 @@ import { LeadsModule } from "./leads/leads.module";
 import { MatchesModule } from "./matches/matches.module";
 import { NotificationsModule } from "./notifications/notifications.module";
 import { OwnerLeadsModule } from "./owner-leads/owner-leads.module";
+import { PrivateMarketModule } from "./private-market/private-market.module";
 import { PropertiesModule } from "./properties/properties.module";
 import { ProposalsModule } from "./proposals/proposals.module";
 import { QueueModule } from "./queue/queue.module";
@@ -67,6 +68,7 @@ import { VisitsModule } from "./visits/visits.module";
     UnitsModule,
     IntegrationsStatusModule,
     OwnerLeadsModule,
+    PrivateMarketModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

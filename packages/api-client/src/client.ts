@@ -58,8 +58,13 @@ import {
   type OwnerLead,
   type OwnerLeadDetail,
   type OwnerLeadListQuery,
+  type PrivateMarketOffer,
+  type PrivateMarketOfferAdmin,
+  type PrivateMarketOfferListQuery,
   type PublishOwnerLeadRequest,
+  type RequestPrivateMarketContactRequest,
   type UpdateOwnerLeadStageRequest,
+  type VerifyPrivateMarketOfferRequest,
   type Proposal,
   type PropertyDetail,
   type PlatformSettings,
@@ -448,5 +453,15 @@ export class SpireApiClient {
       this.request<OwnerLeadDetail>(`/owner-leads/${id}/notes`, { method: "POST", body: JSON.stringify(payload) }),
     publish: (id: string, payload: PublishOwnerLeadRequest = {}) =>
       this.request<OwnerLeadDetail>(`/owner-leads/${id}/publish`, { method: "POST", body: JSON.stringify(payload) }),
+  };
+
+  privateMarket = {
+    list: (query: Partial<PrivateMarketOfferListQuery> = {}) =>
+      this.request<{ items: PrivateMarketOffer[]; nextCursor: string | null }>(`/private-market${toQueryString(query)}`),
+    byOwnerLeadId: (ownerLeadId: string) => this.request<PrivateMarketOfferAdmin | null>(`/private-market/by-owner-lead/${ownerLeadId}`),
+    verify: (id: string, payload: VerifyPrivateMarketOfferRequest) =>
+      this.request<PrivateMarketOfferAdmin>(`/private-market/${id}/verify`, { method: "PATCH", body: JSON.stringify(payload) }),
+    requestContact: (id: string, payload: RequestPrivateMarketContactRequest = { message: "" }) =>
+      this.request<{ ok: true }>(`/private-market/${id}/request-contact`, { method: "POST", body: JSON.stringify(payload) }),
   };
 }

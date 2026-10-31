@@ -7,6 +7,7 @@ import Link from "next/link";
 import { use, useState } from "react";
 
 import { AdminShell } from "@/components/layout/AdminShell";
+import { PrivateMarketOfferCard } from "@/components/owner-leads/PrivateMarketOfferCard";
 import { useBrokers } from "@/hooks/use-admin-brokers";
 import {
   useAddOwnerLeadNote,
@@ -103,6 +104,8 @@ export default function OwnerLeadDetailPage({ params }: { params: Promise<{ id: 
             </div>
             {ownerLead.description && <p className="mt-3 text-bodySm text-ink-secondary">{ownerLead.description}</p>}
           </Card>
+
+          <PrivateMarketOfferCard ownerLeadId={ownerLead.id} />
 
           {ownerLead.stage === "APROVADO" && (
             <Card className="border-status-success/30 bg-status-successBg/40 p-5">

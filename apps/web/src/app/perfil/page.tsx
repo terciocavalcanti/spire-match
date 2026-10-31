@@ -2,7 +2,7 @@
 
 import { Card, EmptyState } from "@spire/ui-web";
 import { useQueryClient } from "@tanstack/react-query";
-import { ChevronRight, Key, ShieldCheck } from "lucide-react";
+import { ChevronRight, EyeOff, Key, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -95,6 +95,18 @@ export default function PerfilPage() {
                 <div>
                   <p className="text-bodyMd font-medium text-ink-primary">Tenho um imóvel</p>
                   <p className="text-bodySm text-ink-secondary">Solicite a captação e avaliação do seu imóvel</p>
+                </div>
+              </div>
+              <ChevronRight className="h-5 w-5 text-ink-tertiary" aria-hidden />
+            </Card>
+          </Link>
+          <Link href="/mercado-privado">
+            <Card className="flex items-center justify-between p-4">
+              <div className="flex items-center gap-3">
+                <EyeOff className="h-5 w-5 text-ink-secondary" aria-hidden />
+                <div>
+                  <p className="text-bodyMd font-medium text-ink-primary">Mercado Privado</p>
+                  <p className="text-bodySm text-ink-secondary">Oportunidades off-market verificadas pela VALORI</p>
                 </div>
               </div>
               <ChevronRight className="h-5 w-5 text-ink-tertiary" aria-hidden />

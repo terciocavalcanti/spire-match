@@ -13,6 +13,7 @@ import { and, desc, eq, ilike, or } from "drizzle-orm";
 import type { Database } from "../database/client";
 import { DATABASE } from "../database/database.module";
 import { brokers, ownerLeadActivities, ownerLeads, roleAssignments, roles, users } from "../database/schema";
+import { PrivateMarketService } from "../private-market/private-market.service";
 import { PropertiesService } from "../properties/properties.service";
 
 import { toOwnerLead, toOwnerLeadActivity } from "./owner-lead-mapper";
@@ -31,6 +32,7 @@ export class OwnerLeadsService {
   constructor(
     @Inject(DATABASE) private readonly db: Database,
     private readonly properties: PropertiesService,
+    private readonly privateMarket: PrivateMarketService,
   ) {}
 
   /** Garante que o papel OWNER esteja atribuído — mesmo padrão de AuthService.register atribuindo BUYER no autocadastro. */
@@ -71,8 +73,9 @@ export class OwnerLeadsService {
       description: "Captação solicitada pelo proprietário.",
     });
 
-    // O opt-in de Mercado Privado (request.privateMarketOptIn) é tratado a
-    // partir daqui quando private_market_offers existir — ver Fase E2.
+    if (request.privateMarketOptIn) {
+      await this.privateMarket.createForOwnerLead(row.id);
+    }
 
     return this.getDetail(row.id);
   }
