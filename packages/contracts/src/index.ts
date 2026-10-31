@@ -21,3 +21,4 @@ export * from "./units";
 export * from "./commissions";
 export * from "./reports";
 export * from "./automations";
+export * from "./settings";

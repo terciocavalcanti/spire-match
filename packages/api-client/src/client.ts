@@ -53,6 +53,7 @@ import {
   type NotificationListQuery,
   type Proposal,
   type PropertyDetail,
+  type PlatformSettings,
   type PropertyNearbyQuery,
   type PropertySearchQuery,
   type PropertySummary,
@@ -70,9 +71,12 @@ import {
   type UpdateAutomationRuleRequest,
   type UpdateBrokerRequest,
   type UpdateBuyerPreferencesRequest,
+  type UpdateCommissionRateRequest,
   type UpdateDevelopmentRequest,
   type UpdateLeadStageRequest,
+  type UpdateMatchWeightsRequest,
   type UpdatePropertyRequest,
+  type UpdateRadarSweepIntervalRequest,
   type UpdateUnitRequest,
   type VerifyEmailRequest,
   type VgvReport,
@@ -404,5 +408,15 @@ export class SpireApiClient {
     update: (type: AutomationType, payload: UpdateAutomationRuleRequest) =>
       this.request<AutomationRule>(`/automations/${type}`, { method: "PATCH", body: JSON.stringify(payload) }),
     run: (type: AutomationType) => this.request<RunAutomationResult>(`/automations/${type}/run`, { method: "POST" }),
+  };
+
+  settings = {
+    get: () => this.request<PlatformSettings>("/settings"),
+    updateMatchWeights: (payload: UpdateMatchWeightsRequest) =>
+      this.request<{ saved: true; recalculationEnqueuedFor: number }>("/settings/match-weights", { method: "PATCH", body: JSON.stringify(payload) }),
+    updateCommissionRate: (payload: UpdateCommissionRateRequest) =>
+      this.request<{ saved: true }>("/settings/commission-rate", { method: "PATCH", body: JSON.stringify(payload) }),
+    updateRadarSweepInterval: (payload: UpdateRadarSweepIntervalRequest) =>
+      this.request<{ saved: true }>("/settings/radar-sweep-interval", { method: "PATCH", body: JSON.stringify(payload) }),
   };
 }

@@ -6,6 +6,7 @@ import type { Database } from "../database/client";
 import { DATABASE } from "../database/database.module";
 import { properties, radarSeenProperties, radars } from "../database/schema";
 import { NotificationsService } from "../notifications/notifications.service";
+import { SettingsService } from "../settings/settings.service";
 
 import { toRadar } from "./radar-mapper";
 
@@ -14,6 +15,7 @@ export class RadarsService {
   constructor(
     @Inject(DATABASE) private readonly db: Database,
     private readonly notifications: NotificationsService,
+    private readonly settings: SettingsService,
   ) {}
 
   private async matchesCount(radarId: string): Promise<number> {
@@ -70,16 +72,29 @@ export class RadarsService {
 
   /**
    * Varre todos os radares ativos — chamada pelo job `radar-sweep` do
-   * apps/worker (a cada `RADAR_SWEEP_INTERVAL_MINUTES`), substituindo o
-   * "sem worker em background" documentado em `database/schema/radars.ts`.
+   * apps/worker, que faz ping a cada `RADAR_SWEEP_INTERVAL_MINUTES` (padrão
+   * do worker, fixo). O intervalo *efetivo* é controlado aqui, por
+   * `platform_settings` (D5): um ping que chega antes do intervalo
+   * configurado é ignorado. Isso permite aumentar o intervalo pelo admin
+   * sem reiniciar o worker — nunca diminuir abaixo do ping fixo do worker,
+   * o que é documentado na tela de Configurações.
    */
   async sweep(): Promise<{ radarsChecked: number; newMatchesTotal: number }> {
+    const [intervalMinutes, lastRunAt] = await Promise.all([
+      this.settings.getRadarSweepIntervalMinutes(),
+      this.settings.getRadarSweepLastRunAt(),
+    ]);
+    if (lastRunAt && Date.now() - lastRunAt.getTime() < intervalMinutes * 60_000) {
+      return { radarsChecked: 0, newMatchesTotal: 0 };
+    }
+
     const activeRadars = await this.db.select().from(radars).where(eq(radars.active, true));
     let newMatchesTotal = 0;
     for (const radar of activeRadars) {
       const { newMatches } = await this.performCheck(radar);
       newMatchesTotal += newMatches;
     }
+    await this.settings.setRadarSweepLastRunAt(new Date());
     return { radarsChecked: activeRadars.length, newMatchesTotal };
   }
 

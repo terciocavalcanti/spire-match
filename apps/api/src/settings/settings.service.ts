@@ -1,13 +1,16 @@
 import { Inject, Injectable } from "@nestjs/common";
+import type { MatchWeightsInput } from "@spire/contracts";
+import { DEFAULT_MATCH_RULESET_VERSION, DEFAULT_MATCH_WEIGHTS } from "@spire/domain";
 import { eq } from "drizzle-orm";
 
 import type { Database } from "../database/client";
 import { DATABASE } from "../database/database.module";
 import { platformSettings } from "../database/schema";
 
-// Comissão padrão quando o admin ainda não configurou nada em D5 (5%) —
-// documentado aqui, não escondido num número mágico espalhado pelo código.
+// Fallbacks quando o admin ainda não configurou nada em D5 — documentados
+// aqui, não escondidos em números mágicos espalhados pelo código.
 export const DEFAULT_COMMISSION_RATE = 0.05;
+export const DEFAULT_RADAR_SWEEP_INTERVAL_MINUTES = 15;
 
 @Injectable()
 export class SettingsService {
@@ -16,6 +19,11 @@ export class SettingsService {
   async get<T>(key: string, fallback: T): Promise<T> {
     const [row] = await this.db.select().from(platformSettings).where(eq(platformSettings.key, key)).limit(1);
     return row ? (row.value as T) : fallback;
+  }
+
+  private async getWithMeta<T>(key: string): Promise<{ value: T; updatedAt: Date } | null> {
+    const [row] = await this.db.select().from(platformSettings).where(eq(platformSettings.key, key)).limit(1);
+    return row ? { value: row.value as T, updatedAt: row.updatedAt } : null;
   }
 
   async set(key: string, value: unknown, updatedByUserId?: string): Promise<void> {
@@ -30,5 +38,29 @@ export class SettingsService {
 
   async getCommissionRate(): Promise<number> {
     return this.get<number>("commissionDefaultRate", DEFAULT_COMMISSION_RATE);
+  }
+
+  async getRadarSweepIntervalMinutes(): Promise<number> {
+    return this.get<number>("radarSweepIntervalMinutes", DEFAULT_RADAR_SWEEP_INTERVAL_MINUTES);
+  }
+
+  async getRadarSweepLastRunAt(): Promise<Date | null> {
+    const iso = await this.get<string | null>("radarSweepLastRunAt", null);
+    return iso ? new Date(iso) : null;
+  }
+
+  async setRadarSweepLastRunAt(at: Date): Promise<void> {
+    await this.set("radarSweepLastRunAt", at.toISOString());
+  }
+
+  /**
+   * `rulesetVersion` muda sozinho quando os pesos são salvos (deriva do
+   * `updatedAt` da própria configuração) — sem precisar de uma coluna de
+   * versão separada para rastrear qual fórmula gerou cada match_results.
+   */
+  async getMatchWeights(): Promise<{ weights: MatchWeightsInput; rulesetVersion: string; isDefault: boolean }> {
+    const stored = await this.getWithMeta<MatchWeightsInput>("matchWeights");
+    if (!stored) return { weights: DEFAULT_MATCH_WEIGHTS, rulesetVersion: DEFAULT_MATCH_RULESET_VERSION, isDefault: true };
+    return { weights: stored.value, rulesetVersion: `custom-${stored.updatedAt.getTime()}`, isDefault: false };
   }
 }

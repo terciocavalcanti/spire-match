@@ -1,12 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 import type { MatchResult } from "@spire/contracts";
-import {
-  DEFAULT_MATCH_RULESET_VERSION,
-  DEFAULT_MATCH_WEIGHTS,
-  computeMatchScore,
-  type BuyerMatchProfile,
-  type PropertyMatchInput,
-} from "@spire/domain";
+import { computeMatchScore, type BuyerMatchProfile, type MatchWeights, type PropertyMatchInput } from "@spire/domain";
 import { desc, eq, inArray, sql } from "drizzle-orm";
 
 import type { Database } from "../database/client";
@@ -20,6 +14,8 @@ import {
   userInteractions,
 } from "../database/schema";
 import { toPropertySummary } from "../properties/property-mapper";
+import { QueueService } from "../queue/queue.service";
+import { SettingsService } from "../settings/settings.service";
 
 type PropertyRow = typeof properties.$inferSelect;
 
@@ -43,7 +39,17 @@ function toPropertyMatchInput(row: PropertyRow): PropertyMatchInput {
 
 @Injectable()
 export class MatchesService {
-  constructor(@Inject(DATABASE) private readonly db: Database) {}
+  constructor(
+    @Inject(DATABASE) private readonly db: Database,
+    private readonly settings: SettingsService,
+    private readonly queue: QueueService,
+  ) {}
+
+  /** Pesos configuráveis em Configurações (D5) — com fallback para os padrões de packages/domain quando não há nada salvo. */
+  private async getWeights(): Promise<{ weights: MatchWeights; rulesetVersion: string }> {
+    const { weights, rulesetVersion } = await this.settings.getMatchWeights();
+    return { weights, rulesetVersion };
+  }
 
   private async buildBuyerProfile(
     userId: string,
@@ -136,9 +142,10 @@ export class MatchesService {
   ): Promise<MatchResult[]> {
     const buyer = await this.buildBuyerProfile(userId, location);
     const availableProperties = await this.db.select().from(properties).where(eq(properties.status, "AVAILABLE"));
+    const { weights, rulesetVersion } = await this.getWeights();
 
     const computed = availableProperties.map((property) =>
-      computeMatchScore(buyer, toPropertyMatchInput(property), DEFAULT_MATCH_WEIGHTS, DEFAULT_MATCH_RULESET_VERSION),
+      computeMatchScore(buyer, toPropertyMatchInput(property), weights, rulesetVersion),
     );
 
     await this.persist(userId, computed);
@@ -159,12 +166,8 @@ export class MatchesService {
     if (!property) return null;
 
     const buyer = await this.buildBuyerProfile(userId, location);
-    const result = computeMatchScore(
-      buyer,
-      toPropertyMatchInput(property),
-      DEFAULT_MATCH_WEIGHTS,
-      DEFAULT_MATCH_RULESET_VERSION,
-    );
+    const { weights, rulesetVersion } = await this.getWeights();
+    const result = computeMatchScore(buyer, toPropertyMatchInput(property), weights, rulesetVersion);
     await this.persist(userId, [result]);
     return this.toDto(result, property);
   }
@@ -186,15 +189,33 @@ export class MatchesService {
       .where(eq(roles.name, "BUYER"));
 
     const propertyInput = toPropertyMatchInput(property);
+    const { weights, rulesetVersion } = await this.getWeights();
     for (const { userId } of buyerRows) {
       // Sem localização ao vivo em segundo plano — o peso de proximidade é
       // redistribuído automaticamente (mesma regra do caminho síncrono).
       const buyer = await this.buildBuyerProfile(userId, null);
-      const result = computeMatchScore(buyer, propertyInput, DEFAULT_MATCH_WEIGHTS, DEFAULT_MATCH_RULESET_VERSION);
+      const result = computeMatchScore(buyer, propertyInput, weights, rulesetVersion);
       await this.persist(userId, [result]);
     }
 
     return { buyersScored: buyerRows.length };
+  }
+
+  /**
+   * Enfileira um recálculo assíncrono para todo comprador — chamado quando
+   * os pesos do Match Engine mudam em Configurações (D5). Reaproveita a
+   * mesma fila `match-recalc-buyer` do Marco C, sem bloquear a requisição
+   * HTTP que salvou os pesos.
+   */
+  async enqueueRecalculationForAllBuyers(): Promise<{ enqueued: number }> {
+    const buyerRows = await this.db
+      .select({ userId: roleAssignments.userId })
+      .from(roleAssignments)
+      .innerJoin(roles, eq(roles.id, roleAssignments.roleId))
+      .where(eq(roles.name, "BUYER"));
+
+    await Promise.all(buyerRows.map(({ userId }) => this.queue.enqueueRecalcForBuyer(userId)));
+    return { enqueued: buyerRows.length };
   }
 
   async computeForPropertyIds(
@@ -205,14 +226,10 @@ export class MatchesService {
     if (propertyIds.length === 0) return new Map();
     const rows = await this.db.select().from(properties).where(inArray(properties.id, propertyIds));
     const buyer = await this.buildBuyerProfile(userId, location);
+    const { weights, rulesetVersion } = await this.getWeights();
     const map = new Map<string, MatchResult>();
     for (const property of rows) {
-      const result = computeMatchScore(
-        buyer,
-        toPropertyMatchInput(property),
-        DEFAULT_MATCH_WEIGHTS,
-        DEFAULT_MATCH_RULESET_VERSION,
-      );
+      const result = computeMatchScore(buyer, toPropertyMatchInput(property), weights, rulesetVersion);
       map.set(property.id, this.toDto(result, property));
     }
     return map;
