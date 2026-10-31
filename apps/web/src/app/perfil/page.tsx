@@ -2,7 +2,8 @@
 
 import { Card, EmptyState } from "@spire/ui-web";
 import { useQueryClient } from "@tanstack/react-query";
-import { ShieldCheck } from "lucide-react";
+import { ChevronRight, Key, ShieldCheck } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { AppShell } from "@/components/layout/AppShell";
@@ -87,6 +88,18 @@ export default function PerfilPage() {
         <div className="mt-6 space-y-3">
           <InstallPwaCard />
           <PushNotificationsCard />
+          <Link href="/tenho-um-imovel">
+            <Card className="flex items-center justify-between p-4">
+              <div className="flex items-center gap-3">
+                <Key className="h-5 w-5 text-ink-secondary" aria-hidden />
+                <div>
+                  <p className="text-bodyMd font-medium text-ink-primary">Tenho um imóvel</p>
+                  <p className="text-bodySm text-ink-secondary">Solicite a captação e avaliação do seu imóvel</p>
+                </div>
+              </div>
+              <ChevronRight className="h-5 w-5 text-ink-tertiary" aria-hidden />
+            </Card>
+          </Link>
         </div>
 
         <div className="mt-6">

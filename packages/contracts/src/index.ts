@@ -23,3 +23,4 @@ export * from "./reports";
 export * from "./automations";
 export * from "./settings";
 export * from "./integrations-status";
+export * from "./owner-leads";

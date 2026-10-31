@@ -52,6 +52,14 @@ import {
   type MatchResult,
   type Notification,
   type NotificationListQuery,
+  type AssignOwnerLeadRequest,
+  type CreateOwnerLeadNoteRequest,
+  type CreateOwnerLeadRequest,
+  type OwnerLead,
+  type OwnerLeadDetail,
+  type OwnerLeadListQuery,
+  type PublishOwnerLeadRequest,
+  type UpdateOwnerLeadStageRequest,
   type Proposal,
   type PropertyDetail,
   type PlatformSettings,
@@ -423,5 +431,22 @@ export class SpireApiClient {
 
   integrationsStatus = {
     list: () => this.request<{ items: IntegrationStatusEntry[] }>("/integrations-status"),
+  };
+
+  ownerLeads = {
+    create: (payload: CreateOwnerLeadRequest) =>
+      this.request<OwnerLeadDetail>("/owner-leads", { method: "POST", body: JSON.stringify(payload) }),
+    mine: () => this.request<{ items: OwnerLead[] }>("/owner-leads/mine"),
+    list: (query: Partial<OwnerLeadListQuery> = {}) =>
+      this.request<{ items: OwnerLead[]; nextCursor: string | null }>(`/owner-leads${toQueryString(query)}`),
+    detail: (id: string) => this.request<OwnerLeadDetail>(`/owner-leads/${id}`),
+    updateStage: (id: string, payload: UpdateOwnerLeadStageRequest) =>
+      this.request<OwnerLeadDetail>(`/owner-leads/${id}/stage`, { method: "PATCH", body: JSON.stringify(payload) }),
+    assign: (id: string, payload: AssignOwnerLeadRequest) =>
+      this.request<OwnerLeadDetail>(`/owner-leads/${id}/assign`, { method: "PATCH", body: JSON.stringify(payload) }),
+    addNote: (id: string, payload: CreateOwnerLeadNoteRequest) =>
+      this.request<OwnerLeadDetail>(`/owner-leads/${id}/notes`, { method: "POST", body: JSON.stringify(payload) }),
+    publish: (id: string, payload: PublishOwnerLeadRequest = {}) =>
+      this.request<OwnerLeadDetail>(`/owner-leads/${id}/publish`, { method: "POST", body: JSON.stringify(payload) }),
   };
 }

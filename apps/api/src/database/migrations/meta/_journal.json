@@ -64,6 +64,13 @@
       "when": 1793404794021,
       "tag": "0008_slippery_fixer",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793437647257,
+      "tag": "0009_dusty_gargoyle",
+      "breakpoints": true
     }
   ]
 }
