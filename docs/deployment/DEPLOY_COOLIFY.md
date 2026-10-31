@@ -37,7 +37,7 @@ No painel do Coolify (a tela que você já está):
 5. Configure:
    - **Base Directory**: `/`
    - **Docker Compose Location**: `docker-compose.coolify.yml`
-6. Clique em algo como **"Continue"** / **"Save"** para o Coolify analisar o arquivo (ele vai listar os 5 serviços: `postgres`, `redis`, `api`, `web`, `admin`).
+6. Clique em algo como **"Continue"** / **"Save"** para o Coolify analisar o arquivo (ele vai listar os 6 serviços: `postgres`, `redis`, `api`, `worker`, `web`, `admin`).
 
 ## 2. Preencher as variáveis de ambiente
 
@@ -50,6 +50,7 @@ lista como campos editáveis. Preencha:
 | `POSTGRES_USER` | `spire` |
 | `POSTGRES_PASSWORD` | uma senha forte só sua — gere com `openssl rand -hex 24` (não use `-base64`: pode gerar `#`/`@`/`/`, que quebram a URL de conexão montada automaticamente) |
 | `POSTGRES_DB` | `spire_match` |
+| `INTERNAL_API_KEY` | segredo compartilhado entre `api` e `worker` (nunca exposto ao navegador) — gere com `openssl rand -hex 24` |
 | `CORS_ALLOWED_ORIGINS` | `https://app.seudominio.com.br,https://admin.seudominio.com.br` |
 | `NEXT_PUBLIC_API_URL` | `https://api.seudominio.com.br/api/v1` |
 | `NEXT_PUBLIC_MAPTILER_API_KEY` | deixe vazio por agora |
@@ -81,15 +82,18 @@ serviço, adicione:
 | `web` | `3000` | `https://app.seudominio.com.br` |
 | `admin` | `3001` | `https://admin.seudominio.com.br` |
 
-Não atribua domínio a `postgres` nem `redis` — eles devem continuar
-acessíveis só internamente, nunca pela internet.
+Não atribua domínio a `postgres`, `redis` nem `worker` — `postgres`/`redis`
+devem continuar acessíveis só internamente, e `worker` não expõe porta
+nenhuma (processa filas BullMQ em segundo plano — recálculo de Match e
+varredura de radares/automações — chamando de volta a própria `api` pelos
+endpoints `/internal/*`, nunca recebe requisição HTTP de fora).
 
 ## 4. Deploy
 
-Clique em **Deploy**. O Coolify vai: clonar o repositório, buildar as 3
-imagens (api, web, admin — isso leva uns 3-6 minutos na primeira vez),
-subir os 5 containers e emitir os certificados HTTPS automaticamente para os
-3 domínios.
+Clique em **Deploy**. O Coolify vai: clonar o repositório, buildar as 4
+imagens (api, worker, web, admin — isso leva uns 4-8 minutos na primeira
+vez), subir os 6 containers e emitir os certificados HTTPS automaticamente
+para os 3 domínios.
 
 Acompanhe pelos **Deployment Logs**. Ao final, cada serviço deve aparecer
 como "Running"/saudável.

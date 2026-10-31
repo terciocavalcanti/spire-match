@@ -61,6 +61,15 @@ export class QueueService implements OnModuleDestroy {
     }
   }
 
+  /** Usado por GET /health/ready — nunca expõe a conexão crua para fora do serviço. */
+  async ping(): Promise<boolean> {
+    try {
+      return (await this.connection.ping()) === "PONG";
+    } catch {
+      return false;
+    }
+  }
+
   async onModuleDestroy(): Promise<void> {
     await Promise.all([this.recalcBuyerQueue.close(), this.recalcPropertyQueue.close()]);
     await this.connection.quit();

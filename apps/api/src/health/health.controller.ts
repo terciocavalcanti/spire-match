@@ -4,11 +4,15 @@ import { sql } from "drizzle-orm";
 
 import type { Database } from "../database/client";
 import { DATABASE } from "../database/database.module";
+import { QueueService } from "../queue/queue.service";
 
 @ApiTags("health")
 @Controller("health")
 export class HealthController {
-  constructor(@Inject(DATABASE) private readonly db: Database) {}
+  constructor(
+    @Inject(DATABASE) private readonly db: Database,
+    private readonly queue: QueueService,
+  ) {}
 
   @Get("live")
   live() {
@@ -17,14 +21,22 @@ export class HealthController {
 
   @Get("ready")
   async ready() {
+    let databaseOk = false;
     try {
       await this.db.execute(sql`select 1`);
-      return { status: "ok" as const };
+      databaseOk = true;
     } catch {
+      databaseOk = false;
+    }
+    const redisOk = await this.queue.ping();
+
+    if (!databaseOk || !redisOk) {
       throw new ServiceUnavailableException({
-        code: "DATABASE_UNAVAILABLE",
-        message: "Banco de dados indisponível",
+        code: "DEPENDENCY_UNAVAILABLE",
+        message: "Dependência indisponível",
+        details: { database: databaseOk, redis: redisOk },
       });
     }
+    return { status: "ok" as const, database: true, redis: true };
   }
 }

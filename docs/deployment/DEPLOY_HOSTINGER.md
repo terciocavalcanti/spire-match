@@ -190,10 +190,13 @@ e clique em **"Run workflow"**.
 
 ### 4.2. Acompanhar
 
-Na mesma página de Actions, clique na execução em andamento. Ela tem 2
-etapas: `build-and-push` (constrói as 3 imagens, ~3–8 minutos) e `deploy`
-(conecta na VPS e atualiza, ~30 segundos). Se a etapa `deploy` falhar com
-erro de SSH, revise o passo 3.1–3.2.
+Na mesma página de Actions, clique na execução em andamento. Ela tem 3
+etapas, em sequência: `test` (typecheck/lint/test/build do monorepo inteiro
+— se algo quebrar aqui, nenhuma imagem nova é construída nem publicada,
+~2–4 minutos), `build-and-push` (constrói as 4 imagens — api, worker, web,
+admin —, ~3–8 minutos) e `deploy` (conecta na VPS e atualiza, ~30
+segundos). Se a etapa `deploy` falhar com erro de SSH, revise o passo
+3.1–3.2.
 
 ### 4.3. Deixar as imagens do GHCR acessíveis para a VPS
 
