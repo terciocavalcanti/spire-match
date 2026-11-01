@@ -1,7 +1,7 @@
 "use client";
 
 import { Button, EmptyState, MatchBadge } from "@spire/ui-web";
-import { BedDouble, Car, List, LocateFixed, Ruler } from "lucide-react";
+import { BedDouble, Car, List, LocateFixed, Maximize, Minimize, Navigation, Ruler } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -9,6 +9,7 @@ import { useMemo, useState } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { useGeolocation } from "@/hooks/use-geolocation";
 import { useMatches } from "@/hooks/use-matches";
+import { useRoute } from "@/hooks/use-route";
 
 // Leaflet acessa `window` no carregamento do módulo — precisa ficar fora do
 // caminho de SSR (o próprio componente já é "use client", mas o Next ainda
@@ -27,6 +28,7 @@ export default function MapaPage() {
   const geo = useGeolocation();
   const { data, isLoading } = useMatches({ limit: 50 });
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const points = useMemo(
     () => (data?.items ?? []).filter((m) => m.property.location).map((m) => ({ property: m.property, score: m.score })),
@@ -35,6 +37,7 @@ export default function MapaPage() {
 
   const selected = points.find((p) => p.property.id === selectedId) ?? points[0];
   const center = geo.location ?? DEFAULT_CENTER;
+  const route = useRoute(geo.location, selected?.property.location ?? null);
 
   return (
     <AppShell
@@ -73,15 +76,25 @@ export default function MapaPage() {
           <EmptyState title="Nenhum imóvel com localização disponível" description="Complete seu perfil para calcularmos Matches geolocalizados." />
         </div>
       ) : (
-        <div className="relative">
+        <div className={isFullscreen ? "fixed inset-0 z-50 flex flex-col bg-background-base" : "relative"}>
           <PropertyMap
             points={points}
             center={center}
             userLocation={geo.location}
             selectedPropertyId={selected?.property.id}
             onSelect={setSelectedId}
-            className="isolate h-[58dvh] w-full bg-background-subtle"
+            routeCoordinates={route.data?.coordinates ?? null}
+            className={`isolate w-full bg-background-subtle ${isFullscreen ? "flex-1" : "h-[58dvh]"}`}
           />
+
+          <button
+            type="button"
+            onClick={() => setIsFullscreen((v) => !v)}
+            aria-label={isFullscreen ? "Sair da tela cheia" : "Ver mapa em tela cheia"}
+            className="absolute left-3 top-3 z-[1001] flex h-9 w-9 items-center justify-center rounded-full bg-background-elevated/90 text-ink-primary shadow-sm"
+          >
+            {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+          </button>
 
           {selected && (
             <div className="relative -mt-6 mx-4 mb-4 overflow-hidden rounded-2xl border border-border-subtle bg-background-elevated shadow-lg sm:mx-6">
@@ -112,6 +125,18 @@ export default function MapaPage() {
                       <Car className="h-3 w-3" /> {selected.property.parkingSpaces}
                     </span>
                   </div>
+                  {geo.location ? (
+                    route.isFetching ? (
+                      <p className="mt-1 text-caption text-ink-tertiary">Calculando rota…</p>
+                    ) : route.data ? (
+                      <p className="mt-1 flex items-center gap-1 text-caption text-ink-secondary">
+                        <Navigation className="h-3 w-3" aria-hidden />
+                        {(route.data.distanceMeters / 1000).toFixed(1)} km · {Math.round(route.data.durationSeconds / 60)} min de carro
+                      </p>
+                    ) : null
+                  ) : (
+                    <p className="mt-1 text-caption text-ink-tertiary">Ative sua localização para ver a rota até aqui.</p>
+                  )}
                 </div>
               </div>
               <div className="px-3 pb-3">

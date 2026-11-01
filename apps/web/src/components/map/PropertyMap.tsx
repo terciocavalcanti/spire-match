@@ -10,19 +10,22 @@ import { useEffect, useRef } from "react";
 const NEARBY_RADIUS_METERS = 1_000;
 
 /**
- * Tile server bruto do OpenStreetMap — decisão explícita do usuário,
- * ciente do trade-off: a política de uso do OSM
+ * Com NEXT_PUBLIC_MAPTILER_API_KEY configurada, usa tiles raster do MapTiler
+ * (plano gratuito — exige atribuição visível, já coberta pelo
+ * attributionControl padrão do Leaflet). Sem a chave, cai para o tile server
+ * bruto do OpenStreetMap — ciente do trade-off: a política de uso do OSM
  * (https://operations.osmfoundation.org/policies/tiles/) não permite uso
  * pesado/comercial/automatizado sem acordo prévio, e a OSMF pode bloquear o
- * domínio/IP sem aviso se o tráfego crescer. Tentamos primeiro o basemap
- * "gratuito" da CARTO (Positron), mas a CARTO passou a exigir cadastro de
- * chave de API mesmo no tier free — não é mais keyless. Caminho de saída,
- * sem mudar nenhum código: configurar NEXT_PUBLIC_MAPTILER_API_KEY (infra já
- * pronta no projeto/Coolify) ou uma chave da CARTO, e trocar TILE_URL abaixo
- * para o endpoint correspondente.
+ * domínio/IP sem aviso se o tráfego crescer. Nunca falha silenciosamente
+ * como "mapa ativo" sem fonte real — sempre um dos dois providers funciona.
  */
-const TILE_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
-const TILE_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+const MAPTILER_KEY = process.env.NEXT_PUBLIC_MAPTILER_API_KEY;
+const TILE_URL = MAPTILER_KEY
+  ? `https://api.maptiler.com/maps/streets-v4/256/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`
+  : "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+const TILE_ATTRIBUTION = MAPTILER_KEY
+  ? '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
+  : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
 export interface MapPoint {
   property: PropertySummary;
@@ -36,15 +39,26 @@ export interface PropertyMapProps {
   userLocation?: { lat: number; lng: number } | null;
   selectedPropertyId?: string | null;
   onSelect: (propertyId: string) => void;
+  /** Geometria da rota até o imóvel selecionado (via `useRoute`) — [lat, lng] por ponto. */
+  routeCoordinates?: [number, number][] | null;
   className?: string;
 }
 
-export function PropertyMap({ points, center, userLocation, selectedPropertyId, onSelect, className }: PropertyMapProps) {
+export function PropertyMap({
+  points,
+  center,
+  userLocation,
+  selectedPropertyId,
+  onSelect,
+  routeCoordinates,
+  className,
+}: PropertyMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<Map<string, L.Marker>>(new Map());
   const userMarkerRef = useRef<L.Marker | null>(null);
   const userRadiusRef = useRef<L.Circle | null>(null);
+  const routeLineRef = useRef<L.Polyline | null>(null);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -54,7 +68,7 @@ export function PropertyMap({ points, center, userLocation, selectedPropertyId, 
       13,
     );
     L.control.zoom({ position: "topright" }).addTo(map);
-    L.tileLayer(TILE_URL, { attribution: TILE_ATTRIBUTION, maxZoom: 19 }).addTo(map);
+    L.tileLayer(TILE_URL, { attribution: TILE_ATTRIBUTION, maxZoom: 19, crossOrigin: true }).addTo(map);
     mapRef.current = map;
     const markers = markersRef.current;
 
@@ -66,8 +80,21 @@ export function PropertyMap({ points, center, userLocation, selectedPropertyId, 
       markers.clear();
       userMarkerRef.current = null;
       userRadiusRef.current = null;
+      routeLineRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- mapa é inicializado uma vez; recentralização é feita via flyTo abaixo
+  }, []);
+
+  // Recalcula o layout interno do Leaflet quando o contêiner muda de tamanho
+  // (ex.: alternar tela cheia) — sem isso, o mapa continua renderizado no
+  // tamanho antigo até o usuário interagir manualmente.
+  useEffect(() => {
+    const map = mapRef.current;
+    const container = containerRef.current;
+    if (!map || !container) return;
+    const observer = new ResizeObserver(() => map.invalidateSize());
+    observer.observe(container);
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
@@ -120,11 +147,21 @@ export function PropertyMap({ points, center, userLocation, selectedPropertyId, 
     }
   }, [points, selectedPropertyId, onSelect, userLocation]);
 
+  // Recentraliza só na transição de "sem localização" para "localização
+  // obtida" (ligar/desligar "Minha localização") — nunca a cada atualização
+  // de watchPosition, senão o flyTo contínuo faz a tela "piscar"/animar sem
+  // parar enquanto o GPS reporta novas coordenadas (a cada poucos segundos).
+  const hasUserLocationRef = useRef(false);
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
-    map.flyTo([center.lat, center.lng], map.getZoom(), { duration: 1 });
-  }, [center.lat, center.lng]);
+    const hasUserLocation = Boolean(userLocation);
+    if (hasUserLocation !== hasUserLocationRef.current) {
+      hasUserLocationRef.current = hasUserLocation;
+      map.flyTo([center.lat, center.lng], map.getZoom(), { duration: 1 });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- centraliza só na transição de userLocation, não a cada tick de center
+  }, [userLocation]);
 
   // Marcador "você está aqui" + raio de 1km, acompanhando a posição em tempo real.
   useEffect(() => {
@@ -171,6 +208,24 @@ export function PropertyMap({ points, center, userLocation, selectedPropertyId, 
       }).addTo(map);
     }
   }, [userLocation]);
+
+  // Linha da rota até o imóvel selecionado (useRoute, calculada na página).
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    routeLineRef.current?.remove();
+    routeLineRef.current = null;
+
+    if (routeCoordinates && routeCoordinates.length > 1) {
+      routeLineRef.current = L.polyline(routeCoordinates, {
+        color: "#3B6EA5",
+        weight: 4,
+        opacity: 0.85,
+      }).addTo(map);
+      map.fitBounds(routeLineRef.current.getBounds(), { padding: [48, 48] });
+    }
+  }, [routeCoordinates]);
 
   return <div ref={containerRef} className={className} role="application" aria-label="Mapa de imóveis" />;
 }
