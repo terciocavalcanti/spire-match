@@ -4,6 +4,7 @@ import { EmptyState, PropertyCard } from "@spire/ui-web";
 import { MapPin, Sparkles } from "lucide-react";
 import Link from "next/link";
 
+import { NearbyOpportunitiesPrompt } from "@/components/home/NearbyOpportunitiesPrompt";
 import { AppShell } from "@/components/layout/AppShell";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useFavoriteIds, useToggleFavorite } from "@/hooks/use-favorites";
@@ -74,6 +75,8 @@ export default function HomePage() {
           </>
         )}
 
+        {!isLoadingUser && user && <NearbyOpportunitiesPrompt geo={geo} />}
+
         {isLoadingMatches ? (
           <div className="mt-6 h-96 animate-pulse rounded-2xl bg-background-subtle" aria-hidden />
         ) : hero ? (
@@ -103,31 +106,6 @@ export default function HomePage() {
                 </Link>
               }
             />
-          </div>
-        )}
-
-        {!isLoadingMatches && rest.length > 0 && (
-          <div className="mt-8">
-            <div className="flex items-center justify-between">
-              <h2 className="font-display text-xl text-ink-primary">Mais Matches para você</h2>
-              <Link href="/matches/descobrir" className="text-bodySm font-medium text-ink-secondary">
-                Ver todos
-              </Link>
-            </div>
-            <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {rest.slice(0, 4).map((m) => (
-                <PropertyCard
-                  key={m.propertyId}
-                  property={m.property}
-                  score={m.score}
-                  isFavorite={favoriteIds.has(m.propertyId)}
-                  onToggleFavorite={() =>
-                    toggleFavorite.mutate({ propertyId: m.propertyId, isFavorite: favoriteIds.has(m.propertyId) })
-                  }
-                  LinkComponent={NextLink}
-                />
-              ))}
-            </div>
           </div>
         )}
 
@@ -175,6 +153,31 @@ export default function HomePage() {
             </p>
           )}
         </div>
+
+        {!isLoadingMatches && rest.length > 0 && (
+          <div className="mt-8">
+            <div className="flex items-center justify-between">
+              <h2 className="font-display text-xl text-ink-primary">Mais Matches para você</h2>
+              <Link href="/matches/descobrir" className="text-bodySm font-medium text-ink-secondary">
+                Ver todos
+              </Link>
+            </div>
+            <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {rest.slice(0, 4).map((m) => (
+                <PropertyCard
+                  key={m.propertyId}
+                  property={m.property}
+                  score={m.score}
+                  isFavorite={favoriteIds.has(m.propertyId)}
+                  onToggleFavorite={() =>
+                    toggleFavorite.mutate({ propertyId: m.propertyId, isFavorite: favoriteIds.has(m.propertyId) })
+                  }
+                  LinkComponent={NextLink}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </AppShell>
   );

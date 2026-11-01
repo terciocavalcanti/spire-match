@@ -22,6 +22,14 @@ export function useGeolocation() {
       if (watchIdRef.current !== null && typeof navigator !== "undefined" && navigator.geolocation) {
         navigator.geolocation.clearWatch(watchIdRef.current);
       }
+      // Sem isso, um efeito de montagem que chama `request()` (ex.: o
+      // parâmetro `ativarLocalizacao` de /mapa) nunca tenta de novo no
+      // segundo passe do Strict Mode do React em dev: o watch já foi limpo
+      // aqui, mas `watchIdRef`/`status` continuavam presos em "requesting"
+      // com uma referência inválida, então `request()` via de novo achava
+      // que já havia um watch ativo.
+      watchIdRef.current = null;
+      setStatus("idle");
     };
   }, []);
 

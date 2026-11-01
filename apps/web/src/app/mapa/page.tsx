@@ -4,7 +4,8 @@ import { Button, EmptyState, MatchBadge } from "@spire/ui-web";
 import { BedDouble, Car, List, LocateFixed, Maximize, Minimize, Navigation, Ruler } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useMemo, useState } from "react";
 
 import { AppShell } from "@/components/layout/AppShell";
 import { useGeolocation } from "@/hooks/use-geolocation";
@@ -25,10 +26,39 @@ const currencyFormatter = new Intl.NumberFormat("pt-BR", { style: "currency", cu
 const DEFAULT_CENTER = { lat: -8.1222, lng: -34.9021 };
 
 export default function MapaPage() {
+  return (
+    <Suspense
+      fallback={
+        <AppShell>
+          <div className="h-[58dvh] w-full animate-pulse bg-background-subtle" aria-hidden />
+        </AppShell>
+      }
+    >
+      <MapaPageInner />
+    </Suspense>
+  );
+}
+
+function MapaPageInner() {
   const geo = useGeolocation();
+  // useSearchParams() exige um limite Suspense no App Router (Next.js lança
+  // erro de prerender sem isso) — por isso a lógica fica num componente
+  // interno, envolvido pelo <Suspense> em MapaPage acima.
+  const searchParams = useSearchParams();
   const { data, isLoading } = useMatches({ limit: 50 });
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Vem do convite "Deseja procurar oportunidades agora?" na Home — o clique
+  // lá já é o gesto explícito do usuário; ativar aqui (não lá) evita que o
+  // watchPosition seja cancelado pelo desmonte da Home antes da resposta
+  // chegar (ver NearbyOpportunitiesPrompt).
+  useEffect(() => {
+    if (searchParams.get("ativarLocalizacao") === "1" && geo.status === "idle") {
+      geo.request();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- só na montagem, nunca de novo se o status mudar depois
+  }, []);
 
   const points = useMemo(
     () => (data?.items ?? []).filter((m) => m.property.location).map((m) => ({ property: m.property, score: m.score })),
