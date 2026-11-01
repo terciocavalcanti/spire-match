@@ -91,14 +91,14 @@ export default function MapaPage() {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={selected.property.coverImageUrl} alt={selected.property.title} className="h-full w-full object-cover" />
                   )}
-                  <div className="absolute left-1 top-1">
-                    <MatchBadge score={selected.score ?? null} />
-                  </div>
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-bodySm uppercase tracking-wide text-ink-tertiary">
-                    {selected.property.type}
-                  </p>
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="truncate text-bodySm uppercase tracking-wide text-ink-tertiary">
+                      {selected.property.type}
+                    </p>
+                    <MatchBadge score={selected.score ?? null} className="shrink-0" />
+                  </div>
                   <p className="font-display text-lg text-ink-primary">{currencyFormatter.format(selected.property.price)}</p>
                   <p className="truncate text-bodySm text-ink-secondary">{selected.property.neighborhood}, {selected.property.city}</p>
                   <div className="mt-1 flex items-center gap-3 text-caption text-ink-secondary">
