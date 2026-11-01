@@ -1,12 +1,13 @@
 "use client";
 
 import { AdminSidebar, Button } from "@spire/ui-web";
-import { Bell, Factory, ShieldAlert } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { Bell, Factory, LogOut, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-import { useCurrentUser } from "@/hooks/use-current-user";
+import { CURRENT_USER_QUERY_KEY, useCurrentUser } from "@/hooks/use-current-user";
 import { useUnreadNotificationsCount } from "@/hooks/use-notifications";
 import { apiClient } from "@/lib/api-client";
 import { hasAdminAccess, isDeveloperPartnerOnly } from "@/lib/roles";
@@ -20,6 +21,7 @@ function NextLink({ href, ...props }: React.AnchorHTMLAttributes<HTMLAnchorEleme
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { data: user, isLoading } = useCurrentUser();
   const { data: unread } = useUnreadNotificationsCount(Boolean(user && hasAdminAccess(user.roles)));
 
@@ -85,14 +87,28 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             )}
           </Link>
           {user && (
-            <div className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-background-subtle text-sm font-semibold text-ink-secondary">
-                {user.name.charAt(0).toUpperCase()}
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-background-subtle text-sm font-semibold text-ink-secondary">
+                  {user.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="leading-tight">
+                  <p className="text-bodySm font-semibold text-ink-primary">{user.name}</p>
+                  <p className="text-caption text-ink-tertiary">{user.roles.join(", ") || "Sem papel"}</p>
+                </div>
               </div>
-              <div className="leading-tight">
-                <p className="text-bodySm font-semibold text-ink-primary">{user.name}</p>
-                <p className="text-caption text-ink-tertiary">{user.roles.join(", ") || "Sem papel"}</p>
-              </div>
+              <button
+                type="button"
+                onClick={async () => {
+                  await apiClient.auth.logout();
+                  queryClient.setQueryData(CURRENT_USER_QUERY_KEY, null);
+                  router.replace("/entrar");
+                }}
+                aria-label="Sair da conta"
+                className="flex h-9 w-9 items-center justify-center rounded-full text-ink-secondary hover:bg-background-subtle hover:text-status-danger"
+              >
+                <LogOut className="h-4 w-4" aria-hidden />
+              </button>
             </div>
           )}
         </header>
