@@ -36,7 +36,12 @@ export function AppShell({ children, headerSlot }: AppShellProps) {
         {headerSlot}
       </SpireHeader>
 
-      <main className="flex-1 pb-24">{children}</main>
+      {/* pb-24 cobre a altura normal da barra de navegação fixa (BottomNavigation);
+          soma-se env(safe-area-inset-bottom) porque a barra cresce por esse
+          valor em aparelhos com gesture bar/home indicator — sem isso, o
+          espaço reservado aqui não acompanha, e o conteúdo pode ficar
+          colado na barra em telas com safe-area maior. */}
+      <main className="flex-1 pb-[calc(6rem+env(safe-area-inset-bottom))]">{children}</main>
 
       <BottomNavigation items={BOTTOM_NAV_ITEMS} activeHref={pathname} LinkComponent={NextLink} />
     </div>
