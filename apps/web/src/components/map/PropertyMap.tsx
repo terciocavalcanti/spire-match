@@ -227,5 +227,17 @@ export function PropertyMap({
     }
   }, [routeCoordinates]);
 
-  return <div ref={containerRef} className={className} role="application" aria-label="Mapa de imóveis" />;
+  // A div que o Leaflet monta precisa de um className que NUNCA muda entre
+  // renders: Leaflet adiciona classes como "leaflet-container" via
+  // classList.add() direto no DOM, fora do React. Se essa MESMA div também
+  // recebesse a prop `className` (que muda ao alternar tela cheia), o React
+  // reescreveria `element.className` inteiro a cada mudança, apagando as
+  // classes do Leaflet — e sem "leaflet-container", o CSS do próprio Leaflet
+  // que neutraliza o max-width:100% do reset de imagem do Tailwind parava de
+  // valer, zerando a largura calculada dos tiles (mapa ficava cinza).
+  return (
+    <div className={className}>
+      <div ref={containerRef} className="h-full w-full" role="application" aria-label="Mapa de imóveis" />
+    </div>
+  );
 }

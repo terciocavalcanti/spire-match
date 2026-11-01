@@ -114,7 +114,7 @@ function MapaPageInner() {
             selectedPropertyId={selected?.property.id}
             onSelect={setSelectedId}
             routeCoordinates={route.data?.coordinates ?? null}
-            className={`isolate w-full bg-background-subtle ${isFullscreen ? "flex-1" : "h-[58dvh]"}`}
+            className={`isolate w-full bg-background-subtle ${isFullscreen ? "flex-1" : "h-[48dvh]"}`}
           />
 
           <button
