@@ -24,8 +24,15 @@ uso (ou ausência deles):
 - **S3 / upload de mídia**: `S3_*` existe no schema de ambiente, mas as
   fotos de imóvel no catálogo são URLs estáticas semeadas (seed), não
   upload real para um bucket. Nenhum fluxo de upload está implementado.
-- **MapTiler**: `MAPTILER_API_KEY` existe, desativado em dev; não verificado
-  com uma conta/chave real.
+- ~~**MapTiler**: desativado, não verificado com conta real~~ — **ativado
+  em 2026-11-01** com `NEXT_PUBLIC_MAPTILER_API_KEY` real (conta grátis).
+  Tiles do mapa (`/mapa`) confirmados funcionando.
+- ~~**City/Life (vizinhança)**: placeholder "pendente de provedor
+  licenciado" na tela do imóvel~~ — **ativado em 2026-11-01** via
+  Geoapify Places API (`NEXT_PUBLIC_GEOAPIFY_API_KEY`, conta grátis,
+  3.000 créditos/dia, uso comercial permitido). A mesma chave também
+  substituiu o servidor de demonstração público do OSRM pelo Routing
+  API real do Geoapify na rota desenhada em `/mapa`.
 - **SMTP em produção**: funciona via Mailhog em dev; nenhuma conta SMTP de
   produção foi configurada ou testada.
 
