@@ -108,8 +108,8 @@ export default function CorretoresPage() {
               <Input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} />
             </label>
             <label className="block">
-              <span className="mb-1 block text-bodySm text-ink-secondary">Telefone</span>
-              <Input value={form.phone} onChange={(e) => set("phone", e.target.value)} />
+              <span className="mb-1 block text-bodySm text-ink-secondary">Telefone (com código do país, para o WhatsApp funcionar)</span>
+              <Input value={form.phone} onChange={(e) => set("phone", e.target.value)} placeholder="+55 81 99999-9999" />
             </label>
             <label className="block">
               <span className="mb-1 block text-bodySm text-ink-secondary">CRECI</span>

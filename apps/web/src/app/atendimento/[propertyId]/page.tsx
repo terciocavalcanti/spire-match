@@ -18,6 +18,19 @@ function initials(name: string): string {
   return (parts[0]?.[0] ?? "").concat(parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? "") : "").toUpperCase();
 }
 
+/**
+ * Telefones de corretor às vezes são cadastrados sem o código do país (ex.:
+ * "(81) 99879-4747", só DDD + número). Usar os dígitos crus direto no
+ * wa.me faz o WhatsApp interpretar o DDD como código de país — "81" é o
+ * DDD do Recife, mas também é o código do Japão, gerando exatamente esse
+ * erro. Prefixa "55" só quando o número ainda não começa com ele.
+ */
+function toWhatsAppNumber(phone: string): string {
+  const digits = phone.replace(/\D/g, "");
+  if (digits.startsWith("55") && digits.length >= 12) return digits;
+  return `55${digits}`;
+}
+
 export default function AtendimentoPage({ params }: { params: Promise<{ propertyId: string }> }) {
   const { propertyId } = use(params);
   const [message, setMessage] = useState("");
@@ -127,7 +140,7 @@ export default function AtendimentoPage({ params }: { params: Promise<{ property
 
                 {broker.phone && (
                   <a
-                    href={`https://wa.me/${broker.phone.replace(/\D/g, "")}?text=${encodeURIComponent(
+                    href={`https://wa.me/${toWhatsAppNumber(broker.phone)}?text=${encodeURIComponent(
                       `Olá, ${broker.name}! Tenho interesse no imóvel ${property.title}.`,
                     )}`}
                     target="_blank"
