@@ -110,6 +110,16 @@ services:
       - "3000"
     environment:
       PORT: 3000
+      # Repetidas aqui (mesmos valores de "args" acima) só para o Coolify
+      # detectar essas variáveis como usadas pelo Compose e incluí-las no
+      # .env que ele gera para o build — Coolify v4 não inclui nesse .env
+      # variáveis referenciadas apenas em "build.args" (coollabsio/coolify#5612),
+      # então sem isso elas chegam vazias no `next build` mesmo configuradas
+      # como Buildtime na UI. Sem efeito em runtime (o Next.js já embute os
+      # valores no bundle durante o build).
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      NEXT_PUBLIC_MAPTILER_API_KEY: ${NEXT_PUBLIC_MAPTILER_API_KEY:-}
+      NEXT_PUBLIC_GEOAPIFY_API_KEY: ${NEXT_PUBLIC_GEOAPIFY_API_KEY:-}
     depends_on:
       api:
         condition: service_healthy
@@ -125,6 +135,8 @@ services:
       - "3001"
     environment:
       PORT: 3001
+      # Ver comentário equivalente no serviço "web" acima (coollabsio/coolify#5612).
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
     depends_on:
       api:
         condition: service_healthy
