@@ -11,7 +11,7 @@ import type {
   PropertyType,
 } from "@spire/contracts";
 import { PAYMENT_METHODS, PROPERTY_STATUSES, PROPERTY_TYPES } from "@spire/contracts";
-import { Button, Input } from "@spire/ui-web";
+import { Button, CurrencyInput, Input } from "@spire/ui-web";
 import { useState } from "react";
 
 import { LISTING_PURPOSE_LABELS, PAYMENT_METHOD_LABELS, PROPERTY_STATUS_LABELS, PROPERTY_TYPE_LABELS } from "@/lib/property-labels";
@@ -40,9 +40,9 @@ interface FormState {
   type: PropertyType;
   purpose: ListingPurpose;
   status: PropertyStatus;
-  price: string;
-  condominiumFee: string;
-  iptu: string;
+  price: number | null;
+  condominiumFee: number | null;
+  iptu: number | null;
   areaSqm: string;
   bedrooms: string;
   bathrooms: string;
@@ -68,9 +68,9 @@ function toFormState(property?: PropertyDetail): FormState {
     type: property?.type ?? "APARTAMENTO",
     purpose: property?.purpose ?? "MORAR",
     status: property?.status ?? "DRAFT",
-    price: property ? String(property.price) : "",
-    condominiumFee: property?.condominiumFee != null ? String(property.condominiumFee) : "",
-    iptu: property?.iptu != null ? String(property.iptu) : "",
+    price: property?.price ?? null,
+    condominiumFee: property?.condominiumFee ?? null,
+    iptu: property?.iptu ?? null,
     areaSqm: property ? String(property.areaSqm) : "",
     bedrooms: property ? String(property.bedrooms) : "0",
     bathrooms: property ? String(property.bathrooms) : "0",
@@ -127,9 +127,9 @@ export function PropertyForm({ property, brokers, isSubmitting, onSubmit, onCanc
       type: form.type,
       purpose: form.purpose,
       status: form.status,
-      price: Number(form.price),
-      condominiumFee: form.condominiumFee ? Number(form.condominiumFee) : null,
-      iptu: form.iptu ? Number(form.iptu) : null,
+      price: form.price ?? 0,
+      condominiumFee: form.condominiumFee,
+      iptu: form.iptu,
       areaSqm: Number(form.areaSqm),
       bedrooms: Number(form.bedrooms || 0),
       bathrooms: Number(form.bathrooms || 0),
@@ -216,13 +216,13 @@ export function PropertyForm({ property, brokers, isSubmitting, onSubmit, onCanc
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
         <Field label="Preço (R$)">
-          <Input type="number" value={form.price} onChange={(e) => set("price", e.target.value)} />
+          <CurrencyInput value={form.price} onChange={(value) => set("price", value)} />
         </Field>
         <Field label="Condomínio (R$)">
-          <Input type="number" value={form.condominiumFee} onChange={(e) => set("condominiumFee", e.target.value)} />
+          <CurrencyInput value={form.condominiumFee} onChange={(value) => set("condominiumFee", value)} />
         </Field>
         <Field label="IPTU (R$)">
-          <Input type="number" value={form.iptu} onChange={(e) => set("iptu", e.target.value)} />
+          <CurrencyInput value={form.iptu} onChange={(value) => set("iptu", value)} />
         </Field>
         <Field label="Área (m²)">
           <Input type="number" value={form.areaSqm} onChange={(e) => set("areaSqm", e.target.value)} />
