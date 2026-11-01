@@ -4,6 +4,7 @@
 #   docker build -f infrastructure/docker/web.Dockerfile \
 #     --build-arg NEXT_PUBLIC_API_URL=https://api.seudominio.com.br/api/v1 \
 #     --build-arg NEXT_PUBLIC_MAPTILER_API_KEY=... \
+#     --build-arg NEXT_PUBLIC_GEOAPIFY_API_KEY=... \
 #     -t spire-match-web .
 #
 # NEXT_PUBLIC_* são embutidos no bundle em tempo de build (padrão Next.js) —
@@ -19,8 +20,10 @@ RUN pnpm install --frozen-lockfile
 
 ARG NEXT_PUBLIC_API_URL
 ARG NEXT_PUBLIC_MAPTILER_API_KEY
+ARG NEXT_PUBLIC_GEOAPIFY_API_KEY
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 ENV NEXT_PUBLIC_MAPTILER_API_KEY=${NEXT_PUBLIC_MAPTILER_API_KEY}
+ENV NEXT_PUBLIC_GEOAPIFY_API_KEY=${NEXT_PUBLIC_GEOAPIFY_API_KEY}
 
 RUN pnpm turbo run build --filter=@spire/web...
 

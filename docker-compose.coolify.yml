@@ -104,6 +104,7 @@ services:
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
         NEXT_PUBLIC_MAPTILER_API_KEY: ${NEXT_PUBLIC_MAPTILER_API_KEY:-}
+        NEXT_PUBLIC_GEOAPIFY_API_KEY: ${NEXT_PUBLIC_GEOAPIFY_API_KEY:-}
     restart: unless-stopped
     expose:
       - "3000"
