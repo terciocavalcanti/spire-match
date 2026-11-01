@@ -34,6 +34,16 @@ export default function ImoveisPage() {
     setEditingId(null);
   };
 
+  // O formulário abre no topo da página — sem isso, editar um imóvel mais
+  // abaixo na lista mantém a rolagem onde estava e o formulário abre fora
+  // da área visível. O AdminShell tem overflow-y-auto em <main>, mas o
+  // contêiner externo só tem min-h-dvh (não h-dvh): na prática quem rola é a
+  // janela, não o <main> — confirmado medindo scrollHeight/clientHeight.
+  const openForm = () => {
+    setFormOpen(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
     <AdminShell>
       <div className="flex items-center justify-between">
@@ -46,7 +56,7 @@ export default function ImoveisPage() {
             size="sm"
             onClick={() => {
               setEditingId(null);
-              setFormOpen(true);
+              openForm();
             }}
           >
             <Plus className="h-4 w-4" aria-hidden />
@@ -137,7 +147,7 @@ export default function ImoveisPage() {
                         type="button"
                         onClick={() => {
                           setEditingId(property.id);
-                          setFormOpen(true);
+                          openForm();
                         }}
                         className="text-bodySm font-medium text-brand-olive hover:underline"
                       >
