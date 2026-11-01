@@ -51,7 +51,11 @@ export function PropertyCard({
               loading="lazy"
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center text-ink-tertiary">Sem foto</div>
+            // Texto ancorado embaixo, não centralizado — o selo de Match e o
+            // botão de favoritar ocupam os cantos superiores, e um texto
+            // centralizado colidia visualmente com eles em cards estreitos
+            // (grade de 2 colunas no mobile).
+            <div className="flex h-full w-full items-end justify-center pb-3 text-bodySm text-ink-tertiary">Sem foto</div>
           )}
         </Anchor>
 
