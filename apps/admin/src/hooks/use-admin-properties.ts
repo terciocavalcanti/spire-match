@@ -32,6 +32,13 @@ export function useUpdateProperty(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (payload: UpdatePropertyRequest) => apiClient.adminProperties.update(id, payload),
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["admin-properties"] }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["admin-properties"] });
+      // Sem isso, reabrir "Editar" no mesmo imóvel mostra os valores antigos
+      // (cache de ["property-detail", id] nunca era invalidado) — parecia
+      // que a edição não tinha sido salva, embora o PATCH já tivesse
+      // persistido corretamente no banco.
+      void queryClient.invalidateQueries({ queryKey: ["property-detail", id] });
+    },
   });
 }
