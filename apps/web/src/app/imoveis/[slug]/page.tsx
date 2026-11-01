@@ -2,7 +2,21 @@
 
 import { Button, MatchBadge, PropertyGallery } from "@spire/ui-web";
 import { useQuery } from "@tanstack/react-query";
-import { BedDouble, Car, ChevronLeft, Heart, MapPin, Ruler, Share2 } from "lucide-react";
+import {
+  BedDouble,
+  Car,
+  ChevronLeft,
+  Dumbbell,
+  GraduationCap,
+  Heart,
+  MapPin,
+  Pill,
+  Ruler,
+  Share2,
+  ShoppingCart,
+  Trees,
+  UtensilsCrossed,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useEffect, useRef } from "react";
@@ -10,9 +24,23 @@ import { use, useEffect, useRef } from "react";
 import { ProposalForm } from "@/components/property/ProposalForm";
 import { useFavoriteIds, useToggleFavorite } from "@/hooks/use-favorites";
 import { useMatchForProperty } from "@/hooks/use-matches";
+import { useNearbyPlaces } from "@/hooks/use-nearby-places";
 import { apiClient } from "@/lib/api-client";
 
 const currencyFormatter = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+
+const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  "commercial.supermarket": ShoppingCart,
+  "healthcare.pharmacy": Pill,
+  "education.school": GraduationCap,
+  "catering.restaurant": UtensilsCrossed,
+  "sport.fitness": Dumbbell,
+  "leisure.park": Trees,
+};
+
+function formatDistance(meters: number): string {
+  return meters < 1000 ? `${Math.round(meters)} m` : `${(meters / 1000).toFixed(1)} km`;
+}
 
 const REASON_LABELS: Record<string, string> = {
   BUDGET_FIT: "Dentro do seu orçamento",
@@ -38,6 +66,7 @@ export default function ImovelPage({ params }: { params: Promise<{ slug: string 
     queryFn: () => apiClient.properties.bySlug(slug),
   });
   const { data: match } = useMatchForProperty(property?.id);
+  const nearbyPlaces = useNearbyPlaces(property?.location);
 
   useEffect(() => {
     if (property && !viewRecorded.current) {
@@ -177,9 +206,50 @@ export default function ImovelPage({ params }: { params: Promise<{ slug: string 
           </div>
         )}
 
-        <div className="flex items-start gap-2 border-t border-border-subtle py-5 text-bodySm text-ink-tertiary">
-          <MapPin className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
-          <p>Mapa de serviços e vizinhança (City/Life) — pendente de provedor licenciado.</p>
+        <div className="border-t border-border-subtle py-5">
+          <h2 className="font-display text-xl text-ink-primary">Vida no bairro</h2>
+          {!property.location ? (
+            <p className="mt-2 flex items-start gap-2 text-bodySm text-ink-tertiary">
+              <MapPin className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+              Este imóvel não tem localização cadastrada — não é possível calcular o que há por perto.
+            </p>
+          ) : nearbyPlaces.isLoading ? (
+            <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="h-20 animate-pulse rounded-xl bg-background-subtle" aria-hidden />
+              ))}
+            </div>
+          ) : nearbyPlaces.isError ? (
+            <p className="mt-2 text-bodySm text-ink-tertiary">Não foi possível carregar os serviços próximos agora.</p>
+          ) : (
+            <>
+              <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {nearbyPlaces.data?.map((item) => {
+                  const Icon = CATEGORY_ICONS[item.categoryKey] ?? MapPin;
+                  return (
+                    <div key={item.categoryKey} className="rounded-xl border border-border-subtle p-3">
+                      <Icon className="h-4 w-4 text-ink-tertiary" aria-hidden />
+                      <p className="mt-1.5 text-caption uppercase tracking-wide text-ink-tertiary">{item.label}</p>
+                      {item.place ? (
+                        <>
+                          <p className="mt-0.5 truncate text-bodySm font-medium text-ink-primary">{item.place.name}</p>
+                          <p className="text-caption text-ink-secondary">{formatDistance(item.place.distanceMeters)}</p>
+                        </>
+                      ) : (
+                        <p className="mt-0.5 text-bodySm text-ink-tertiary">Nenhum em 2 km</p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="mt-2 text-caption text-ink-tertiary">
+                Dados de localização por{" "}
+                <a href="https://www.geoapify.com/" target="_blank" rel="noreferrer" className="underline">
+                  Geoapify
+                </a>
+              </p>
+            </>
+          )}
         </div>
 
         <ProposalForm property={property} />

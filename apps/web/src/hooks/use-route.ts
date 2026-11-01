@@ -10,14 +10,12 @@ export interface RouteResult {
 }
 
 /**
- * Roteirização de carro via servidor de demonstração público do OSRM
- * (router.project-osrm.org) — sem chave, mas é um serviço de demonstração:
- * mesmo trade-off de uso pesado/comercial já documentado para o tile server
- * bruto do OpenStreetMap (ver PropertyMap.tsx). Caminho de upgrade real sem
- * mudar a forma da resposta: trocar OSRM_URL abaixo por uma conta própria
- * (ex. OpenRouteService, GraphHopper) com chave.
+ * Roteirização de carro via Geoapify Routing API (mesma chave do Places/City-Life
+ * e do MapTiler para tiles — contas reais, nunca um servidor de demonstração
+ * público). Precisa de NEXT_PUBLIC_GEOAPIFY_API_KEY configurada.
  */
-const OSRM_URL = "https://router.project-osrm.org/route/v1/driving";
+const GEOAPIFY_KEY = process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY;
+const ROUTING_URL = "https://api.geoapify.com/v1/routing";
 
 // Arredonda a ~100m de precisão só para decidir SE recalcula a rota — o GPS
 // real (watchPosition com enableHighAccuracy) varia a cada leitura mesmo
@@ -42,19 +40,24 @@ export function useRoute(
       destination?.lng,
     ],
     queryFn: async (): Promise<RouteResult | null> => {
-      const coords = `${origin!.lng},${origin!.lat};${destination!.lng},${destination!.lat}`;
-      const res = await fetch(`${OSRM_URL}/${coords}?overview=full&geometries=geojson`);
+      if (!GEOAPIFY_KEY) throw new Error("NEXT_PUBLIC_GEOAPIFY_API_KEY não configurada");
+      const waypoints = `${origin!.lat},${origin!.lng}|${destination!.lat},${destination!.lng}`;
+      const res = await fetch(`${ROUTING_URL}?waypoints=${waypoints}&mode=drive&apiKey=${GEOAPIFY_KEY}`);
       if (!res.ok) throw new Error(`Falha ao calcular rota (status ${res.status})`);
       const data = await res.json();
-      const route = data.routes?.[0];
-      if (!route) return null;
+      const feature = data.features?.[0];
+      if (!feature) return null;
+      // geometry vem como MultiLineString (um ou mais segmentos) — achata
+      // num único traçado contínuo, suficiente para desenhar a polyline.
+      const segments: [number, number][][] = feature.geometry.coordinates;
+      const coordinates: [number, number][] = segments.flat().map(([lng, lat]) => [lat, lng]);
       return {
-        coordinates: route.geometry.coordinates.map(([lng, lat]: [number, number]): [number, number] => [lat, lng]),
-        distanceMeters: route.distance,
-        durationSeconds: route.duration,
+        coordinates,
+        distanceMeters: feature.properties.distance,
+        durationSeconds: feature.properties.time,
       };
     },
-    enabled: Boolean(origin && destination),
+    enabled: Boolean(origin && destination && GEOAPIFY_KEY),
     retry: false,
     staleTime: 60_000,
   });
