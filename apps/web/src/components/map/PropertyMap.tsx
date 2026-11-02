@@ -10,8 +10,13 @@ import { useEffect, useRef } from "react";
 
 const NEARBY_RADIUS_METERS = 1_000;
 // Zoom inicial alto o bastante para já mostrar o nome das ruas ao redor do
-// ponto de partida (13 mostrava só o bairro, sem rótulos de rua legíveis).
-const INITIAL_ZOOM = 15;
+// ponto de partida de forma legível, sem perder o contexto dos imóveis
+// vizinhos. 13 mostrava só o bairro (nenhuma rua legível); 15 ainda exigia
+// apertar "+" várias vezes; 19 (o maxZoom do tileLayer abaixo) ficou
+// exagerado — só 1 imóvel visível e número de lote em vez de nome de rua.
+// 17 é o equilíbrio: ruas e pontos de referência legíveis, ainda com
+// 2-3 imóveis de contexto ao redor.
+const INITIAL_ZOOM = 17;
 
 // Mesmo arredondamento de useRoute.ts (~100m) — só para decidir QUANDO
 // refazer os marcadores de imóvel, nunca para o cálculo de distância em si.
