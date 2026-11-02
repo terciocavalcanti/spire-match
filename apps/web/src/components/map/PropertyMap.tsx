@@ -9,14 +9,15 @@ import { LocateFixed } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 const NEARBY_RADIUS_METERS = 1_000;
-// Zoom inicial alto o bastante para já mostrar o nome das ruas ao redor do
-// ponto de partida de forma legível, sem perder o contexto dos imóveis
-// vizinhos. 13 mostrava só o bairro (nenhuma rua legível); 15 ainda exigia
-// apertar "+" várias vezes; 19 (o maxZoom do tileLayer abaixo) ficou
-// exagerado — só 1 imóvel visível e número de lote em vez de nome de rua.
-// 17 é o equilíbrio: ruas e pontos de referência legíveis, ainda com
-// 2-3 imóveis de contexto ao redor.
-const INITIAL_ZOOM = 17;
+// Zoom "normal" de abertura do mapa — visão de bairro, mostrando vários
+// imóveis de contexto. O zoom fechado (LOCATION_ZOOM) só entra em ação
+// quando o usuário ativa "Minha localização", não no carregamento inicial.
+const INITIAL_ZOOM = 13;
+// Zoom ao ativar a localização — perto o bastante pra ver ruas e pontos de
+// referência legíveis (testado visualmente: 15 ainda exigia apertar "+"
+// várias vezes; 19/maxZoom ficou exagerado, só 1 imóvel visível e número de
+// lote em vez de nome de rua; 17 é o equilíbrio certo).
+const LOCATION_ZOOM = 17;
 
 // Mesmo arredondamento de useRoute.ts (~100m) — só para decidir QUANDO
 // refazer os marcadores de imóvel, nunca para o cálculo de distância em si.
@@ -165,16 +166,15 @@ export function PropertyMap({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- userLocation entra arredondado (~100m) acima; a cada tick bruto do GPS este efeito removeria e recriaria TODOS os marcadores de imóvel, piscando o mapa inteiro
   }, [points, selectedPropertyId, onSelect, userLocationLatForMarkers, userLocationLngForMarkers]);
 
-  // Recentraliza só na transição de "sem localização" para "localização
-  // obtida" (ligar/desligar "Minha localização") — nunca a cada atualização
-  // de watchPosition, senão a animação contínua faz a tela "piscar"/animar
-  // sem parar enquanto o GPS reporta novas coordenadas (a cada poucos
-  // segundos). Usa panTo, não flyTo: flyTo faz um "voo" que, quando a
-  // distância até o destino é grande (ex.: DEFAULT_CENTER até a localização
-  // real do usuário), zoom out no meio do trajeto antes de voltar ao zoom
-  // final — mesmo pedindo o MESMO zoom como alvo. O usuário via isso como
-  // "o mapa mostra outro zoom e depois volta ao normal". panTo só translada
-  // o centro, nunca muda o zoom, então não existe esse efeito.
+  // Reage só na TRANSIÇÃO de "sem localização" para "localização obtida" (ligar/
+  // desligar "Minha localização") — nunca a cada atualização de watchPosition,
+  // senão a animação contínua faz a tela "piscar"/animar sem parar enquanto o
+  // GPS reporta novas coordenadas (a cada poucos segundos). O mapa abre no
+  // zoom "normal" (INITIAL_ZOOM); ativar a localização é o que de fato aciona
+  // o zoom fechado (LOCATION_ZOOM) sobre a posição do usuário; desativar volta
+  // para o zoom normal. Usa flyTo aqui de propósito (diferente do botão de
+  // recentralizar abaixo) — o objetivo agora É mudar o zoom de forma visível,
+  // não só re-centralizar mantendo o mesmo zoom.
   const hasUserLocationRef = useRef(false);
   useEffect(() => {
     const map = mapRef.current;
@@ -182,7 +182,8 @@ export function PropertyMap({
     const hasUserLocation = Boolean(userLocation);
     if (hasUserLocation !== hasUserLocationRef.current) {
       hasUserLocationRef.current = hasUserLocation;
-      map.panTo([center.lat, center.lng], { duration: 1 });
+      const targetZoom = hasUserLocation ? LOCATION_ZOOM : INITIAL_ZOOM;
+      map.flyTo([center.lat, center.lng], targetZoom, { duration: 1.5 });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- centraliza só na transição de userLocation, não a cada tick de center
   }, [userLocation]);
@@ -234,6 +235,13 @@ export function PropertyMap({
   }, [userLocation]);
 
   // Linha da rota até o imóvel selecionado (useRoute, calculada na página).
+  // Sem fitBounds automático: a rota é calculada assim que o usuário ativa a
+  // localização (sempre há um imóvel selecionado por padrão, mesmo sem o
+  // usuário ter tocado em nada), e um fitBounds aqui desfazia o zoom que o
+  // efeito acima acabou de aplicar sobre a posição do usuário — ele via isso
+  // como "ativei a localização e o mapa ficou sem zoom". A linha da rota
+  // ainda é desenhada normalmente; o usuário pode dar zoom out manualmente
+  // se quiser ver o trajeto inteiro.
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -247,7 +255,6 @@ export function PropertyMap({
         weight: 4,
         opacity: 0.85,
       }).addTo(map);
-      map.fitBounds(routeLineRef.current.getBounds(), { padding: [48, 48] });
     }
   }, [routeCoordinates]);
 
@@ -262,10 +269,14 @@ export function PropertyMap({
   function recenter() {
     const map = mapRef.current;
     if (!map) return;
-    const target = userLocation ?? center;
-    // panTo, não flyTo — mesmo motivo do efeito acima: sem zoom out/in no
-    // meio do caminho quando o usuário arrastou o mapa para longe.
-    map.panTo([target.lat, target.lng], { duration: 1 });
+    if (userLocation) {
+      // Com localização ativa, "voltar para onde estou" inclui o zoom
+      // fechado — não só re-centralizar no zoom atual (que pode já ter sido
+      // alterado manualmente pelo usuário ao explorar o mapa).
+      map.flyTo([userLocation.lat, userLocation.lng], LOCATION_ZOOM, { duration: 1 });
+    } else {
+      map.panTo([center.lat, center.lng], { duration: 1 });
+    }
   }
 
   return (
