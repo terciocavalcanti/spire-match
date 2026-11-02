@@ -15,8 +15,12 @@ const currencyFormatter = new Intl.NumberFormat("pt-BR", { style: "currency", cu
 function SwipeCard({ match }: { match: MatchResult }) {
   const { property } = match;
   return (
-    <div className="overflow-hidden rounded-2xl border border-border-subtle bg-background-elevated">
-      <div className="relative aspect-[4/3] w-full bg-background-subtle">
+    <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-border-subtle bg-background-elevated">
+      {/* flex-1 (não aspect-[4/3] fixo) — numa tela curta, uma altura de imagem
+          fixa empurrava o preço/specs e os botões de ação para fora da área
+          visível, forçando rolagem. Com flex-1 a imagem encolhe para caber no
+          espaço que sobrar depois do texto abaixo, que tem altura natural. */}
+      <div className="relative min-h-0 flex-1 bg-background-subtle">
         {property.coverImageUrl && (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={property.coverImageUrl} alt={property.title} className="h-full w-full object-cover" />
@@ -25,7 +29,7 @@ function SwipeCard({ match }: { match: MatchResult }) {
           <MatchBadge score={match.score} size="lg" />
         </div>
       </div>
-      <div className="px-5 py-4">
+      <div className="shrink-0 px-5 py-4">
         <p className="text-bodySm uppercase tracking-wide text-ink-tertiary">{property.type}</p>
         <p className="mt-1 font-display text-2xl text-ink-primary">{currencyFormatter.format(property.price)}</p>
         <p className="mt-1 flex items-center gap-1 text-bodyMd text-ink-secondary">
@@ -74,12 +78,24 @@ export default function DescobrirPage() {
 
   return (
     <AppShell>
-      <div className="px-4 py-6 sm:px-6">
-        <h1 className="font-display text-2xl text-ink-primary">Descubra imóveis para você</h1>
-        <p className="mt-1 text-bodyMd text-ink-secondary">Deslize para encontrar o seu próximo lar</p>
+      {/* absolute + bottom:var(--app-shell-bottom-clearance) — mesma técnica
+          já usada em /mapa. <main> só tem min-height (para páginas normais
+          poderem crescer e rolar), não height; um filho em fluxo normal com
+          "h-full" não ficava de fato limitado por isso (ficava tão alto
+          quanto o próprio conteúdo pedisse) e o SwipeCard continuava
+          empurrando os botões para fora da área visível em telas curtas.
+          Tirar este wrapper do fluxo normal (absolute) dá a ele uma altura
+          de verdade restrita ao espaço disponível, e é isso que faz o
+          SwipeCard (flex-1) encolher corretamente. */}
+      <div
+        className="absolute inset-x-0 top-0 flex flex-col px-4 py-6 sm:px-6"
+        style={{ bottom: "var(--app-shell-bottom-clearance, 0px)" }}
+      >
+        <h1 className="shrink-0 font-display text-2xl text-ink-primary">Descubra imóveis para você</h1>
+        <p className="mt-1 shrink-0 text-bodyMd text-ink-secondary">Deslize para encontrar o seu próximo lar</p>
 
         {isLoading ? (
-          <div className="mt-6 h-[28rem] animate-pulse rounded-2xl bg-background-subtle" aria-hidden />
+          <div className="mt-6 min-h-0 flex-1 animate-pulse rounded-2xl bg-background-subtle" aria-hidden />
         ) : !current ? (
           <div className="mt-6">
             <EmptyState
@@ -96,12 +112,12 @@ export default function DescobrirPage() {
             />
           </div>
         ) : (
-          <>
-            <div className="mt-6">
+          <div className="mt-6 flex min-h-0 flex-1 flex-col">
+            <div className="min-h-0 flex-1">
               <SwipeCard match={current} />
             </div>
 
-            <div className="mt-6 flex items-start justify-center gap-6">
+            <div className="mt-6 flex shrink-0 items-start justify-center gap-6">
               <div className="flex w-16 flex-col items-center gap-2">
                 <div className="flex h-16 items-center justify-center">
                   <button
@@ -142,7 +158,7 @@ export default function DescobrirPage() {
                 <span className="text-caption text-ink-tertiary">Quero</span>
               </div>
             </div>
-          </>
+          </div>
         )}
       </div>
     </AppShell>
