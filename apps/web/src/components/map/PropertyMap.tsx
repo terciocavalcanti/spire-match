@@ -167,8 +167,14 @@ export function PropertyMap({
 
   // Recentraliza só na transição de "sem localização" para "localização
   // obtida" (ligar/desligar "Minha localização") — nunca a cada atualização
-  // de watchPosition, senão o flyTo contínuo faz a tela "piscar"/animar sem
-  // parar enquanto o GPS reporta novas coordenadas (a cada poucos segundos).
+  // de watchPosition, senão a animação contínua faz a tela "piscar"/animar
+  // sem parar enquanto o GPS reporta novas coordenadas (a cada poucos
+  // segundos). Usa panTo, não flyTo: flyTo faz um "voo" que, quando a
+  // distância até o destino é grande (ex.: DEFAULT_CENTER até a localização
+  // real do usuário), zoom out no meio do trajeto antes de voltar ao zoom
+  // final — mesmo pedindo o MESMO zoom como alvo. O usuário via isso como
+  // "o mapa mostra outro zoom e depois volta ao normal". panTo só translada
+  // o centro, nunca muda o zoom, então não existe esse efeito.
   const hasUserLocationRef = useRef(false);
   useEffect(() => {
     const map = mapRef.current;
@@ -176,7 +182,7 @@ export function PropertyMap({
     const hasUserLocation = Boolean(userLocation);
     if (hasUserLocation !== hasUserLocationRef.current) {
       hasUserLocationRef.current = hasUserLocation;
-      map.flyTo([center.lat, center.lng], map.getZoom(), { duration: 1 });
+      map.panTo([center.lat, center.lng], { duration: 1 });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- centraliza só na transição de userLocation, não a cada tick de center
   }, [userLocation]);
@@ -257,7 +263,9 @@ export function PropertyMap({
     const map = mapRef.current;
     if (!map) return;
     const target = userLocation ?? center;
-    map.flyTo([target.lat, target.lng], map.getZoom(), { duration: 1 });
+    // panTo, não flyTo — mesmo motivo do efeito acima: sem zoom out/in no
+    // meio do caminho quando o usuário arrastou o mapa para longe.
+    map.panTo([target.lat, target.lng], { duration: 1 });
   }
 
   return (
