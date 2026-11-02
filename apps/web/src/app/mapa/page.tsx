@@ -141,7 +141,14 @@ function MapaPageInner() {
           </button>
 
           {selected && (
-            <div className="relative -mt-6 mx-4 mb-4 overflow-hidden rounded-2xl border border-border-subtle bg-background-elevated shadow-lg sm:mx-6">
+            // Absolute ancorado no fundo do wrapper (não um filho normal
+            // depois do mapa flex-1) — o mapa já ocupa 100% da altura
+            // disponível do wrapper, então um card no fluxo normal depois
+            // dele transbordaria para fora do wrapper (que termina em
+            // --app-shell-bottom-clearance fora da tela cheia), caindo por
+            // cima da barra de navegação. Ancorando no "bottom" do próprio
+            // wrapper o card sempre respeita o limite certo nos dois modos.
+            <div className="absolute inset-x-4 bottom-4 overflow-hidden rounded-2xl border border-border-subtle bg-background-elevated shadow-lg sm:inset-x-6">
               <div className="flex gap-3 p-3">
                 <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-background-subtle">
                   {selected.property.coverImageUrl && (
