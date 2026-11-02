@@ -25,16 +25,15 @@ export interface BottomNavigationProps {
  * docs/architecture/ADR_NAVEGACAO.md. Favoritos é acessível em 1 toque via
  * coração nos cards e atalho no Perfil, não ocupa aba própria aqui.
  */
-export function BottomNavigation({
-  items,
-  activeHref,
-  LinkComponent,
-  className,
-}: BottomNavigationProps) {
+export const BottomNavigation = React.forwardRef<HTMLElement, BottomNavigationProps>(function BottomNavigation(
+  { items, activeHref, LinkComponent, className },
+  ref,
+) {
   const Anchor = LinkComponent ?? "a";
 
   return (
     <nav
+      ref={ref}
       aria-label="Navegação principal"
       className={cn(
         "fixed inset-x-0 bottom-0 z-30 border-t border-border-subtle bg-background-elevated/95 backdrop-blur",
@@ -76,4 +75,4 @@ export function BottomNavigation({
       </ul>
     </nav>
   );
-}
+});

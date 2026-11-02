@@ -106,7 +106,21 @@ function MapaPageInner() {
           <EmptyState title="Nenhum imóvel com localização disponível" description="Complete seu perfil para calcularmos Matches geolocalizados." />
         </div>
       ) : (
-        <div className={isFullscreen ? "fixed inset-0 z-50 flex flex-col bg-background-base" : "relative"}>
+        <div
+          className={
+            isFullscreen
+              ? "fixed inset-0 z-50 flex flex-col bg-background-base"
+              : // Posicionamento absoluto (não porcentagem de altura) preenchendo
+                // de "logo abaixo do header" até "logo acima da barra de
+                // navegação" (--app-shell-bottom-clearance, exposta pelo
+                // AppShell) — com o mapa em flex-1, o card acaba encostado na
+                // barra, igual à tela cheia. Antes o mapa tinha altura fixa
+                // (48dvh), bem menor que o espaço disponível, sobrando um vão
+                // morto entre o card e a barra que não existia na tela cheia.
+                "absolute inset-x-0 top-0 flex flex-col"
+          }
+          style={!isFullscreen ? { bottom: "var(--app-shell-bottom-clearance, 0px)" } : undefined}
+        >
           <PropertyMap
             points={points}
             center={center}
@@ -114,7 +128,7 @@ function MapaPageInner() {
             selectedPropertyId={selected?.property.id}
             onSelect={setSelectedId}
             routeCoordinates={route.data?.coordinates ?? null}
-            className={`isolate w-full bg-background-subtle ${isFullscreen ? "flex-1" : "h-[48dvh]"}`}
+            className="isolate w-full flex-1 bg-background-subtle"
           />
 
           <button

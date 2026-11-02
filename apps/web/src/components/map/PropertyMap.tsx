@@ -9,6 +9,12 @@ import { useEffect, useRef } from "react";
 
 const NEARBY_RADIUS_METERS = 1_000;
 
+// Mesmo arredondamento de useRoute.ts (~100m) — só para decidir QUANDO
+// refazer os marcadores de imóvel, nunca para o cálculo de distância em si.
+function roundForDependency(value: number): number {
+  return Math.round(value * 1000) / 1000;
+}
+
 /**
  * Com NEXT_PUBLIC_MAPTILER_API_KEY configurada, usa tiles raster do MapTiler
  * (plano gratuito — exige atribuição visível, já coberta pelo
@@ -97,6 +103,8 @@ export function PropertyMap({
     return () => observer.disconnect();
   }, []);
 
+  const userLocationLatForMarkers = userLocation ? roundForDependency(userLocation.lat) : undefined;
+  const userLocationLngForMarkers = userLocation ? roundForDependency(userLocation.lng) : undefined;
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -145,7 +153,8 @@ export function PropertyMap({
       }).addTo(map);
       markersRef.current.set(point.property.id, marker);
     }
-  }, [points, selectedPropertyId, onSelect, userLocation]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- userLocation entra arredondado (~100m) acima; a cada tick bruto do GPS este efeito removeria e recriaria TODOS os marcadores de imóvel, piscando o mapa inteiro
+  }, [points, selectedPropertyId, onSelect, userLocationLatForMarkers, userLocationLngForMarkers]);
 
   // Recentraliza só na transição de "sem localização" para "localização
   // obtida" (ligar/desligar "Minha localização") — nunca a cada atualização
