@@ -5,9 +5,13 @@ import "leaflet/dist/leaflet.css";
 import type { PropertySummary } from "@spire/contracts";
 import { haversineDistanceMeters } from "@spire/domain";
 import L from "leaflet";
+import { LocateFixed } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 const NEARBY_RADIUS_METERS = 1_000;
+// Zoom inicial alto o bastante para já mostrar o nome das ruas ao redor do
+// ponto de partida (13 mostrava só o bairro, sem rótulos de rua legíveis).
+const INITIAL_ZOOM = 15;
 
 // Mesmo arredondamento de useRoute.ts (~100m) — só para decidir QUANDO
 // refazer os marcadores de imóvel, nunca para o cálculo de distância em si.
@@ -71,7 +75,7 @@ export function PropertyMap({
 
     const map = L.map(containerRef.current, { zoomControl: false, attributionControl: true }).setView(
       [center.lat, center.lng],
-      13,
+      INITIAL_ZOOM,
     );
     L.control.zoom({ position: "topright" }).addTo(map);
     L.tileLayer(TILE_URL, { attribution: TILE_ATTRIBUTION, maxZoom: 19, crossOrigin: true }).addTo(map);
@@ -244,9 +248,24 @@ export function PropertyMap({
   // classes do Leaflet — e sem "leaflet-container", o CSS do próprio Leaflet
   // que neutraliza o max-width:100% do reset de imagem do Tailwind parava de
   // valer, zerando a largura calculada dos tiles (mapa ficava cinza).
+  function recenter() {
+    const map = mapRef.current;
+    if (!map) return;
+    const target = userLocation ?? center;
+    map.flyTo([target.lat, target.lng], map.getZoom(), { duration: 1 });
+  }
+
   return (
-    <div className={className}>
+    <div className={`relative ${className ?? ""}`}>
       <div ref={containerRef} className="h-full w-full" role="application" aria-label="Mapa de imóveis" />
+      <button
+        type="button"
+        onClick={recenter}
+        aria-label="Voltar para o ponto onde você está"
+        className="absolute left-3 top-16 z-[1001] flex h-9 w-9 items-center justify-center rounded-full bg-background-elevated/90 text-ink-primary shadow-sm"
+      >
+        <LocateFixed className="h-4 w-4" />
+      </button>
     </div>
   );
 }
