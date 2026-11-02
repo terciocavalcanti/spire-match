@@ -75,6 +75,25 @@ export function PropertyMap({
   const userMarkerRef = useRef<L.Marker | null>(null);
   const userRadiusRef = useRef<L.Circle | null>(null);
   const routeLineRef = useRef<L.Polyline | null>(null);
+  // Enquanto o flyTo entre INITIAL_ZOOM e LOCATION_ZOOM está em andamento,
+  // vários imóveis realmente próximos (distintos no mundo real) colapsam
+  // visualmente no zoom largo e ficam a poucos pixels uns dos outros — o
+  // Leaflet sempre entrega o clique ao marcador geometricamente "por cima"
+  // (z-index por posição Y na tela), então um toque em QUALQUER um dos
+  // marcadores sobrepostos sempre seleciona o mesmo (o que está no topo),
+  // nunca o que o usuário realmente tocou. Como o cluster se separa
+  // perfeitamente assim que a câmera assenta (confirmado via medição de
+  // pixels), a correção é simplesmente ignorar cliques em marcadores
+  // enquanto a câmera ainda está em voo, não mudar o zoom/clustering.
+  const isFlyingRef = useRef(false);
+
+  function flyToGuarded(map: L.Map, latlng: L.LatLngTuple, zoom: number, duration: number) {
+    isFlyingRef.current = true;
+    map.once("moveend", () => {
+      isFlyingRef.current = false;
+    });
+    map.flyTo(latlng, zoom, { duration });
+  }
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -155,7 +174,10 @@ export function PropertyMap({
         border:2px solid #F7F4EC;box-shadow:0 2px 8px rgba(33,31,25,0.25);cursor:pointer;
       `;
       button.textContent = point.score !== undefined ? String(point.score) : "•";
-      button.onclick = () => onSelect(point.property.id);
+      button.onclick = () => {
+        if (isFlyingRef.current) return;
+        onSelect(point.property.id);
+      };
       wrapper.appendChild(button);
 
       const marker = L.marker([location.lat, location.lng], {
@@ -183,7 +205,7 @@ export function PropertyMap({
     if (hasUserLocation !== hasUserLocationRef.current) {
       hasUserLocationRef.current = hasUserLocation;
       const targetZoom = hasUserLocation ? LOCATION_ZOOM : INITIAL_ZOOM;
-      map.flyTo([center.lat, center.lng], targetZoom, { duration: 1.5 });
+      flyToGuarded(map, [center.lat, center.lng], targetZoom, 1.5);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- centraliza só na transição de userLocation, não a cada tick de center
   }, [userLocation]);
@@ -273,7 +295,7 @@ export function PropertyMap({
       // Com localização ativa, "voltar para onde estou" inclui o zoom
       // fechado — não só re-centralizar no zoom atual (que pode já ter sido
       // alterado manualmente pelo usuário ao explorar o mapa).
-      map.flyTo([userLocation.lat, userLocation.lng], LOCATION_ZOOM, { duration: 1 });
+      flyToGuarded(map, [userLocation.lat, userLocation.lng], LOCATION_ZOOM, 1);
     } else {
       map.panTo([center.lat, center.lng], { duration: 1 });
     }
