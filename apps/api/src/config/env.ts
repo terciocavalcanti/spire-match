@@ -27,6 +27,9 @@ const envSchema = z.object({
   // Pendências externas reais (ver docs/deployment/DEPLOY_HOSTINGER.md) —
   // ausentes em dev, nunca simuladas como ativas em produção.
   MAPTILER_API_KEY: z.string().optional(),
+  // Mesma variável usada pelo web (NEXT_PUBLIC_*), lida aqui pela API para
+  // servir em runtime via GET /map-config — ver comentário no controller.
+  NEXT_PUBLIC_GEOAPIFY_API_KEY: z.string().optional(),
   S3_ENDPOINT: z.string().optional(),
   S3_ACCESS_KEY_ID: z.string().optional(),
   S3_SECRET_ACCESS_KEY: z.string().optional(),

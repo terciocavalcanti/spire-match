@@ -377,6 +377,10 @@ export class SpireApiClient {
       }),
   };
 
+  mapConfig = {
+    get: () => this.request<{ geoapifyApiKey: string | null }>("/map-config"),
+  };
+
   radars = {
     list: () => this.request<{ items: Radar[] }>("/radars"),
     create: (payload: CreateRadarRequest) => this.request<Radar>("/radars", { method: "POST", body: JSON.stringify(payload) }),

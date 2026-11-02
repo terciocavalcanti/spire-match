@@ -2,6 +2,8 @@
 
 import { useQuery } from "@tanstack/react-query";
 
+import { useMapConfig } from "./use-map-config";
+
 export interface NearbyCategoryResult {
   categoryKey: string;
   label: string;
@@ -9,7 +11,6 @@ export interface NearbyCategoryResult {
   place: { name: string; distanceMeters: number } | null;
 }
 
-const GEOAPIFY_KEY = process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY;
 const PLACES_URL = "https://api.geoapify.com/v2/places";
 const SEARCH_RADIUS_METERS = 2000;
 
@@ -28,8 +29,9 @@ async function fetchNearest(
   fallbackName: string,
   lat: number,
   lng: number,
+  geoapifyKey: string,
 ): Promise<{ name: string; distanceMeters: number } | null> {
-  const url = `${PLACES_URL}?categories=${categoryKey}&filter=circle:${lng},${lat},${SEARCH_RADIUS_METERS}&bias=proximity:${lng},${lat}&limit=1&apiKey=${GEOAPIFY_KEY}`;
+  const url = `${PLACES_URL}?categories=${categoryKey}&filter=circle:${lng},${lat},${SEARCH_RADIUS_METERS}&bias=proximity:${lng},${lat}&limit=1&apiKey=${geoapifyKey}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Falha ao buscar ${categoryKey} (status ${res.status})`);
   const data = await res.json();
@@ -45,24 +47,28 @@ async function fetchNearest(
 /**
  * City/Life real: a categoria mais próxima de cada tipo de serviço/comodidade
  * em até SEARCH_RADIUS_METERS do imóvel, via Geoapify Places API (conta real,
- * mesma chave do Routing). Uma categoria sem resultado no raio aparece como
- * zero honesto (`place: null`), nunca é omitida silenciosamente nem
- * preenchida com dado inventado.
+ * mesma chave do Routing). A chave vem de useMapConfig (runtime via API), não
+ * de build-time. Uma categoria sem resultado no raio aparece como zero
+ * honesto (`place: null`), nunca é omitida silenciosamente nem preenchida
+ * com dado inventado.
  */
 export function useNearbyPlaces(location: { lat: number; lng: number } | null | undefined) {
+  const mapConfig = useMapConfig();
+  const geoapifyKey = mapConfig.data?.geoapifyApiKey;
+
   return useQuery({
-    queryKey: ["nearby-places", location?.lat, location?.lng],
+    queryKey: ["nearby-places", location?.lat, location?.lng, geoapifyKey],
     queryFn: async (): Promise<NearbyCategoryResult[]> => {
       const { lat, lng } = location!;
       return Promise.all(
         CATEGORIES.map(async ({ key, label, fallbackName }) => ({
           categoryKey: key,
           label,
-          place: await fetchNearest(key, fallbackName, lat, lng),
+          place: await fetchNearest(key, fallbackName, lat, lng, geoapifyKey!),
         })),
       );
     },
-    enabled: Boolean(location && GEOAPIFY_KEY),
+    enabled: Boolean(location && geoapifyKey),
     staleTime: 10 * 60_000,
     retry: false,
   });

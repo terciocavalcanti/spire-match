@@ -25,6 +25,7 @@ import { IntegrationsStatusModule } from "./integrations-status/integrations-sta
 import { InteractionsModule } from "./interactions/interactions.module";
 import { InternalModule } from "./internal/internal.module";
 import { LeadsModule } from "./leads/leads.module";
+import { MapConfigModule } from "./map-config/map-config.module";
 import { MarketIndicatorsModule } from "./market-indicators/market-indicators.module";
 import { MatchesModule } from "./matches/matches.module";
 import { NotificationsModule } from "./notifications/notifications.module";
@@ -83,6 +84,7 @@ import { VisitsModule } from "./visits/visits.module";
     MarketIndicatorsModule,
     PartnersModule,
     DataSubjectRequestsModule,
+    MapConfigModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

@@ -23,6 +23,7 @@ import { use, useEffect, useRef } from "react";
 
 import { ProposalForm } from "@/components/property/ProposalForm";
 import { useFavoriteIds, useToggleFavorite } from "@/hooks/use-favorites";
+import { useMapConfig } from "@/hooks/use-map-config";
 import { useMatchForProperty } from "@/hooks/use-matches";
 import { useNearbyPlaces } from "@/hooks/use-nearby-places";
 import { apiClient } from "@/lib/api-client";
@@ -66,6 +67,7 @@ export default function ImovelPage({ params }: { params: Promise<{ slug: string 
     queryFn: () => apiClient.properties.bySlug(slug),
   });
   const { data: match } = useMatchForProperty(property?.id);
+  const mapConfig = useMapConfig();
   const nearbyPlaces = useNearbyPlaces(property?.location);
 
   useEffect(() => {
@@ -213,10 +215,16 @@ export default function ImovelPage({ params }: { params: Promise<{ slug: string 
               <MapPin className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
               Este imóvel não tem localização cadastrada — não é possível calcular o que há por perto.
             </p>
-          ) : !process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY ? (
+          ) : mapConfig.isLoading ? (
+            <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="h-20 animate-pulse rounded-xl bg-background-subtle" aria-hidden />
+              ))}
+            </div>
+          ) : !mapConfig.data?.geoapifyApiKey ? (
             <p className="mt-2 flex items-start gap-2 text-bodySm text-ink-tertiary">
               <MapPin className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
-              Mapa de serviços e vizinhança — pendente de NEXT_PUBLIC_GEOAPIFY_API_KEY configurada.
+              Mapa de serviços e vizinhança — pendente de provedor configurado.
             </p>
           ) : nearbyPlaces.isLoading ? (
             <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">

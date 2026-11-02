@@ -59,6 +59,9 @@ services:
       # Pendências externas reais — deixe em branco até ter a credencial
       # (ver docs/deployment/DEPLOY_COOLIFY.md).
       MAPTILER_API_KEY: ${MAPTILER_API_KEY:-}
+      # Lida pela API para servir em runtime via GET /map-config (ver
+      # comentário no serviço "web" acima sobre coollabsio/coolify#5612).
+      NEXT_PUBLIC_GEOAPIFY_API_KEY: ${NEXT_PUBLIC_GEOAPIFY_API_KEY:-}
       S3_ENDPOINT: ${S3_ENDPOINT:-}
       S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-}
       S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-}
