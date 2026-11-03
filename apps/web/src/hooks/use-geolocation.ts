@@ -19,19 +19,29 @@ const MIN_MOVEMENT_METERS = 75;
 
 // `watchPosition` roda com `maximumAge: 30_000`, então em celular real a
 // PRIMEIRA leitura costuma vir de um fix em cache/rede (até 30s desatualizado
-// ou de baixa precisão) e é comum uma SEGUNDA leitura, genuinamente mais
-// precisa, chegar 1-2s depois a centenas de metros de distância — passando
-// facilmente do limiar de histerese acima e sendo aceita como "movimento
-// real". Sem essa espera, a primeira leitura já deixa `status` em "granted" e
-// pinta conteúdo tocável (ex.: os cards de "Perto de você agora" em
-// /inicio); se a segunda leitura chega e substitui a posição um instante
-// depois — às vezes bem na hora em que o usuário está tocando a tela —, o
-// conteúdo muda de baixo do dedo e ele acaba entrando num imóvel diferente
-// do que viu. Por isso a PRIMEIRA leitura só é efetivamente aceita (e só aí
-// `status` vira "granted") depois de ficar este tempo sem ser substituída
-// por outra leitura distante — leituras seguintes, já com a posição
-// estabilizada, continuam sendo aceitas na hora, sem essa espera.
-const SETTLE_DELAY_MS = 1_200;
+// ou de baixa precisão), e o GPS pode levar VÁRIAS leituras — não só uma —
+// pra convergir pra posição real, cada correção chegando um ou mais segundos
+// depois da anterior (comum em ambiente fechado/sinal fraco). Enquanto isso,
+// se a posição já tivesse sido exposta ao resto do app, conteúdo tocável
+// (ex.: os cards de "Perto de você agora" em /inicio) pintaria com uma
+// leitura, e uma correção seguinte — às vezes bem na hora em que o usuário
+// está tocando a tela — trocaria o conteúdo debaixo do dedo, fazendo-o
+// entrar num imóvel diferente do que viu. Uma primeira versão desta espera
+// só protegia a PRIMEIRA leitura (assumindo que a segunda já seria a
+// definitiva); na prática o GPS às vezes corrige mais de uma vez, e esse
+// "só a primeira" deixava as correções seguintes passarem direto sem
+// proteção. Por isso agora QUALQUER salto de ≥`MIN_MOVEMENT_METERS` (não só
+// o primeiro) reinicia a espera de decantação: só quando uma leitura fica
+// este tempo sem ser substituída por outro salto é que ela de fato vira
+// `location`/"granted". Uma leitura dentro do raio de ruído da candidata
+// pendente não reinicia a espera (ruído normal não trava a decantação).
+const SETTLE_DELAY_MS = 1_500;
+
+// Trava de segurança: nunca deixa o usuário olhando pro esqueleto de
+// carregamento indefinidamente se o GPS nunca "acalmar" (sinal ruim demais
+// pra convergir). Passado esse tempo desde o `request()`, a leitura mais
+// recente é aceita na hora, mesmo que ainda estivesse em decantação.
+const MAX_SETTLE_WAIT_MS = 8_000;
 
 /**
  * Localização somente durante a sessão visível, atrás de gesto explícito do
@@ -46,7 +56,12 @@ export function useGeolocation() {
   const [location, setLocation] = useState<{ lat: number; lng: number; accuracy: number | null } | null>(null);
   const watchIdRef = useRef<number | null>(null);
   const lastAcceptedRef = useRef<{ lat: number; lng: number } | null>(null);
+  // Candidata mais recente ainda em decantação (não commitada em `location`).
+  // Enquanto existir, é ELA a referência de histerese para leituras novas —
+  // não a última aceita, que pode já estar várias correções desatualizada.
+  const pendingRef = useRef<{ lat: number; lng: number; accuracy: number | null } | null>(null);
   const settleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const requestStartedAtRef = useRef<number | null>(null);
 
   function clearSettleTimeout() {
     if (settleTimeoutRef.current !== null) {
@@ -54,6 +69,14 @@ export function useGeolocation() {
       settleTimeoutRef.current = null;
     }
   }
+
+  const commit = useCallback((next: { lat: number; lng: number }, accuracy: number | null) => {
+    clearSettleTimeout();
+    pendingRef.current = null;
+    lastAcceptedRef.current = next;
+    setLocation({ ...next, accuracy });
+    setStatus("granted");
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -68,6 +91,8 @@ export function useGeolocation() {
       // que já havia um watch ativo.
       watchIdRef.current = null;
       lastAcceptedRef.current = null;
+      pendingRef.current = null;
+      requestStartedAtRef.current = null;
       clearSettleTimeout();
       setStatus("idle");
     };
@@ -80,48 +105,47 @@ export function useGeolocation() {
     }
     if (watchIdRef.current !== null) return;
     setStatus("requesting");
+    requestStartedAtRef.current = Date.now();
+    pendingRef.current = null;
     watchIdRef.current = navigator.geolocation.watchPosition(
       (position) => {
         const next = { lat: position.coords.latitude, lng: position.coords.longitude };
         const accuracy = position.coords.accuracy ?? null;
-        const last = lastAcceptedRef.current;
+        // Mede contra a candidata em decantação se houver uma (pode já estar
+        // várias correções à frente da última posição commitada); senão,
+        // contra a última posição de fato commitada.
+        const reference = pendingRef.current ?? lastAcceptedRef.current;
 
-        if (last) {
-          if (haversineDistanceMeters(last, next) < MIN_MOVEMENT_METERS) {
-            // Ruído de sensor, não movimento real — status confirma "granted"
-            // (relevante na primeira leitura após "requesting"), mas a
-            // posição oficial não muda, então nada que dependa de `location`
-            // refaz.
-            setStatus("granted");
-            return;
-          }
-          // Já existe uma posição estável aceita antes — isto é movimento
-          // real do usuário, não a primeira leitura (que é a única sujeita
-          // ao salto comum de fix impreciso -> fix preciso), então aplica na
-          // hora, sem esperar.
-          clearSettleTimeout();
-          lastAcceptedRef.current = next;
-          setLocation({ ...next, accuracy });
-          setStatus("granted");
+        if (reference && haversineDistanceMeters(reference, next) < MIN_MOVEMENT_METERS) {
+          // Ruído de sensor, não um novo salto — não reinicia a decantação.
+          // Se já existe algo commitado, confirma "granted" (relevante logo
+          // após "requesting"); a posição oficial não muda.
+          if (lastAcceptedRef.current) setStatus("granted");
           return;
         }
 
-        // Primeira leitura desde que a localização foi ativada — espera
-        // decantar (ver SETTLE_DELAY_MS acima) antes de comprometer e expor
-        // ao resto do app, pra não pintar conteúdo tocável que pode mudar
-        // sozinho um instante depois.
+        const elapsedSinceRequest = Date.now() - (requestStartedAtRef.current ?? Date.now());
+        if (elapsedSinceRequest >= MAX_SETTLE_WAIT_MS) {
+          // Já esperamos o suficiente — expõe o que tiver em vez de deixar o
+          // usuário olhando pro esqueleto de carregamento pra sempre.
+          commit(next, accuracy);
+          return;
+        }
+
+        // Salto real (≥ MIN_MOVEMENT_METERS) dentro da janela de segurança —
+        // (re)inicia a decantação a partir desta leitura.
+        pendingRef.current = { ...next, accuracy };
         clearSettleTimeout();
         settleTimeoutRef.current = setTimeout(() => {
           settleTimeoutRef.current = null;
-          lastAcceptedRef.current = next;
-          setLocation({ ...next, accuracy });
-          setStatus("granted");
+          const candidate = pendingRef.current;
+          if (candidate) commit(candidate, candidate.accuracy);
         }, SETTLE_DELAY_MS);
       },
       () => setStatus("denied"),
       { enableHighAccuracy: true, timeout: 10_000, maximumAge: 30_000 },
     );
-  }, []);
+  }, [commit]);
 
   /** Desativa o acompanhamento em tempo real — o usuário pode reativar a qualquer momento com `request()`. */
   const clear = useCallback(() => {
@@ -130,6 +154,8 @@ export function useGeolocation() {
     }
     watchIdRef.current = null;
     lastAcceptedRef.current = null;
+    pendingRef.current = null;
+    requestStartedAtRef.current = null;
     clearSettleTimeout();
     setStatus("idle");
     setLocation(null);
