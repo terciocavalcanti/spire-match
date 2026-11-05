@@ -5,6 +5,16 @@ já completos — ver `docs/product/PRD.md`). Antes de retomar: releia este
 documento e `docs/product/NOVOS_RECURSOS_M0_DIAGNOSTICO.md`, depois confira o
 código real — não confie neles como estado atual sem verificar.
 
+## Infra — deploy automático (Coolify) ✅ resolvido em 2026-11-05
+
+O recurso no Coolify estava conectado via "Public GitHub" (sem webhook
+automático) — cada push em `main` exigia clicar **Redeploy** manualmente
+(ver `docs/deployment/DEPLOY_COOLIFY.md`, seção 6). Trocado para a fonte
+`git-arkiv` (conexão via GitHub App já autorizada), que registra webhook
+automático. Este commit é o teste real desse webhook: se aparecer um
+deployment automático no Coolify logo após o push, sem clique manual, está
+confirmado.
+
 ## M0 — Diagnóstico ✅ concluído
 
 Ver `docs/product/NOVOS_RECURSOS_M0_DIAGNOSTICO.md`: arquitetura confirmada
