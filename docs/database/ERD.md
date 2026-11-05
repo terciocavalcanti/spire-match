@@ -1,7 +1,7 @@
 # ERD — VALORI MATCH
 
 Gerado a partir do schema real em `apps/api/src/database/schema/*.ts` (Drizzle
-ORM, Postgres). 43 tabelas em 8 grupos de domínio. Todo FK/coluna abaixo
+ORM, Postgres). 46 tabelas em 9 grupos de domínio. Todo FK/coluna abaixo
 existe hoje no código — nada aspiracional.
 
 ## 1. Identidade e acesso
@@ -339,3 +339,48 @@ LGPD do próprio ator sem quebrar o histórico. `data_subject_requests` de tipo
 `EXPORTACAO` já nasce `CONCLUIDO` (resolvida na hora); `EXCLUSAO` fica
 `PENDENTE` até confirmação ou rejeição do time comercial (ver
 `docs/security/LGPD_DATA_MAP.md`).
+
+## 9. Integrações externas (fundação — "novos recursos" M1)
+
+```mermaid
+erDiagram
+  INTEGRATION_CONNECTIONS ||--o{ INTEGRATION_EVENTS : recebe
+  INTEGRATION_CONNECTIONS ||--o{ INTEGRATION_EXTERNAL_REFS : mapeia
+  USERS ||--o{ INTEGRATION_CONNECTIONS : edita
+
+  INTEGRATION_CONNECTIONS {
+    uuid id PK
+    text provider "texto livre — nenhum provedor nomeado/credenciado ainda"
+    text label
+    enum direction "ENTRADA/SAIDA/AMBAS"
+    enum status "PENDENTE/ATIVA/PAUSADA"
+    jsonb config
+    timestamp last_error_at
+    text last_error_message
+  }
+  INTEGRATION_EVENTS {
+    uuid id PK
+    uuid connection_id FK
+    enum direction "ENTRADA/SAIDA"
+    text event_type
+    text external_event_id "nullable — chave de dedupe quando a fonte fornece"
+    jsonb payload
+    enum status "PENDENTE/PROCESSADO/FALHOU/DUPLICADO"
+    int attempts
+  }
+  INTEGRATION_EXTERNAL_REFS {
+    uuid id PK
+    uuid connection_id FK
+    text entity_type "texto livre, ex.: PROPERTY/LEAD"
+    uuid internal_id
+    text external_id
+  }
+```
+
+Fundação provider-agnóstica: nenhum conector concreto existe ainda (ver
+`docs/product/NOVOS_RECURSOS_M0_DIAGNOSTICO.md`). `integration_events` tem
+índice único parcial `(connection_id, external_event_id) WHERE external_event_id
+IS NOT NULL` — dedupe real sob concorrência, não heurística em memória,
+verificado contra Postgres real (não só mockado). "Isolar por imobiliária" é
+tratado como isolar por CONEXÃO: o sistema é single-tenant (uma única
+imobiliária), sem tabela de organização/tenant.

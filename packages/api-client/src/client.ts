@@ -57,6 +57,12 @@ import {
   type GrantDevelopmentPartnerAccessRequest,
   type ImportUnitsRequest,
   type ImportUnitsResponse,
+  type CreateIntegrationConnectionRequest,
+  type IntegrationConnection,
+  type IntegrationEvent,
+  type IntegrationEventListQuery,
+  type RetryFailedIntegrationEventsResult,
+  type UpdateIntegrationConnectionRequest,
   type IntegrationStatusEntry,
   type Lead,
   type LeadDetail,
@@ -509,6 +515,20 @@ export class SpireApiClient {
 
   integrationsStatus = {
     list: () => this.request<{ items: IntegrationStatusEntry[] }>("/integrations-status"),
+  };
+
+  integrationConnections = {
+    list: () => this.request<{ items: IntegrationConnection[] }>("/integration-connections"),
+    create: (payload: CreateIntegrationConnectionRequest) =>
+      this.request<IntegrationConnection>("/integration-connections", { method: "POST", body: JSON.stringify(payload) }),
+    update: (id: string, payload: UpdateIntegrationConnectionRequest) =>
+      this.request<IntegrationConnection>(`/integration-connections/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
+    activate: (id: string) => this.request<IntegrationConnection>(`/integration-connections/${id}/activate`, { method: "POST" }),
+    pause: (id: string) => this.request<IntegrationConnection>(`/integration-connections/${id}/pause`, { method: "POST" }),
+    events: (id: string, query: Partial<IntegrationEventListQuery> = {}) =>
+      this.request<{ items: IntegrationEvent[]; nextCursor: string | null }>(`/integration-connections/${id}/events${toQueryString(query)}`),
+    retryFailedEvents: () =>
+      this.request<RetryFailedIntegrationEventsResult>("/integration-connections/events/retry-failed", { method: "POST" }),
   };
 
   auditLogs = {

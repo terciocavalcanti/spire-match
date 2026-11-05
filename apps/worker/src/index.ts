@@ -2,10 +2,11 @@ import { Queue, Worker } from "bullmq";
 
 import { loadEnv } from "./env";
 import { processAutomationTick } from "./jobs/automation-tick";
+import { processIntegrationEventsRetry } from "./jobs/integration-events-retry";
 import { processRadarSweep } from "./jobs/radar-sweep";
 import { processRecalcBuyer } from "./jobs/recalc-buyer";
 import { processRecalcProperty } from "./jobs/recalc-property";
-import { QUEUE_AUTOMATION_TICK, QUEUE_RADAR_SWEEP, QUEUE_RECALC_BUYER, QUEUE_RECALC_PROPERTY } from "./queues";
+import { QUEUE_AUTOMATION_TICK, QUEUE_INTEGRATION_EVENTS_RETRY, QUEUE_RADAR_SWEEP, QUEUE_RECALC_BUYER, QUEUE_RECALC_PROPERTY } from "./queues";
 import { createRedisConnection } from "./redis";
 
 const env = loadEnv();
@@ -25,8 +26,9 @@ async function main(): Promise<void> {
   });
   const radarSweepWorker = new Worker(QUEUE_RADAR_SWEEP, (job) => processRadarSweep(job, env), { connection });
   const automationTickWorker = new Worker(QUEUE_AUTOMATION_TICK, (job) => processAutomationTick(job, env), { connection });
+  const integrationEventsRetryWorker = new Worker(QUEUE_INTEGRATION_EVENTS_RETRY, (job) => processIntegrationEventsRetry(job, env), { connection });
 
-  for (const worker of [recalcBuyerWorker, recalcPropertyWorker, radarSweepWorker, automationTickWorker]) {
+  for (const worker of [recalcBuyerWorker, recalcPropertyWorker, radarSweepWorker, automationTickWorker, integrationEventsRetryWorker]) {
     worker.on("completed", (job) => console.log(`[${worker.name}] job ${job.id} concluído`));
     worker.on("failed", (job, err) => console.error(`[${worker.name}] job ${job?.id} falhou:`, err.message));
   }
@@ -56,8 +58,19 @@ async function main(): Promise<void> {
     },
   );
 
+  const integrationEventsRetryQueue = new Queue(QUEUE_INTEGRATION_EVENTS_RETRY, { connection });
+  await integrationEventsRetryQueue.add(
+    "retry",
+    {},
+    {
+      ...DEFAULT_JOB_OPTIONS,
+      repeat: { every: env.INTEGRATION_EVENTS_RETRY_INTERVAL_MINUTES * 60_000 },
+      jobId: "integration-events-retry-repeatable",
+    },
+  );
+
   console.log(
-    `VALORI MATCH worker no ar — recálculo de match ativo, varredura de radares a cada ${env.RADAR_SWEEP_INTERVAL_MINUTES} min, automações a cada ${env.AUTOMATION_TICK_INTERVAL_MINUTES} min.`,
+    `VALORI MATCH worker no ar — recálculo de match ativo, varredura de radares a cada ${env.RADAR_SWEEP_INTERVAL_MINUTES} min, automações a cada ${env.AUTOMATION_TICK_INTERVAL_MINUTES} min, reprocessamento de eventos de integração a cada ${env.INTEGRATION_EVENTS_RETRY_INTERVAL_MINUTES} min.`,
   );
 
   async function shutdown(): Promise<void> {
@@ -67,8 +80,9 @@ async function main(): Promise<void> {
       recalcPropertyWorker.close(),
       radarSweepWorker.close(),
       automationTickWorker.close(),
+      integrationEventsRetryWorker.close(),
     ]);
-    await Promise.all([radarSweepQueue.close(), automationTickQueue.close()]);
+    await Promise.all([radarSweepQueue.close(), automationTickQueue.close(), integrationEventsRetryQueue.close()]);
     await connection.quit();
     process.exit(0);
   }

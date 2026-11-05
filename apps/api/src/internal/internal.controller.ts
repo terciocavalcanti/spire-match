@@ -3,6 +3,7 @@ import { ApiExcludeController } from "@nestjs/swagger";
 
 import { AutomationsService } from "../automations/automations.service";
 import { InternalGuard } from "../common/guards/internal.guard";
+import { IntegrationEventsService } from "../integration-connections/integration-events.service";
 import { MatchesService } from "../matches/matches.service";
 import { RadarsService } from "../radars/radars.service";
 
@@ -20,6 +21,7 @@ export class InternalController {
     private readonly matches: MatchesService,
     private readonly radars: RadarsService,
     private readonly automations: AutomationsService,
+    private readonly integrationEvents: IntegrationEventsService,
   ) {}
 
   @Post("matches/recalculate-buyer/:userId")
@@ -45,5 +47,11 @@ export class InternalController {
       this.automations.runSlaReminders(),
     ]);
     return { leadAutoAssigned, slaReminded };
+  }
+
+  @Post("integration-events/requeue-failed")
+  async requeueFailedIntegrationEvents() {
+    const requeued = await this.integrationEvents.requeueFailed();
+    return { requeued };
   }
 }

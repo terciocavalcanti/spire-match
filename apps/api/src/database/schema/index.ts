@@ -30,3 +30,4 @@ export * from "./market-indicators";
 export * from "./partners";
 export * from "./audit-logs";
 export * from "./data-subject-requests";
+export * from "./integration-connections";
