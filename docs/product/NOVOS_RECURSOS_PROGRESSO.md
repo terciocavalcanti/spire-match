@@ -162,6 +162,72 @@ conexão `provider: "GRUPOZAP"` em `/admin/integracoes` e registrar a URL do
 webhook (`https://<domínio-api>/api/v1/webhooks/grupozap/leads`) com o Grupo
 ZAP. Sem isso, o endpoint responde 503 sempre — nunca finge estar ativo.
 
+**Correção posterior (mesmo dia):** o `ZodValidationPipe` rodava antes de
+qualquer persistência — um payload que não batesse 100% com o schema (ex.:
+lead só por telefone, sem e-mail, plausível para `leadType` `PHONE_VIEW`/
+`CLICK_WHATSAPP`) era rejeitado com 400 e o evento nunca chegava a ser
+salvo, contrariando o princípio do M1 de nunca perder um evento. Corrigido:
+o controller aceita o corpo cru, `GrupoZapLeadsService.receiveLead` sempre
+ingere o payload primeiro (dedupe por `originLeadId` já funciona mesmo sem
+schema válido) e só depois tenta interpretá-lo — se falhar, o evento fica
+`FALHOU` e visível em "Conexões externas", nunca descartado silenciosamente.
+
+## M3 — Perfil progressivo e match imediato ✅ concluído
+
+**O que já existia e foi reaproveitado:** motor de score determinístico
+(`computeMatchScore`), critérios eliminatórios (`eliminated`/`eliminationReason`),
+explicações por `reasons[]`, `PUT /me/preferences` para preferências
+confirmadas, `user_interactions`/`favorites` como fonte real de sinais.
+
+**Gap real encontrado (não hipotético):** `BuyerMatchProfile.preferenceSignalScore`
+existia na interface do motor, mas `MatchesService.buildBuyerProfile` nunca
+o calculava — caía sempre no fallback fixo `0.5`. Consequência silenciosa:
+10% do peso do Match Engine nunca diferenciava nada, e o motivo
+`PREFERENCE_SIGNAL` ("Parecido com imóveis que você curtiu") nunca aparecia
+em nenhum Match, para ninguém, desde que esse peso foi criado.
+
+**O que mudou:**
+- `packages/domain/src/match/preference-signal.ts`: `computePreferenceSignalScore`
+  (puro, por candidato — não mais um escalar fixo por comprador) e
+  `inferPreferenceSuggestions` (hipóteses de preferência a partir de
+  LIKE/FAVORITE reais, nunca escritas automaticamente no perfil).
+  `BuyerMatchProfile.preferenceSignalScore` virou `preferenceSignalSamples`
+  (lista de amostras) — o score passou a ser calculado dentro de
+  `computeMatchScore`, por imóvel candidato, como deveria sempre ter sido.
+- `MatchesService.gatherPreferenceSignalSamples` (pública): combina as duas
+  fontes reais de sinal positivo — `user_interactions` (LIKE/FAVORITE do
+  swipe) e a tabela `favorites` (coração nos cards) — deduplicadas por
+  imóvel.
+- `GET /me/preferences/suggestions` (novo, em `BuyerProfileController`):
+  sugestões de bairro/característica, nunca gravadas sozinhas — confirmar
+  reaproveita 100% o `PUT /me/preferences` já existente.
+- `apps/web/src/components/profile/InferredPreferencesCard.tsx`: cartão em
+  `/perfil`, acima do formulário manual, com Confirmar/Dispensar por sugestão.
+
+**Bug real encontrado rodando contra Postgres de verdade (não um mock):**
+`featuresScore` dividia pelo tamanho do conjunto acumulado de características
+curtidas, não pelas características do próprio imóvel candidato — um
+candidato com poucas características (2) contra um histórico que acumulava
+muitas (6) era penalizado injustamente (score caía de ~0.80 para ~0.75,
+exatamente no limiar de 0.75 que decide se o motivo aparece). Com dados de
+seed reais (3 imóveis curtidos em Boa Viagem, candidato também em Boa
+Viagem com 1 característica em comum), o motivo `PREFERENCE_SIGNAL` não
+aparecia. Corrigido (dividir pelas características do candidato) e travado
+com um teste de regressão novo.
+
+**Verificações executadas:**
+- 31/31 testes de domínio (8 novos para `preference-signal.ts`, incluindo o
+  teste de regressão do bug acima).
+- `pnpm turbo run typecheck lint test build --force`: 29/29.
+- Verificação funcional de ponta a ponta contra Postgres real descartável,
+  com dados do seed de demonstração: curtir 3 imóveis de um bairro não
+  confirmado fez a sugestão de bairro aparecer corretamente (e não sugeriu
+  "Boa Viagem" para a conta demo porque já estava confirmado — nunca sugere
+  o óbvio); após corrigir o bug do `featuresScore`, o motivo
+  `PREFERENCE_SIGNAL` passou a aparecer de verdade no Match recalculado
+  (score subiu de 97 para 98). Ambiente descartável completamente removido
+  ao final (container Docker + processo da API) — nada ficou para trás.
+
 ## M5 — Publicação centralizada (próximo passo natural)
 
 Spec do feed Vrsync já pesquisada (ver acima) — não implementado ainda.
@@ -171,7 +237,7 @@ técnicos confirmados (TLS válido não autoassinado, `VivaRealBot/1.0`
 liberado no firewall, URL ≤255 caracteres, timeout de conexão 60s/download
 20min) — ver `/feeds/connection_guideline.html`.
 
-## M3, M4, M6–M12 — pendentes
+## M4, M6–M12 — pendentes
 
 Ver a matriz completa em `docs/product/NOVOS_RECURSOS_M0_DIAGNOSTICO.md`.
 M9 (catálogo externo licenciado — diferente de M5, que é publicar a carteira

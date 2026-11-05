@@ -1,4 +1,5 @@
 import { haversineDistanceMeters } from "./geo";
+import { computePreferenceSignalScore } from "./preference-signal";
 import type {
   BuyerMatchProfile,
   MatchReason,
@@ -144,7 +145,7 @@ export function computeMatchScore(
   const { score: roomsFeatures, featuresScore } = scoreRoomsFeatures(buyer, property);
   const purpose = scorePurpose(buyer, property);
   const payment = scorePayment(buyer, property);
-  const preferenceSignals = buyer.preferenceSignalScore ?? 0.5;
+  const preferenceSignals = computePreferenceSignalScore(buyer.preferenceSignalSamples ?? [], property);
 
   const weighted =
     budget * effectiveWeights.budget +

@@ -57,6 +57,7 @@ import {
   type GrantDevelopmentPartnerAccessRequest,
   type ImportUnitsRequest,
   type ImportUnitsResponse,
+  type InferredPreferenceSuggestion,
   type CreateIntegrationConnectionRequest,
   type IntegrationConnection,
   type IntegrationEvent,
@@ -297,6 +298,8 @@ export class SpireApiClient {
 
     update: (payload: UpdateBuyerPreferencesRequest) =>
       this.request<BuyerPreferences>("/me/preferences", { method: "PUT", body: JSON.stringify(payload) }),
+
+    suggestions: () => this.request<{ items: InferredPreferenceSuggestion[] }>("/me/preferences/suggestions"),
   };
 
   aiSearch = {

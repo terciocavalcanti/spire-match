@@ -19,6 +19,11 @@ export class BuyerProfileController {
     return this.buyerProfile.get(userId);
   }
 
+  @Get("suggestions")
+  async suggestions(@CurrentUserId() userId: string) {
+    return { items: await this.buyerProfile.inferSuggestions(userId) };
+  }
+
   @Put()
   async update(
     @CurrentUserId() userId: string,

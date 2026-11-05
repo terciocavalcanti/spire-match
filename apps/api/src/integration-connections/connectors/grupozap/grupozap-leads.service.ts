@@ -47,24 +47,37 @@ export class GrupoZapLeadsService {
     return connection;
   }
 
-  /** Ponto de entrada do webhook — sempre persiste o evento antes de tentar processar. */
-  async receiveLead(payload: GrupoZapLeadPayload): Promise<{ duplicate: boolean; processed: boolean }> {
+  /**
+   * Ponto de entrada do webhook — sempre persiste o payload cru primeiro,
+   * antes de qualquer tentativa de interpretá-lo. Um lead "incompleto" (ex.:
+   * sem e-mail, só com telefone — plausível para leadType PHONE_VIEW/
+   * CLICK_WHATSAPP, não documentados com todos os campos garantidos) fica
+   * salvo como evento FALHOU, nunca descartado silenciosamente.
+   */
+  async receiveLead(raw: Record<string, unknown>): Promise<{ duplicate: boolean; processed: boolean }> {
     const connection = await this.getConnectionOrThrow();
 
+    const externalEventId = typeof raw.originLeadId === "string" ? raw.originLeadId : undefined;
     const { event, duplicate } = await this.events.ingest({
       connectionId: connection.id,
       direction: "ENTRADA",
       eventType: "LEAD_RECEIVED",
-      payload: payload as unknown as Record<string, unknown>,
-      externalEventId: payload.originLeadId,
+      payload: raw,
+      externalEventId,
     });
     if (duplicate) return { duplicate: true, processed: event.status === "PROCESSADO" };
+
+    const parsed = grupoZapLeadPayloadSchema.safeParse(raw);
+    if (!parsed.success) {
+      await this.events.markFailed(event.id, `Payload não reconhecido: ${parsed.error.message}`);
+      return { duplicate: false, processed: false };
+    }
 
     // Conexão PENDENTE/PAUSADA: o evento já está salvo (nunca se perde), só
     // não processa agora — reprocessa quando a conexão for ativada.
     if (connection.status !== "ATIVA") return { duplicate: false, processed: false };
 
-    await this.processEvent(connection.id, event.id, payload);
+    await this.processEvent(connection.id, event.id, parsed.data);
     return { duplicate: false, processed: true };
   }
 

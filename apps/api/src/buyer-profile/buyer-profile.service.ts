@@ -1,10 +1,12 @@
 import { Inject, Injectable } from "@nestjs/common";
-import type { BuyerPreferences, UpdateBuyerPreferencesRequest } from "@spire/contracts";
+import type { BuyerPreferences, InferredPreferenceSuggestion, UpdateBuyerPreferencesRequest } from "@spire/contracts";
+import { inferPreferenceSuggestions } from "@spire/domain";
 import { eq } from "drizzle-orm";
 
 import type { Database } from "../database/client";
 import { DATABASE } from "../database/database.module";
 import { buyerProfiles } from "../database/schema";
+import { MatchesService } from "../matches/matches.service";
 import { QueueService } from "../queue/queue.service";
 
 type BuyerProfileRow = typeof buyerProfiles.$inferSelect;
@@ -42,11 +44,26 @@ export class BuyerProfileService {
   constructor(
     @Inject(DATABASE) private readonly db: Database,
     private readonly queue: QueueService,
+    private readonly matches: MatchesService,
   ) {}
 
   async get(userId: string): Promise<BuyerPreferences> {
     const [row] = await this.db.select().from(buyerProfiles).where(eq(buyerProfiles.userId, userId)).limit(1);
     return row ? toDto(row) : EMPTY_PREFERENCES;
+  }
+
+  /**
+   * Hipóteses de preferência derivadas do comportamento real (LIKE/FAVORITE)
+   * — nunca escritas automaticamente no perfil confirmado; o comprador
+   * confirma pelo fluxo normal de `PUT /me/preferences` (ver
+   * `apps/web/src/components/profile/InferredPreferencesCard.tsx`).
+   */
+  async inferSuggestions(userId: string): Promise<InferredPreferenceSuggestion[]> {
+    const [confirmed, samples] = await Promise.all([this.get(userId), this.matches.gatherPreferenceSignalSamples(userId)]);
+    return inferPreferenceSuggestions(samples, {
+      desiredNeighborhoods: confirmed.desiredNeighborhoods,
+      desiredFeatures: confirmed.desiredFeatures,
+    });
   }
 
   async getRow(userId: string): Promise<BuyerProfileRow | null> {

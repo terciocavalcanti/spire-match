@@ -1,12 +1,19 @@
 import { Inject, Injectable } from "@nestjs/common";
 import type { MatchResult } from "@spire/contracts";
-import { computeMatchScore, type BuyerMatchProfile, type MatchWeights, type PropertyMatchInput } from "@spire/domain";
+import {
+  computeMatchScore,
+  type BuyerMatchProfile,
+  type MatchWeights,
+  type PreferenceSignalSample,
+  type PropertyMatchInput,
+} from "@spire/domain";
 import { desc, eq, inArray, sql } from "drizzle-orm";
 
 import type { Database } from "../database/client";
 import { DATABASE } from "../database/database.module";
 import {
   buyerProfiles,
+  favorites,
   matchResults,
   properties,
   roleAssignments,
@@ -51,14 +58,8 @@ export class MatchesService {
     return { weights, rulesetVersion };
   }
 
-  private async buildBuyerProfile(
-    userId: string,
-    location: { lat: number; lng: number } | null,
-  ): Promise<BuyerMatchProfile> {
-    const [profileRow] = await this.db.select().from(buyerProfiles).where(eq(buyerProfiles.userId, userId)).limit(1);
-
-    // Última interação por imóvel: DISLIKE mais recente que qualquer LIKE/FAVORITE
-    // posterior é tratado como incompatibilidade essencial (seção 4.3).
+  /** Última interação por imóvel — DISLIKE mais recente que qualquer LIKE/FAVORITE posterior é incompatibilidade essencial (seção 4.3). */
+  private async latestInteractionByProperty(userId: string): Promise<Map<string, string>> {
     const interactions = await this.db
       .select({ propertyId: userInteractions.propertyId, type: userInteractions.type, createdAt: userInteractions.createdAt })
       .from(userInteractions)
@@ -71,9 +72,47 @@ export class MatchesService {
         latestByProperty.set(interaction.propertyId, interaction.type);
       }
     }
+    return latestByProperty;
+  }
+
+  /**
+   * Imóveis que o comprador demonstrou preferir de verdade — combina as duas
+   * fontes reais de sinal positivo do sistema: LIKE/FAVORITE registrado em
+   * `user_interactions` (swipe em `/matches/descobrir`) e a tabela
+   * `favorites` (coração nos cards, caminho separado). Público porque
+   * `BuyerProfileService` reaproveita para sugerir preferências inferidas
+   * (`/me/preferences/suggestions`) sem duplicar a consulta.
+   */
+  async gatherPreferenceSignalSamples(userId: string, latestInteractionByProperty?: Map<string, string>): Promise<PreferenceSignalSample[]> {
+    const likedMap = latestInteractionByProperty ?? (await this.latestInteractionByProperty(userId));
+    const likedPropertyIds = [...likedMap.entries()]
+      .filter(([, type]) => type === "LIKE" || type === "FAVORITE")
+      .map(([propertyId]) => propertyId);
+
+    const favoriteRows = await this.db.select({ propertyId: favorites.propertyId }).from(favorites).where(eq(favorites.userId, userId));
+    const positivePropertyIds = [...new Set([...likedPropertyIds, ...favoriteRows.map((f) => f.propertyId)])];
+    if (positivePropertyIds.length === 0) return [];
+
+    const rows = await this.db
+      .select({ neighborhood: properties.neighborhood, price: properties.price, bedrooms: properties.bedrooms, features: properties.features })
+      .from(properties)
+      .where(inArray(properties.id, positivePropertyIds));
+
+    return rows.map((row) => ({ neighborhood: row.neighborhood, price: Number(row.price), bedrooms: row.bedrooms, features: row.features }));
+  }
+
+  private async buildBuyerProfile(
+    userId: string,
+    location: { lat: number; lng: number } | null,
+  ): Promise<BuyerMatchProfile> {
+    const [profileRow] = await this.db.select().from(buyerProfiles).where(eq(buyerProfiles.userId, userId)).limit(1);
+
+    const latestByProperty = await this.latestInteractionByProperty(userId);
     const hardExcludedPropertyIds = [...latestByProperty.entries()]
       .filter(([, type]) => type === "DISLIKE")
       .map(([propertyId]) => propertyId);
+
+    const preferenceSignalSamples = await this.gatherPreferenceSignalSamples(userId, latestByProperty);
 
     return {
       budgetMin: profileRow?.budgetMin ? Number(profileRow.budgetMin) : 0,
@@ -87,6 +126,7 @@ export class MatchesService {
       desiredFeatures: profileRow?.desiredFeatures ?? [],
       currentLocation: location,
       hardExcludedPropertyIds,
+      preferenceSignalSamples,
     };
   }
 

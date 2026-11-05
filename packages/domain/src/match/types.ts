@@ -1,5 +1,7 @@
 import type { GeoPoint, ListingPurpose, MatchReasonCode, PaymentMethod, PropertyStatus } from "@spire/contracts";
 
+import type { PreferenceSignalSample } from "./preference-signal";
+
 export type { GeoPoint, ListingPurpose, MatchReasonCode, PaymentMethod, PropertyStatus };
 
 export interface BuyerMatchProfile {
@@ -16,8 +18,13 @@ export interface BuyerMatchProfile {
   currentLocation: GeoPoint | null;
   /** IDs de imóveis marcados pelo comprador como incompatibilidade essencial (DISLIKE forte). */
   hardExcludedPropertyIds: string[];
-  /** Score 0..1 derivado de sinais de interação prévios (likes/views em imóveis similares). Opcional. */
-  preferenceSignalScore?: number;
+  /**
+   * Imóveis que o comprador já demonstrou preferir (LIKE/FAVORITE) — usados
+   * por `computeMatchScore` para calcular, por candidato, o quanto ele se
+   * parece com o que o comprador curtiu (ver `computePreferenceSignalScore`
+   * em `./preference-signal.ts`). Vazio/ausente = sem sinal, score neutro.
+   */
+  preferenceSignalSamples?: PreferenceSignalSample[];
 }
 
 export interface PropertyMatchInput {

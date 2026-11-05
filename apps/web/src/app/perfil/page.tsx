@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { AppShell } from "@/components/layout/AppShell";
+import { InferredPreferencesCard } from "@/components/profile/InferredPreferencesCard";
 import { PreferencesForm } from "@/components/profile/PreferencesForm";
 import { InstallPwaCard } from "@/components/pwa/InstallPwaCard";
 import { PushNotificationsCard } from "@/components/pwa/PushNotificationsCard";
@@ -228,6 +229,9 @@ export default function PerfilPage() {
           <p className="mt-1 text-bodySm text-ink-secondary">
             Usadas pelo Match Engine para calcular sua compatibilidade com os imóveis.
           </p>
+          <div className="mt-4">
+            <InferredPreferencesCard />
+          </div>
           <div className="mt-4">
             <PreferencesForm />
           </div>
