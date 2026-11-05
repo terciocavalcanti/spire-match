@@ -1,0 +1,1 @@
+ALTER TYPE "public"."lead_activity_type" ADD VALUE 'INTEGRATION_LEAD_RECEIVED';

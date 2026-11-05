@@ -19,6 +19,7 @@ simplesmente desligados (nunca simulados como ativos).
 | `SMTP_URL` | Apenas verificado em `integrations-status.service.ts` para o painel; e-mails transacionais de auth (verificação/redefinição de senha) usam Mailhog em dev via essa mesma variável | Real em dev (Mailhog), placeholder em produção | Configurar um SMTP real (ou provedor transacional) antes do lançamento |
 | `WHATSAPP_CLOUD_API_TOKEN` / `WHATSAPP_PHONE_NUMBER_ID` | Apenas verificado em `integrations-status.service.ts` | Placeholder — ver `docs/operations/WHATSAPP_TEMPLATES.md` | Sem envio implementado; configurar só terá efeito depois que o adapter de envio for escrito |
 | `LLM_PROVIDER_API_KEY` | Apenas verificado em `integrations-status.service.ts` — a busca "IA" (`AiSearchService`) usa um parser determinístico de `packages/domain`, **não chama nenhum LLM** | Placeholder | Integrar um LLM real é trabalho futuro — o parser atual já cobre a função sem depender de credencial |
+| `GRUPOZAP_WEBHOOK_SECRET_KEY` | `GrupoZapWebhookAuthGuard` protege `POST /webhooks/grupozap/leads` (leads do ZAP Imóveis/Viva Real/OLX) | **Real quando presente** — é a implementação funcional do conector de leads (M2), não um placeholder só de status; sem a variável o endpoint responde 503 sempre | Chave fornecida pelo Grupo ZAP/OLX no processo de homologação (ver `docs/product/NOVOS_RECURSOS_PROGRESSO.md`); também requer criar a conexão `provider: "GRUPOZAP"` em `/admin/integracoes` e registrar a URL do webhook com o Grupo ZAP |
 
 ## Resumo honesto
 

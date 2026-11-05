@@ -40,6 +40,12 @@ const envSchema = z.object({
   LLM_PROVIDER_API_KEY: z.string().optional(),
   VAPID_PUBLIC_KEY: z.string().optional(),
   VAPID_PRIVATE_KEY: z.string().optional(),
+
+  // Webhook de leads do Grupo ZAP/OLX (ZAP Imóveis, Viva Real, OLX — mesmo
+  // backend). Chave única por CRM, nunca por anunciante (ver
+  // docs/operations/PROVIDER_CONFIGURATION.md). Sem ela, o endpoint responde
+  // 503 — nunca aceita um webhook sem poder validar a origem.
+  GRUPOZAP_WEBHOOK_SECRET_KEY: z.string().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

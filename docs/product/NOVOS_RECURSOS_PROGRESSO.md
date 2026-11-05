@@ -96,9 +96,83 @@ qualquer lógica específica de payload/assinatura de webhook; sem isso, o
 próximo passo executável é M3 (perfil progressivo + match imediato), que não
 depende de nenhuma integração externa.
 
-## M2–M12 — pendentes
+## M2 — Leads externos (ZAP Imóveis / Viva Real / OLX) ✅ conector implementado, 🔶 aguardando credencial real
+
+Provedor confirmado em 2026-11-05: o usuário pediu para conectar com ZAP
+Imóveis e Viva Real. Pesquisa na documentação oficial (`developers.grupozap.com`,
+único portal de desenvolvedor encontrado — **não existe** cadastro
+self-service equivalente ao `developer.olxgroup.com` europeu para o Brasil;
+OLX Brasil/ZAP Imóveis/Viva Real compartilham o mesmo backend de leads,
+chamado "Grupo ZAP", e publicação multi-portal é comercializada via **Canal
+Pro**, sob consulta comercial) confirmou:
+
+- **Leads** (M2, implementado): webhook `POST` com JSON assinado por Basic
+  Auth (`SECRET_KEY` única por CRM) — spec completa em
+  `/webhooks/integration_leads.html` e `/webhooks/security.html`.
+- **Publicação** (M5, não implementado ainda): feed XML no formato
+  **Vrsync** (o formato "Zap" é depreciado) — a Grupo ZAP faz *polling* do
+  nosso XML a cada ~12h (`VivaRealBot/1.0`), não um push nosso. Spec em
+  `/feeds/vrsync/elements/`, `/feeds/connection_guideline.html`.
+
+**O que foi implementado (M2):**
+- `apps/api/src/integration-connections/connectors/grupozap/`: conector
+  completo — `grupozap-webhook-auth.guard.ts` (Basic Auth contra
+  `GRUPOZAP_WEBHOOK_SECRET_KEY`, 503 se não configurada), `grupozap-lead-payload.schema.ts`
+  (schema Zod fiel ao payload documentado), `grupozap-leads.service.ts`
+  (ingestão via `IntegrationEventsService` do M1, dedupe por `originLeadId`,
+  resolução/criação de usuário por e-mail — nunca duplica identidade —,
+  chamada a `LeadsService.recordSignal` reaproveitando 100% do CRM
+  existente), `grupozap-leads.controller.ts` (`POST /webhooks/grupozap/leads`).
+- Novo tipo de atividade `INTEGRATION_LEAD_RECEIVED` em `LEAD_ACTIVITY_TYPES`
+  — avança o estágio para INTERESSE (mesmo peso de um `CONTACT` direto) e
+  notifica o time comercial, exatamente como qualquer outro sinal real.
+- Worker: fila `grupozap-process-leads` (a cada 5 min, reprocessa eventos
+  PENDENTE — cobre o caso de a conexão ter sido ativada depois do
+  recebimento, ou falha transitória).
+- D6 (`/admin/integracoes`) ganhou a entrada "Grupo ZAP/OLX (leads)".
+- Migration `0017_rare_jazinda.sql`: `ALTER TYPE lead_activity_type ADD VALUE`.
+
+**Decisão de identidade:** um lead sem conta prévia na VALORI MATCH gera um
+usuário "sombra" (e-mail real do lead, hash de senha aleatório e descartado
+— nunca utilizável para login) só para satisfazer `leads.user_id`. Se a
+mesma pessoa já tiver conta (mesmo e-mail), reaproveita — nunca duplica.
+Gap conhecido, não resolvido nesta fatia: não há fluxo de "reivindicar" essa
+conta sombra caso a pessoa se cadastre depois com o mesmo e-mail (colidiria
+no `UNIQUE` de `users.email` — precisa de tratamento dedicado se/quando
+despriorizar).
+
+**Verificações executadas:**
+- `pnpm turbo run typecheck lint test build --force`: achou e corrigiu 2
+  mapas exaustivos de `LeadActivityType` no admin (`lead-labels.ts`,
+  `leads/[id]/page.tsx`) que não cobriam o novo valor do enum — TypeScript
+  pegou isso antes de qualquer teste manual.
+- Verificação funcional contra Postgres real descartável (script temporário,
+  removido depois): lead novo cria usuário+lead reais e avança para
+  INTERESSE; webhook duplicado (mesmo `originLeadId`) não reprocessa nem
+  duplica usuário; segundo lead real do mesmo e-mail reaproveita o mesmo
+  usuário/lead (2 atividades, 1 lead, 1 usuário) — **essa rodada encontrou um
+  bug real**: a migration do novo valor de enum (`ALTER TYPE ... ADD VALUE`)
+  não tinha sido gerada, e só apareceu rodando contra Postgres de verdade
+  (um mock não capturaria isso) — corrigido com a migration 0017 antes de
+  prosseguir.
+
+**Bloqueio real para ativar de verdade:** falta (1) a `GRUPOZAP_WEBHOOK_SECRET_KEY`
+real, fornecida pelo Grupo ZAP/OLX no processo de homologação, e (2) criar a
+conexão `provider: "GRUPOZAP"` em `/admin/integracoes` e registrar a URL do
+webhook (`https://<domínio-api>/api/v1/webhooks/grupozap/leads`) com o Grupo
+ZAP. Sem isso, o endpoint responde 503 sempre — nunca finge estar ativo.
+
+## M5 — Publicação centralizada (próximo passo natural)
+
+Spec do feed Vrsync já pesquisada (ver acima) — não implementado ainda.
+Arquitetura é o INVERSO de M2: não é um webhook que recebemos, é um XML
+público que expomos e a Grupo ZAP busca por polling a cada ~12h. Requisitos
+técnicos confirmados (TLS válido não autoassinado, `VivaRealBot/1.0`
+liberado no firewall, URL ≤255 caracteres, timeout de conexão 60s/download
+20min) — ver `/feeds/connection_guideline.html`.
+
+## M3, M4, M6–M12 — pendentes
 
 Ver a matriz completa em `docs/product/NOVOS_RECURSOS_M0_DIAGNOSTICO.md`.
-M9 (catálogo externo licenciado) e, por decorrência, M10/M11/M12 dependem de
-um provedor nomeado e credenciado — **nenhum nome de portal/provedor foi
-confirmado ainda**; não inventar endpoint/campo/capacidade até isso existir.
+M9 (catálogo externo licenciado — diferente de M5, que é publicar a carteira
+própria) continua sem provedor confirmado.

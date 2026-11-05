@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const INTEGRATION_KEYS = ["maps", "storage", "smtp", "whatsapp", "llm", "webPush"] as const;
+export const INTEGRATION_KEYS = ["maps", "storage", "smtp", "whatsapp", "llm", "webPush", "grupozap"] as const;
 export const integrationKeySchema = z.enum(INTEGRATION_KEYS);
 export type IntegrationKey = z.infer<typeof integrationKeySchema>;
 

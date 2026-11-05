@@ -3,7 +3,7 @@
 import type { IntegrationConnectionStatus, IntegrationDirection, IntegrationKey } from "@spire/contracts";
 import { INTEGRATION_DIRECTIONS } from "@spire/contracts";
 import { Button, Card, EmptyState } from "@spire/ui-web";
-import { Bell, HardDrive, Mail, Map, MessageCircle, Plug, RefreshCw, Sparkles } from "lucide-react";
+import { Bell, Globe, HardDrive, Mail, Map, MessageCircle, Plug, RefreshCw, Sparkles } from "lucide-react";
 import { type ComponentType, useState } from "react";
 
 import { AdminShell } from "@/components/layout/AdminShell";
@@ -23,6 +23,7 @@ const ICONS: Record<IntegrationKey, ComponentType<{ className?: string }>> = {
   whatsapp: MessageCircle,
   llm: Sparkles,
   webPush: Bell,
+  grupozap: Globe,
 };
 
 const CONNECTION_STATUS_LABEL: Record<IntegrationConnectionStatus, string> = {

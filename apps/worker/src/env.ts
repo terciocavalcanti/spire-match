@@ -13,6 +13,7 @@ const envSchema = z.object({
   RADAR_SWEEP_INTERVAL_MINUTES: z.coerce.number().int().positive().default(15),
   AUTOMATION_TICK_INTERVAL_MINUTES: z.coerce.number().int().positive().default(10),
   INTEGRATION_EVENTS_RETRY_INTERVAL_MINUTES: z.coerce.number().int().positive().default(20),
+  GRUPOZAP_PROCESS_LEADS_INTERVAL_MINUTES: z.coerce.number().int().positive().default(5),
 });
 
 export type WorkerEnv = z.infer<typeof envSchema>;

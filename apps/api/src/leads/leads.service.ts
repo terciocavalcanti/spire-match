@@ -43,6 +43,7 @@ const COMMERCIAL_TEAM_ROLES = ["ADMIN", "SUPER_ADMIN", "SALES_MANAGER"] as const
 
 const SIGNAL_NOTIFICATION_TITLES: Partial<Record<LeadActivityType, (buyerName: string) => string>> = {
   CONTACT: (buyerName) => `${buyerName} pediu contato`,
+  INTEGRATION_LEAD_RECEIVED: (buyerName) => `${buyerName} chegou por uma fonte externa (ZAP/OLX/Viva Real)`,
   VISIT_SCHEDULED: (buyerName) => `${buyerName} agendou uma visita`,
   PROPOSAL_RECEIVED: (buyerName) => `${buyerName} enviou uma proposta`,
 };
@@ -71,6 +72,10 @@ const STAGE_ORDER: Record<LeadStage, number> = {
 
 const AUTO_ADVANCE_TARGET: Partial<Record<LeadActivityType, LeadStage>> = {
   CONTACT: "INTERESSE",
+  // Um lead chegando de uma fonte externa (ZAP/OLX/Viva Real) já demonstrou
+  // interesse real num imóvel — equivalente a um CONTACT direto, mesmo
+  // avanço de estágio.
+  INTEGRATION_LEAD_RECEIVED: "INTERESSE",
   VISIT_SCHEDULED: "VISITA",
   PROPOSAL_RECEIVED: "PROPOSTA",
 };

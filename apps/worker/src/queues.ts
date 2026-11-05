@@ -7,6 +7,7 @@ export const QUEUE_RECALC_PROPERTY = "match-recalc-property";
 export const QUEUE_RADAR_SWEEP = "radar-sweep";
 export const QUEUE_AUTOMATION_TICK = "automation-tick";
 export const QUEUE_INTEGRATION_EVENTS_RETRY = "integration-events-retry";
+export const QUEUE_GRUPOZAP_PROCESS_LEADS = "grupozap-process-leads";
 
 export interface RecalcBuyerPayload {
   userId: string;
@@ -24,3 +25,6 @@ export type AutomationTickPayload = Record<string, never>;
 
 // Idem — varre eventos FALHOU de todas as conexões (fundação de integrações, M1).
 export type IntegrationEventsRetryPayload = Record<string, never>;
+
+// Idem — processa eventos LEAD_RECEIVED PENDENTE da conexão GrupoZap (M2).
+export type GrupoZapProcessLeadsPayload = Record<string, never>;

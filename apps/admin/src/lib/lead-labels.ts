@@ -33,4 +33,5 @@ export const LEAD_ACTIVITY_LABELS: Record<LeadActivityType, string> = {
   ASSIGNED: "Corretor atribuído",
   NOTE: "Nota interna",
   SLA_REMINDER_SENT: "Lembrete de SLA enviado",
+  INTEGRATION_LEAD_RECEIVED: "Lead recebido de integração externa",
 };

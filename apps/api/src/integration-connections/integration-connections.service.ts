@@ -66,6 +66,12 @@ export class IntegrationConnectionsService {
     return row;
   }
 
+  /** Usado por conectores concretos (ex.: GrupoZapLeadsService) para achar sua própria conexão pelo `provider`. */
+  async findByProvider(provider: string): Promise<typeof integrationConnections.$inferSelect | null> {
+    const [row] = await this.db.select().from(integrationConnections).where(eq(integrationConnections.provider, provider)).limit(1);
+    return row ?? null;
+  }
+
   async create(request: CreateIntegrationConnectionRequest, userId: string): Promise<IntegrationConnection> {
     const [row] = await this.db
       .insert(integrationConnections)

@@ -24,6 +24,7 @@ export class IntegrationsStatusService {
     const hasWhatsapp = Boolean(this.get("WHATSAPP_CLOUD_API_TOKEN") && this.get("WHATSAPP_PHONE_NUMBER_ID"));
     const hasLlm = Boolean(this.get("LLM_PROVIDER_API_KEY"));
     const hasWebPush = Boolean(this.get("VAPID_PUBLIC_KEY") && this.get("VAPID_PRIVATE_KEY"));
+    const hasGrupoZap = Boolean(this.get("GRUPOZAP_WEBHOOK_SECRET_KEY"));
 
     return [
       {
@@ -63,6 +64,14 @@ export class IntegrationsStatusService {
         label: "Notificações push",
         status: hasWebPush ? "ATIVO" : "PENDENTE",
         description: hasWebPush ? "Par de chaves VAPID configurado — não depende de credencial de terceiro." : "Sem par de chaves VAPID — notificações push do navegador ficam indisponíveis.",
+      },
+      {
+        key: "grupozap",
+        label: "Grupo ZAP/OLX (leads)",
+        status: hasGrupoZap ? "ATIVO" : "PENDENTE",
+        description: hasGrupoZap
+          ? "Chave de segurança do webhook de leads configurada."
+          : "Sem GRUPOZAP_WEBHOOK_SECRET_KEY — o webhook de leads do ZAP Imóveis/Viva Real/OLX recusa qualquer requisição com 503, nunca aceita sem validar a origem.",
       },
     ];
   }

@@ -21,6 +21,7 @@ import { DevelopmentPartnerAccessModule } from "./development-partner-access/dev
 import { DevelopmentsModule } from "./developments/developments.module";
 import { FavoritesModule } from "./favorites/favorites.module";
 import { HealthModule } from "./health/health.module";
+import { GrupoZapModule } from "./integration-connections/connectors/grupozap/grupozap.module";
 import { IntegrationConnectionsModule } from "./integration-connections/integration-connections.module";
 import { IntegrationsStatusModule } from "./integrations-status/integrations-status.module";
 import { InteractionsModule } from "./interactions/interactions.module";
@@ -78,6 +79,7 @@ import { VisitsModule } from "./visits/visits.module";
     UnitsModule,
     IntegrationsStatusModule,
     IntegrationConnectionsModule,
+    GrupoZapModule,
     OwnerLeadsModule,
     PrivateMarketModule,
     DemandMatchModule,

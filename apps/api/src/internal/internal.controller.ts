@@ -3,6 +3,7 @@ import { ApiExcludeController } from "@nestjs/swagger";
 
 import { AutomationsService } from "../automations/automations.service";
 import { InternalGuard } from "../common/guards/internal.guard";
+import { GrupoZapLeadsService } from "../integration-connections/connectors/grupozap/grupozap-leads.service";
 import { IntegrationEventsService } from "../integration-connections/integration-events.service";
 import { MatchesService } from "../matches/matches.service";
 import { RadarsService } from "../radars/radars.service";
@@ -22,6 +23,7 @@ export class InternalController {
     private readonly radars: RadarsService,
     private readonly automations: AutomationsService,
     private readonly integrationEvents: IntegrationEventsService,
+    private readonly grupoZapLeads: GrupoZapLeadsService,
   ) {}
 
   @Post("matches/recalculate-buyer/:userId")
@@ -53,5 +55,11 @@ export class InternalController {
   async requeueFailedIntegrationEvents() {
     const requeued = await this.integrationEvents.requeueFailed();
     return { requeued };
+  }
+
+  @Post("grupozap/process-pending-leads")
+  async processGrupoZapPendingLeads() {
+    const processed = await this.grupoZapLeads.processPendingEvents();
+    return { processed };
   }
 }

@@ -7,6 +7,7 @@ import {
   CalendarCheck,
   CalendarX,
   FileText,
+  Globe,
   MessageSquare,
   Sparkles,
   StickyNote,
@@ -32,6 +33,7 @@ const ACTIVITY_ICONS = {
   ASSIGNED: UserPlus,
   NOTE: StickyNote,
   SLA_REMINDER_SENT: AlarmClock,
+  INTEGRATION_LEAD_RECEIVED: Globe,
 } as const;
 
 export default function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
